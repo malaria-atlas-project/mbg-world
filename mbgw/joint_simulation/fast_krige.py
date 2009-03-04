@@ -1,0 +1,117 @@
+# Author: Anand Patil
+# Date: 6 Feb 2009
+# License: Creative Commons BY-NC-SA
+####################################
+
+import numpy as np
+import pymc as pm
+from pymc.gp.incomplete_chol import ichol_full
+from numpy import float32
+import tables as tb
+import time
+import scipy
+
+# N_nearest = 1446
+# N_nearest = 1300
+N_nearest = 100
+
+__all__ = ['preprocess', 'krige_month', 'ndmeshgrid']
+
+def ndmeshgrid(grids, hnode=None):
+    """
+    Converts a list of (start, stop, n) tuples to an 'n-dimensional meshgrid'.
+    In two dimensions, this would be:
+    
+        x = linspace(*grids[0])
+        y = linspace(*grids[1])
+        x,y = meshgrid(x,y)
+        z = concatenate(x,y,axis=-1)
+    
+    or something like that. Also returns the number of locations in each direction
+    as a list.
+    """
+    ndim = len(grids)
+    grids = np.asarray(grids)
+    ns = grids[:,2]
+    axes = [np.linspace(*grid) for grid in grids]
+    if hnode is None:
+        x = np.empty(list(ns)+[ndim])
+        for index in np.ndindex(*ns):
+            x[index+(None,)] = [axes[i][index[i]] for i in xrange(ndim)]
+        return np.atleast_2d(x.squeeze()), ns            
+    else:
+        for index in np.ndindex(*ns):
+            hnode[index] = [axes[i][index[i]] for i in xrange(ndim)]
+        return ns
+
+
+def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata):
+
+
+    xbi = np.asarray(np.linspace(0,grids[0][2],n_blocks_x+1),dtype=int)
+    ybi = np.asarray(np.linspace(0,grids[1][2],n_blocks_y+1),dtype=int)
+
+    dev = (tdata-mean_ondata-pdata)
+
+    # Figure out which data locations are relevant to the different prediction blocks
+    cutoff = C.params['amp']*relp
+    scale = C.params['scale']
+    inc = C.params['inc']
+    ecc = C.params['ecc']
+    eff_spat_scale = scale/np.sqrt(2)
+    C_s = pm.gp.Covariance(pm.gp.cov_funs.exponential.aniso_geo_rad, amp=1, scale=eff_spat_scale, inc=inc, ecc=ecc)
+    rel_data_ind = np.empty((n_blocks_x, n_blocks_y), dtype=object)
+
+    from pylab import *
+    import matplotlib
+    matplotlib.interactive(True)    
+    
+    for j in xrange(n_blocks_x):        
+        for k in xrange(n_blocks_y):
+            this_x = x[xbi[j]:xbi[j+1], ybi[k]:ybi[k+1]]
+            approx_dpc = np.asarray(C_s(this_x[:,:,:2], data_locs[:,:2]))            
+            this_rdi = []
+    
+            # Find the points that covary most with points in block.
+            if len(this_rdi) < N_nearest:
+                this_rdi = list(set(np.ravel(np.argsort(approx_dpc.T,axis=0)[-N_nearest:])))
+            
+            # print '\t%i datapoints, min cov %f'%(len(this_rdi), approx_dpc.min())
+            rel_data_ind[j,k] = this_rdi
+    
+    
+    return dev, xbi, ybi, rel_data_ind
+        
+
+def krige_month(C, C_eval, i, data_locs, grid_shape, n_blocks_x, n_blocks_y, rel_data_ind, xbi, ybi, x, dev, row, mask, relp):
+        
+    x_index_start = 0
+
+    for j in xrange(n_blocks_x):
+        x_block_size = (xbi[j+1]-xbi[j])
+        
+        for k in xrange(n_blocks_y):
+            
+            this_x = x[xbi[j]:xbi[j+1], ybi[k]:ybi[k+1]]
+            this_mask = mask[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]]
+            y_block_size = ybi[k+1]-ybi[k]            
+            
+            # Check if this block contains any land area, otherwise leave the covariance block as zero.
+            if np.sum(this_mask) > 0:   
+
+                U, n_posdef, pivots = ichol_full(c=C_eval[rel_data_ind[j,k], :][:, rel_data_ind[j,k]], reltol=relp)
+
+                U = U[:n_posdef, :n_posdef]
+
+                dl_posdef = data_locs[rel_data_ind[j,k]][pivots[:n_posdef]]
+                dev_posdef = dev[rel_data_ind[j,k]][pivots[:n_posdef]]
+
+                # Backsolve data-data covariance against dev
+                pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
+                pm.gp.trisolve(U, dev_posdef, uplo='U', transa='N', inplace=True)
+                             
+                n_posdef = len(dl_posdef)
+                this_C_V = C(dl_posdef, this_x)
+                this_mask = mask[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]]             
+
+                row[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]] = scipy.linalg.blas.fblas.sgemv(1., this_C_V.T, dev_posdef).reshape((x_block_size, y_block_size))
