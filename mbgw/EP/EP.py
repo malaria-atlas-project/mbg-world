@@ -11,6 +11,7 @@ from IPython.Debugger import Pdb
 __all__ = ['EP']
 
 class EP(pm.Sampler):
+
     def __init__(self, M_pri, C_pri, lp, nug):
         # Number of input points
         self.Nx = len(M_pri)
@@ -27,8 +28,7 @@ class EP(pm.Sampler):
         # Prior mean and covariance of theta
         self.M_pri = M_pri
         self.C_pri = C_pri
-
-                                
+                      
     def compute_expectation(self, i, funs=[lambda x:x, lambda x:x**2]):
         """
         Use rejection sampling to compute moments
@@ -42,9 +42,11 @@ class EP(pm.Sampler):
         w = np.exp(ts - p_tot)
         moments = [np.sum(fun(thetas)*w) for fun in funs]
         if np.any(np.isinf(moments)):
-            Pdb(color_scheme='Linux').set_trace()   
+            # Pdb(color_scheme='Linux').set_trace()   
+            raise RuntimeError, 'Infinite moments.'
         if np.any(np.isnan(moments)):
-            Pdb(color_scheme='Linux').set_trace()   
+            # Pdb(color_scheme='Linux').set_trace()   
+            raise RuntimeError, 'Some moments are nan.'
         if np.abs(moments[1]-moments[0]**2) < 1e-6:
             # Prior hardly supports posterior, return p_tot=0 and don't update moments.
             p_tot = -np.Inf
@@ -66,19 +68,22 @@ class EP(pm.Sampler):
         else:
             eff_Cobs = (self.C[i,i] + self.nug[i] + self.V[i])
         if eff_Cobs==0:
-            Pdb(color_scheme='Linux').set_trace()
+            # Pdb(color_scheme='Linux').set_trace()
+            raise RuntimeError, 'Observed covariance is zero.'
         offdiag = np.asarray(self.C[i,:]).ravel()
-        self.M = self.M + offdiag / eff_Cobs* (self.mu[i] - self.M[i])
-        self.C = self.C - np.outer(offdiag, offdiag) / eff_Cobs
+        new_M = self.M + offdiag / eff_Cobs* (self.mu[i] - self.M[i])
+        new_C = self.C - np.outer(offdiag, offdiag) / eff_Cobs
+        if np.any(np.isinf(new_M)) or np.any(np.isinf(new_M)):
+            # Pdb(color_scheme='Linux').set_trace()  
+            raise RuntimeError, 'Infinite covariance or mean.'
+        if np.any(np.diag(new_C)<0):
+            # Pdb(color_scheme='Linux').set_trace()    
+            raise RuntimeError, 'Negative diagonal elements of covariance.'
+        self.M = new_M
+        self.C = new_C
         self.M.flags['WRITEABLE'] = False
-        self.C.flags['WRITEABLE'] = False
-
-        if np.any(np.isinf(self.C)) or np.any(np.isinf(self.M)):
-            Pdb(color_scheme='Linux').set_trace()  
-        if np.any(np.diag(self.C)<0):
-            Pdb(color_scheme='Linux').set_trace()    
-
-    
+        self.C.flags['WRITEABLE'] = False            
+        
     def update_item(self, i):
         """
         Update approximate likelihood parameters mu[i], V[i], s[i] according to 
@@ -106,10 +111,11 @@ class EP(pm.Sampler):
             self.observe(i)
             
             if np.isinf(self.V[i]):
-                Pdb(color_scheme='Linux').set_trace()   
+                # Pdb(color_scheme='Linux').set_trace()   
+                raise RuntimeError, 'Infinite likelihood varaince.'
             if np.any(np.isnan(self.V)) | np.any(np.isnan(self.mu)):
-                Pdb(color_scheme='Linux').set_trace()
-            
+                # Pdb(color_scheme='Linux').set_trace()
+                raise RuntimeError, 'Likelihood variance or mean is nan.'
         else:
             print 'Zero probability'
             self.observe(i)
@@ -119,11 +125,11 @@ class EP(pm.Sampler):
         
         # if self.C[i,i]<0 or self.V[i] <= 0:
         #     Pdb(color_scheme='Linux').set_trace()
-    
+        
     def update_sweep(self):
         for i in xrange(self.Nx):
             self.update_item(i)
-        
+    
     def fit(self, N_samps, tol=.01):
         """
         Stores approximate likelihood parameters mu, V
@@ -136,10 +142,11 @@ class EP(pm.Sampler):
         for i in xrange(self.Nx):
             self.observe(i)
             if np.any(np.isinf(self.C)) or np.any(np.isinf(self.M)):
-                Pdb(color_scheme='Linux').set_trace()  
+                # Pdb(color_scheme='Linux').set_trace()  
+                raise RuntimeError, 'C or M is infinite.'
             if np.any(np.diag(self.C)<0):
-                Pdb(color_scheme='Linux').set_trace()    
-            
+                # Pdb(color_scheme='Linux').set_trace()   
+                raise RuntimeError, 'C has negative diagonal.' 
         
         # To help convergence, use same iid normal samples
         # in all iterations.
@@ -162,26 +169,43 @@ class EP(pm.Sampler):
             if np.isnan(dmu):
                 dmu = np.max(np.abs((self.mu - last_mu)*10))
             dV = np.max(np.abs((self.V - last_V)/self.V))
+
+            if sw > 10000 and sw % 100 == 0:
+                print 'Too many iterations, randomizing.'
+                # Pdb(color_scheme='Linux').set_trace()                   
+                print 'mu: %s'%self.mu
+                print 'V: %s'%self.V
+                self.V = last_V + np.random.random(size=len(self.V)) * dV * self.V
+                self.mu = last_mu + np.random.random(size=len(self.mu)) * dmu * self.mu
+                
             last_V[:] = self.V[:]
             last_mu[:] = self.mu[:]
             
-
-        if np.all(self.V>0):
-            joint_term = pm.mv_normal_cov_like(self.mu, self.M_pri, self.C_pri + np.diag((self.V + self.nug)))
-            ind_term = pm.normal_like(self.mu, self.M_pri, 1/(np.diag(self.C_pri) + (self.V + self.nug)))
+        V = np.array((self.V+self.nug))
+        V_ind = V + np.diag(self.C_pri)
+        C_joint = self.C_pri+np.diag(V)
+        if np.all(V_ind>0):
+            joint_term = pm.mv_normal_cov_like(self.mu, self.M_pri, C_joint)
+            ind_term = pm.normal_like(self.mu, self.M_pri, 1/V_ind)
             log_ratio = joint_term-ind_term
         # Protect against negative 'variances' (which are acceptable)
         else:
-            V = np.array((self.V+self.nug), dtype=complex)
-            V_ind = V + np.diag(self.C_pri)
-            C_joint = self.C_pri+np.diag(V)
-            dev=self.mu-self.M_pri
-            
-            ind_term = -.5*np.sum((np.log(2.*np.pi*V) + dev**2/V))
-            val,vec = np.linalg.eig(C_joint)
-            
+            V = V.astype('complex')
+            V_ind = V_ind.astype('complex')
+            C_joint = C_joint.astype('complex')
+
+            dev=self.mu-self.M_pri            
+            ind_term = -.5*np.sum((np.log(2.*np.pi*V_ind) + dev**2/V_ind))
+
+            val,vec = np.linalg.eig(C_joint)            
             dev = np.asarray(np.dot(dev,vec)).ravel()
-            joint_term = -.5*np.sum((np.log(2.*np.pi*val))) -.5*np.dot(dev, dev/val)
+            joint_term = -.5*np.sum((np.log(2.*np.pi*val))) + np.dot(dev, dev/val)
+
             log_ratio = np.real(joint_term-ind_term)
             # Pdb(color_scheme='Linux').set_trace()   
-        return np.sum(self.p) + joint_term - ind_term
+        
+        if np.sum(self.p) + log_ratio > 10000:
+            from IPython.Debugger import Pdb
+            Pdb(color_scheme='Linux').set_trace()   
+        
+        return np.sum(self.p) + log_ratio

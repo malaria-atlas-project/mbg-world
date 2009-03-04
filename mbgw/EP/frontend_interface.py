@@ -4,7 +4,7 @@
 ####################################
 
 import matplotlib
-matplotlib.interactive(False)
+matplotlib.interactive(True)
 import matplotlib.pyplot as pl
 import numpy as np
 import os
@@ -14,9 +14,15 @@ from IPython.Debugger import Pdb
 import pymc as pm
 from copy import copy
 from tables import openFile, FloatAtom
+from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
+from mbgw.agepr import a
 
-__all__ = ['frontend', 'backend', 'PR_samps', 'make_pt_fig', 'make_img_patch', 'scratch_cleanup', 'make_EP_inputs', 'make_pred_meshes', 'make_samples', 'update_posterior']
+# __all__ = ['frontend', 'backend', 'PR_samps', 'make_pt_fig', 'make_img_patch', 'scratch_cleanup', 'make_EP_inputs', 'make_pred_meshes', 'make_samples', 'update_posterior']
 
+rad_to_km = 6378.1/np.pi
+km_to_rad = 1./rad_to_km
+rad_to_deg = 180./np.pi
+deg_to_rad = 1./rad_to_deg
 
 def frontend(fun):
 	def new_fun(*args):
@@ -31,13 +37,24 @@ def backend(fun):
     		return pickle.dumps(fun(*pickle.loads(args[0])))
 	return new_fun
 
+def age_to_bin(age, a=a):
+    return np.where(a>=age)[0][0]
+    
+def regularize_ages(lo_age, up_age):
+    lo_age= np.array(map(age_to_bin, lo_age))
+    up_age = np.array(map(age_to_bin, up_age))
+    if np.any(up_age<lo_age):
+        raise ValueError
+    lo_age[np.where(up_age == lo_age)] -= 1
+    return lo_age, up_age
+
 def PR_samps(mesh, Ms, Cs, Vs, ind, facs):
     nm = mesh.shape[0]        
     samps = np.empty((len(ind), nm))
     for i in ind:
         C = Cs[i](mesh, mesh)
         C[::nm+1] += Vs[i]
-        samps[i,:] = pm.invlogit(pm.mv_normal_cov(Ms[i](mesh), C)) * facs[A[i]]
+        samps[i,:] = pm.invlogit(pm.mv_normal_cov(Ms[i](mesh), C).ravel()) * facs[A[i]]
 
     return np.mean(samps,axis=1)
     
@@ -46,7 +63,7 @@ def make_pt_fig(pt, cur_val, samps, output_fname, output_path, outfigs_transpare
     Creates a png file from a point, writes it to disk and returns the path.
     """
     output_fname += '.png'
-    pl.close('all')
+    # pl.close('all')
     pl.figure()
     h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
     pl.xlabel(r'$x$')
@@ -59,18 +76,7 @@ def make_pt_fig(pt, cur_val, samps, output_fname, output_path, outfigs_transpare
     # pl.axis('tight')
     l.legendPatch.set_alpha(0)
     pl.savefig(output_path+'/'+output_fname, transparent=outfigs_transparent)
-    return '/'.join(os.getcwd(), output_path, output_fname)
-
-def make_img_patch(lon, lat, exp_surf, path, alpha=.8, cmap=matplotlib.cm.hot):
-    pl.close('all')
-    pl.figure()
-
-    pl.imshow(exp_surf, extent=[lon.min(), lon.max(), lat.min(), lat.max()], origin='lower', alpha=alpha, cmap=cmap)
-    
-    output_fname = str(id(exp_surf))+'.png'
-    pl.axis('off')
-    pl.savefig(path+output_fname, transparent=True)
-    return os.getcwd() + path + output_fname    
+    return '/'.join([os.getcwd(), output_path, output_fname])
 
 @backend
 def scratch_cleanup():
@@ -81,68 +87,70 @@ def make_EP_inputs(din):
     samp_mesh = np.vstack((din.lon, din.lat, din.year + (din.month-1)/12. - 2009)).T
     return samp_mesh
 
-def make_pred_meshes(dout, img_yr):
+def add_times(pred_mesh, nmonths):
+    """
+    Expands the prediction mesh to the requested number of months.
+    """
+    new_pred_mesh = np.empty((0, 3))
+    for i in xrange(pred_mesh.shape[0]):
+        p = np.repeat(np.atleast_2d(pred_mesh[i]), nmonths[i], axis=0)
+        p[:,2] += np.arange(nmonths[i])
+        new_pred_mesh = np.vstack((new_pred_mesh, p))
+    return new_pred_mesh
     
-    pred_mesh = np.repeat(np.vstack((dout.lon, dout.lat, dout.year-2009)),12,1).T
-    pred_mesh[:,2] += np.tile(np.arange(12)/12.,len(dout))
+def one_point_mean(res, nmonths, i):
+    """
+    Takes the slice of 'res' that corresponds to a temporal slice at one spatial point,
+    and computes the mean, and returns it.
+    """
+    start = np.sum(nmonths[:i])
+    stop = np.sum(nmonths[:i+1])
+    return np.mean(res[start:stop])
+        
 
-    # TODO: return pred_mesh, img_mesh
-    main_hdf = openFile(main_hdf_file)
-    lon = main_hdf.root.long[:]*np.pi/180.
-    lat = main_hdf.root.lat[:]*np.pi/180.
-    main_hdf.close()
+def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=1000):
     
-    return pred_mesh,lon,lat
-
-# FIXME: This should use the on-disk realizations Just need to add nugget and compute utility. MUCH easier!    
-def make_samples(samp_mesh,pred_mesh,img_mesh,img_slices,img_yr,img_samps,img_i,rt_now,M,C,V,r,lm=None,lv=None,nsamp=1):
-    # TODO: take pred_mesh, img_mesh, return needful
     npr = pred_mesh.shape[0]
+    fac_array = fac_array
     
     if lm is not None:
+        # Observe according to EP likelihood
         try:
             pm.gp.observe(M,C,samp_mesh,lm,lv+V)
-        # In case of error:
         except np.linalg.LinAlgError:
             C_old = C
-            C = pm.gp.NearlyFullRankCovariance(C_old.eval_fun, **C.params)
+            C = pm.gp.NearlyFullRankCovariance(C_old.eval_fun, **C_old.params)
             C.observe(C_old.obs_mesh, C_old.obs_V)
             pm.gp.observe(M,C,samp_mesh,lm,lv+V)            
-    
-    # Sample at prediction points: do jointly
-    sigp = C(pred_mesh,pred_mesh)
-    sigp[::npr+1] += V
-    sigp = np.linalg.cholesky(sigp)
-    outp = pm.rmv_normal_chol(M(pred_mesh), sigp, size=nsamp)
-    outp = (pm.flib.invlogit(outp) * r[np.random.randint(len(r), size=npr*nsamp)]).reshape((nsamp,npr))
-    outp = np.mean(outp.reshape((nsamp,-1,12)),axis=2)
-    
-    # Samples at image points: do pointwise. Eventually do with a block-circulant call.
-    nlon, nlat = len(img_mesh[0]), len(img_mesh[1])
-    pix_mesh = np.empty((12,3))
-    pix_mesh[:,2] = np.arange(12)/12. + img_yr - 2009
-    for i in range(nlon)[img_slices[0]]:
-        pix_mesh[:,0] = img_mesh[0][i]
-        for j in range(nlat)[img_slices[1]]:
-            pix_mesh[:,1] = img_mesh[1][j]
-            sigp = C(pix_mesh, pix_mesh)
-            sigp[::13] += V
-            sigp = np.linalg.cholesky(sigp)
-            these_samps = pm.rmv_normal_chol(M(pix_mesh), sigp, size=nsamp)
-            these_samps = (pm.flib.invlogit(these_samps) * r[np.random.randint(len(r), size=nsamp*12)]).reshape((nsamp,12))
-            these_samps = np.mean(these_samps, axis=1)
-            img_samps[img_i,i,j] = these_samps[0]
-            for k in xrange(nsamp-1):
-                img_samps[rt_now[k],i,j] = these_samps[k+1]
-                
-    # Pdb(color_scheme='Linux').set_trace()   
-    return outp
 
-# TODO: Factor some of this shit out into functions!!
-# TODO: Get it working from a terminal before you get Will involved!
-# TODO: Don't even attempt to make image patch initially.    
-@backend
-def update_posterior(input_pts, output_pts, img_yr, utility=np.std):
+    # Sample at prediction points: do jointly
+    Vp = np.diag(C(pred_mesh,pred_mesh))
+    Vp += V
+    outp = (np.random.normal(size=(nsamp,len(Vp)))*np.sqrt(Vp) + M(pred_mesh))
+    outp = pm.flib.invlogit(outp.ravel()).reshape((nsamp,len(Vp))).T
+
+    # For all prediction points,
+    for i in xrange(len(nmonths)):
+        these_facs = np.empty((nmonths[i],nsamp))
+        # For each month at the prediction point, draw a new set of nsamp age-correction factors.
+        for month in xrange(nmonths[i]):
+            this_fac_array = fac_array[lo_age[i]:up_age[i], np.random.randint(fac_array.shape[1])]
+            these_facs[month,:] = this_fac_array[np.random.randint(this_fac_array.shape[0], size=nsamp)]
+        outp[np.sum(nmonths[:i]):np.sum(nmonths[:i+1]),:] *= these_facs
+    
+    if np.any(np.isnan(outp)):
+        raise ValueError, 'NaN in results!'
+    
+    # Compress to annual means and return
+    results = []
+    for i in xrange(len(nmonths)):
+        results.append(one_point_mean(outp, nmonths, i))
+        
+    return results
+
+
+# @backend
+def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std]):
     """
     Inputs and outputs will be pickled as tuples.
 
@@ -150,7 +158,7 @@ def update_posterior(input_pts, output_pts, img_yr, utility=np.std):
         input_pts: List of dictionaries of form:
             {'lon': float, 'lat': float, 'month': integer, 'year': integer, 'lo_age': integer, 'up_age': integer, 'n': integer}
         output_pts: List of dictionaries of form:
-            {'lon': float, 'lat': float, 'year': integer, 'lo_age': integer, 'up_age': integer}
+            {'lon': float, 'lat': float, 'month': integer, 'year': integer, 'nmonths': integer, 'lo_age': integer, 'up_age': integer}
         and one float, 'resolution', which gives the size of a pixel in decimal degrees.
 
         Defaults for both are:
@@ -178,113 +186,99 @@ def update_posterior(input_pts, output_pts, img_yr, utility=np.std):
     din = np.rec.fromrecords([input_pt.values() for input_pt in input_pts], names=input_pts[0].keys())
     dout = np.rec.fromrecords([output_pt.values() for output_pt in output_pts], names=output_pts[0].keys())
 
-    # FIXME: Check the units... they might be stored correctly already.
-    # for pt in (din,dout):
-    #     for attr in ('lon','lat'):
-    #         pt[attr] *= np.pi/180.
+    for pt in (din,dout):
+        for attr in ('lon','lat'):
+            pt[attr] *= deg_to_rad
     
     samp_mesh = make_EP_inputs(din)
-    ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors = \
-        EP_MAP.pred_samps(np.empty((0,3)), samp_mesh, N_exam)
+    pred_mesh = add_times(make_EP_inputs(dout), dout.nmonths)
         
-    N_inner = len(ind_inner)
-    N_outer = len(ind_outer)
+    # Correction factors for each set of age limits.
+    lo_age_in, up_age_in = regularize_ages(din.lo_age, din.up_age) 
+    lo_age_out, up_age_out = regularize_ages(dout.lo_age, dout.up_age)     
     
-    # Figure out output bounding box and number of pixels
-    pred_mesh,  img_lon, img_lat = make_pred_meshes(dout, img_yr)
-    nlon, nlat = len(img_lon), len(img_lat)
+    age_lims = zip(lo_age_in, up_age_in)
+    correction_factor_array = known_age_corr_factors(np.arange(0,27), 1000)
 
-    # Age-correction factors
-    age_distribution = EP_MAP.S_trace[np.random.randint(EP_MAP.S_trace.shape[0]),0,2:11]
-    age_distribution /= np.sum(age_distribution)
-    mean_facs=np.dot(age_distribution, EP_MAP.correction_factor_array)
+    # Find posteriors with EP algorithm
+    ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors = \
+        EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, age_lims, correction_factor_array)
+    
+    # Adjust for failures
+    N_outer = len(ind_outer)
+    N_inner = len(ind_inner)
     
     # Generate current and predictive utilities
-    cur_samps = np.empty((N_outer, N_output))
-    pred_utility_samps = np.empty((N_outer, N_output))
-    pred_samps = np.empty((N_inner, N_output))
+    N_utilities = len(utilities)
+    # To hold samples from the predictive distribution of utility
+    pred_samps = dict(zip([utility.__name__ for utility in utilities], 
+                    [np.empty((N_outer, N_output)) for i in xrange(N_utilities)]))
+    # To hold the current utility
+    cur_vals =  dict(zip([utility.__name__ for utility in utilities], 
+                    [np.empty(N_output) for i in xrange(N_utilities)]))
+    # To hold current samples at prediction points.
+    cur_samps = np.empty((0, N_output))
     
-    # Current and predictive expected utilities
-    img_scratch = openFile('web_scratch/'+str(id(img_lon))+'.hdf5','w')
-    img_exp_utility=img_scratch.createCArray('/','img_exp_utility',FloatAtom(),(nlon,nlat))
-    img_samps=img_scratch.createCArray('/','img_samps',FloatAtom(), (N_inner,nlon,nlat))
-
-    # Initialize scratch space
-    img_exp_utility[:] = 0
-
     # Pdb(color_scheme='Linux').set_trace()   
     for i in xrange(N_outer):
-        print 'Point predictions: outer %i'%i
+        
+        # print 'Point predictions: outer %i'%i
+        
+        # Sample from predictive distribution at output points.
         ii = ind_outer[i]
+        M, C, V = copy(Ms[ii]), copy(Cs[ii]), Vs[ii]
+        cur_samps = np.vstack((cur_samps,make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=10)))
+        
         mp = model_posteriors[i]
         mp -= pm.flib.logsum(mp)
         mp = np.exp(mp)
-        # importance-resample ind_outer and uniquify    
+        
+        # Resample the slices of the posterior conditional on simulated dataset i.
         indices=pm.rcategorical(mp, size=N_inner)
-        nr, rf, rt, nu, xu, ui = pm.gp.linalg_utils.remove_duplicates(indices)
-        
-        for j in xrange(1,len(ui)):
-            if ui[j]==0:
-                break
-        rf = rf[:j]
-        rt = rt[:j]
-        ui = ui[:j]
-        
-        # FIXME: This should target the appropriate year.
-        cur_utilities = np.empty(N_output)
-        for j in xrange(N_output):
-            this_lon = np.argmin(np.abs(img_lon)-dout.lon[j])
-            this_lat = np.argmin(np.abs(img_lat)-dout.lat[j])
-            cur_utilities[i] = cur_img.root.data[this_lat, this_lon]
-        
-        # FIXME: M, C should be observed to make a correct image patch, not just to make
-        # correct values at the output points.
-        # Current samples
-        M, C, V = Ms[ii], Cs[ii], Vs[ii]
-        
-        jc=0
-        # Loop over indices that are represented in the importance resample.
-        for j in ui:
-            jc+=1
-            if jc%100==0:
-                print '\t inner %i of %i'%(jc,len(ui))
+        unique_indices = set(indices)
+        print '%i indices of %i used.'%(len(unique_indices),len(indices))
+
+        # Sample from predictive distribution at output points conditionally on simulated dataset i.        
+        these_samps = np.empty((0,N_output))        
+        for j in unique_indices:
             
-            # Load up mean and covariance parameters
-            jj = ind_inner[indices[j]]
+            # Draw samples conditional on simulated dataset i and posterior slice j.
+            lm, lv = likelihood_means[i][j], likelihood_variances[i][j]
+            jj = ind_inner[j]
             M, C, V = copy(Ms[jj]), copy(Cs[jj]), Vs[jj]
-            
             # Draw enough values to fill in all the slots that are set to j
             # in the importance resample.
-            n_copies = 1 + np.sum(rf==j)
-            rt_now = rt[np.where(rf==j)]
-            # TODO: Split into two functions!
-            these_samps = make_samples(samp_mesh,pred_mesh,img_mesh,img_slices,img_yr,img_samps,j,rt_now,M,C,V,mean_facs,lm=likelihood_means[i][indices[j]],lv=likelihood_variances[i][indices[j]], nsamp=n_copies)
-            pred_samps[j,:] = these_samps[0,:]
-            
-            for k in xrange(len(rt_now)):
-                pred_samps[rt_now[k]] = these_samps[k+1,:]
+            n_copies = 1 + np.sum(indices==jj)
+            these_samps = np.vstack((these_samps,make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=10*n_copies)))
         
-        # FIXME: Why the fuck is utility getting bound to 2009?
-        utility = np.std                    
-        pred_utility_samps[i,:] = np.apply_along_axis(utility, 0, pred_samps)
-        # FIXME: Do this slice-by-slice, will be too big in the full image.
-        img_exp_utility += np.apply_along_axis(utility, 0, img_samps)
-
-    img_exp_utility /= float(N_outer)
+        # Reduce predictive samples, conditional on simulated dataset i, with the utility functions.    
+        for utility in utilities:
+            pred_samps[utility.__name__][i,:] = np.apply_along_axis(utility, 0, these_samps)
     
-    # Create new patch figure
-    path = make_img_patch(img_lon, img_lat, img_exp_utility)
-
-    # Create output_info
-    # TODO: MAKE THIS REAL OUTPUT INFO
-    dum_objs = []
+    # Reduce predictive samples, unconditionally on any simulated data, with the utility function.
+    for utility in utilities:
+        cur_vals[utility.__name__] = np.apply_along_axis(utility, 0, cur_samps)
+    
     output_info = []
-    pl.figure()
     for i in xrange(N_output):
-        dum_objs.append([])
-        pt = dout[i]
-        pt_info = {'lon': pt.lon, 'lat': pt.lat, 'year': pt.year, 'lower age': pt.lo_age, 'upper age': pt.up_age, 'random number': str(np.random.random())}
-        this_out_tup = (pt_info, make_pt_fig(pt, cur_utilities[i], pred_utility_samps[:,i], str(id(dum_objs[-1]))))
-        output_info.append(this_out_tup)
+        output_info.append({})
+        for utility in utilities:
+            pl.close('all')
+            output_info[i][utility.__name__]=make_pt_fig(pt, cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
 
-    return (path,(img_lon.min(), img_lat.min()), (img_lon.max(), img_lat.max()), output_info)
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()   
+    # return output_info
+    
+    # Create output_info
+    # dum_objs = []
+    # output_info = []
+    # pl.figure()
+    # for i in xrange(N_output):
+    #     dum_objs.append([])
+    #     pt = dout[i]
+    #     pt_info = {'lon': pt.lon, 'lat': pt.lat, 'year': pt.year, 'lower age': pt.lo_age, 'upper age': pt.up_age, 'random number': str(np.random.random())}
+    #     this_out_tup = (pt_info, make_pt_fig(pt, cur_utilities[i], pred_utility_samps[:,i], str(id(dum_objs[-1]))))
+    #     output_info.append(this_out_tup)
+    # 
+    # return (path,(img_lon.min(), img_lat.min()), (img_lon.max(), img_lat.max()), output_info)
