@@ -1,6 +1,6 @@
 # Master grid:
-ncols         6281
-nrows         1605
+ncols=         6281
+nrows=         1605
 xllc = -91.45003542
 yllc = -29.23335764
 cellsize = 0.04166665
