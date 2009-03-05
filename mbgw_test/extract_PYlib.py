@@ -1,4 +1,9 @@
-print("hello")
+# Author: Pete Gething
+# Date: 5 March 2009
+# License: Creative Commons BY-NC-SA
+####################################
+
+
 # import python libraries
 from rpy import *
 import numpy as np
@@ -20,6 +25,16 @@ expandGridResPY=r['expandGridRes']
 
 # import parameters from param file
 from extract_params import *
+
+# check filepaths stated in parameter file
+checkAndBuildPaths(filename,VERBOSE=True,BUILD=True)
+checkAndBuildPaths(exportPath,VERBOSE=True,BUILD=True)
+checkAndBuildPaths(exportPathCombined,VERBOSE=True,BUILD=True)
+checkAndBuildPaths(salblim1km_path,VERBOSE=True,BUILD=True)
+checkAndBuildPaths(gr001km_path,VERBOSE=True,BUILD=True)
+checkAndBuildPaths(uniqueSalb_path,VERBOSE=True,BUILD=True)
+checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=True)
+
 
 #############################################################################################################################################
 def examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path):

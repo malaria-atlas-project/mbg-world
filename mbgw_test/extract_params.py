@@ -2,18 +2,21 @@
 # main input hdf5  file of simulated realisations of f
 filename = '/home/pwg/Desktop/test_sim_Af.hdf5'
 
-# location for export files
-exportPath = '/home/pwg/MBGWorld/extraction/output/'
+# location for export of raw extractions (as they come off each distributed instance)
+exportPath = '/home/pwg/mbg-world/extraction/DistributedOutput/'
+
+# location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
+exportPathCombined = '/home/pwg/mbg-world/extraction/CombinedOutput/'
 
 # input 1km salb raster of unique spatial IDs
-salblim1km_path="/home/pwg/MBGWorld/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
+salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
 
 # input 1km raster of population per cell
-gr001km_path="/home/pwg/MBGWorld/datafiles/auxiliary_data/gr001km_ken.hdf5"
+gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_ken.hdf5"
 
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
-uniqueSalb_path='/home/pwg/MBGWorld/extraction/uniqueSalb.txt'
-pixelN_path='/home/pwg/MBGWorld/extraction/pixelN.txt'
+uniqueSalb_path='/home/pwg/mbg-world/extraction/uniqueSalb.txt'
+pixelN_path='/home/pwg/mbg-world/extraction/pixelN.txt'
 
 # class definition dictionaries
 breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}
