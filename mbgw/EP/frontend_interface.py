@@ -19,6 +19,17 @@ from mbgw.agepr import a
 
 # __all__ = ['frontend', 'backend', 'PR_samps', 'make_pt_fig', 'make_img_patch', 'scratch_cleanup', 'make_EP_inputs', 'make_pred_meshes', 'make_samples', 'update_posterior']
 
+# - Screen on big mac. Figure out why EP algorithm doesn't produce 
+#     reasonable predictive distributions for std even when log-likelihood 
+#     function always returns 0 (in this case, you should recover the 
+#     current standard deviation exactly.) Debugging techniques:
+#    - Rerun visualize in EP_map with the log-likelihood functions returning zero. 
+#         You should get the posteriors very close to the prior.
+#    - in update_posterior, set model posteriors to a constant. Then regardless of 
+#         how badly the model posteriors in the EP are, if the mean and variance are 
+#         correct, you should recover the correct predictive standard deviation.
+
+
 rad_to_km = 6378.1/np.pi
 km_to_rad = 1./rad_to_km
 rad_to_deg = 180./np.pi

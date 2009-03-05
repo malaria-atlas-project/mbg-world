@@ -5,7 +5,7 @@ svn export http://pymc.googlecode.com/svn/trunk/ pymc
 git clone git://github.com/malaria-atlas-project/mbg-world.git --depth 1
 
 # File transfers:
-datafiles/auxiliary_data/landSea-e.hdf5
+gsiscp -P2222 datafiles/auxiliary_data/landSea-e.hdf5 condor-zeus.oerc.ox.ac.uk:datafiles/auxiliary_data
 datafiles/auxiliary_data/age_dist_model.hdf5
 datafiles/auxiliary_data/parameter_model.hdf5
 datafiles/auxiliary_data/periurb.hdf5
