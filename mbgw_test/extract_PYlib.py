@@ -3,7 +3,6 @@
 # License: Creative Commons BY-NC-SA
 ####################################
 
-
 # import python libraries
 from rpy import *
 import numpy as np
@@ -27,6 +26,7 @@ expandGridResPY=r['expandGridRes']
 from extract_params import *
 
 # check filepaths stated in parameter file
+from map_utils import checkAndBuildPaths
 checkAndBuildPaths(filename,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(exportPath,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(exportPathCombined,VERBOSE=True,BUILD=True)
@@ -445,9 +445,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
  
 #############################################################################################################################################
 def outputExtraction(dict): 
-    
-    from scipy.io import write_array
-    
+
     # define which realisations we are dealing with
     startRel=dict['startRel']
     endRel=dict['endRel']
@@ -472,10 +470,10 @@ def outputExtraction(dict):
             classSuff = '_'+schemes[ss]+'_'+classes[cc]
 
             # export PAR array for this scheme-class
-            write_array(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
+            savetxt(exportPath+'PAR'+classSuff+relSuff+'.gz', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
 
-a=r.Sys_time()
-ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
-print("TOTAL TIME: "+(str(r.Sys_time()-a)))
-outputExtraction(ExtractedDict) 
+#a=r.Sys_time()
+#ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
+#print("TOTAL TIME: "+(str(r.Sys_time()-a)))
+#outputExtraction(ExtractedDict) 
