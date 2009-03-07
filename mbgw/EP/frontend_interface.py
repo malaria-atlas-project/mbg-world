@@ -4,7 +4,7 @@
 ####################################
 
 import matplotlib
-matplotlib.interactive(True)
+matplotlib.interactive(False)
 import matplotlib.pyplot as pl
 import numpy as np
 import os
@@ -19,16 +19,10 @@ from mbgw.agepr import a
 
 # __all__ = ['frontend', 'backend', 'PR_samps', 'make_pt_fig', 'make_img_patch', 'scratch_cleanup', 'make_EP_inputs', 'make_pred_meshes', 'make_samples', 'update_posterior']
 
-# - Screen on big mac. Figure out why EP algorithm doesn't produce 
-#     reasonable predictive distributions for std even when log-likelihood 
-#     function always returns 0 (in this case, you should recover the 
-#     current standard deviation exactly.) Debugging techniques:
-#    - Rerun visualize in EP_map with the log-likelihood functions returning zero. 
-#         You should get the posteriors very close to the prior.
-#    - in update_posterior, set model posteriors to a constant. Then regardless of 
-#         how badly the model posteriors in the EP are, if the mean and variance are 
-#         correct, you should recover the correct predictive standard deviation.
-
+# Two problems now:
+# - The normalizing constant apparently can be off for large, negative variances. Check it very carefully.
+# - Observing with negative variances is probably buggy. The current run is replacing negative variances with NaN,
+#   and the filtered output should have the same SD as the current samples if all is well.
 
 rad_to_km = 6378.1/np.pi
 km_to_rad = 1./rad_to_km
@@ -122,22 +116,40 @@ def one_point_mean(res, nmonths, i):
 def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=1000):
     
     npr = pred_mesh.shape[0]
+    nsm = samp_mesh.shape[0]
     fac_array = fac_array
     
     if lm is not None:
         # Observe according to EP likelihood
         try:
             pm.gp.observe(M,C,samp_mesh,lm,lv+V)
+            C_mesh = C(pred_mesh, pred_mesh)
+            M_mesh = M(pred_mesh)
         except np.linalg.LinAlgError:
-            C_old = C
-            C = pm.gp.NearlyFullRankCovariance(C_old.eval_fun, **C_old.params)
-            C.observe(C_old.obs_mesh, C_old.obs_V)
-            pm.gp.observe(M,C,samp_mesh,lm,lv+V)            
+            # If there's a problem with the Cholesky-based algorithm (and there easily might be
+            # because lv may be large and negative) then do it the boneheaded way.
+            C_mesh = C(pred_mesh, pred_mesh)
+            M_mesh = M(pred_mesh)
+            C_samp = C(samp_mesh, samp_mesh).copy()
+            M_samp = M(samp_mesh)
+
+            np.ravel(C_samp)[::nsm+1] += lv + V # Add lv+V to diagonal of C_samp in place
+            C_samp_I = C_samp.I
+
+            C_off = C(samp_mesh, pred_mesh)
+            C_mesh -= C_off.T * C_samp_I * C_off
+            M_mesh += np.ravel(np.dot(C_off.T * C_samp_I , (lm - M_samp)))
+            
+    else:
+        C_mesh = C(pred_mesh, pred_mesh)
+        M_mesh = M(pred_mesh)
+        
+            
 
     # Sample at prediction points: do jointly
-    Vp = np.diag(C(pred_mesh,pred_mesh))
+    Vp = np.diag(C_mesh)
     Vp += V
-    outp = (np.random.normal(size=(nsamp,len(Vp)))*np.sqrt(Vp) + M(pred_mesh))
+    outp = (np.random.normal(size=(nsamp,len(Vp)))*np.sqrt(Vp) + M_mesh)
     outp = pm.flib.invlogit(outp.ravel()).reshape((nsamp,len(Vp))).T
 
     # For all prediction points,
@@ -159,6 +171,14 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
         
     return results
 
+def dtrm_disc_sample(p):
+    n = len(p)
+    pn = np.floor(np.cumsum(p)*n)
+    samp = np.empty(n, dtype=int)
+    samp[0] = pn[0]
+    samp[1:] = np.diff(pn)
+    return samp
+        
 
 # @backend
 def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std]):
@@ -241,13 +261,20 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
         cur_samps = np.vstack((cur_samps,make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=10)))
         
         mp = model_posteriors[i]
+        # FIXME: Comment!
+        mp *= 0
         mp -= pm.flib.logsum(mp)
         mp = np.exp(mp)
         
         # Resample the slices of the posterior conditional on simulated dataset i.
-        indices=pm.rcategorical(mp, size=N_inner)
-        unique_indices = set(indices)
-        print '%i indices of %i used.'%(len(unique_indices),len(indices))
+        # indices=pm.rcategorical(mp, size=N_inner)
+        index_samp = dtrm_disc_sample(mp)
+        where_pos = np.where(index_samp>0)
+        unique_indices = where_pos[0]
+        n_copies = index_samp[where_pos]
+        
+        # unique_indices = set(indices)
+        print '%i indices of %i used.'%(len(unique_indices),N_inner)
 
         # Sample from predictive distribution at output points conditionally on simulated dataset i.        
         these_samps = np.empty((0,N_output))        
@@ -259,8 +286,7 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             M, C, V = copy(Ms[jj]), copy(Cs[jj]), Vs[jj]
             # Draw enough values to fill in all the slots that are set to j
             # in the importance resample.
-            n_copies = 1 + np.sum(indices==jj)
-            these_samps = np.vstack((these_samps,make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=10*n_copies)))
+            these_samps = np.vstack((these_samps,make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=10*n_copies[j])))
         
         # Reduce predictive samples, conditional on simulated dataset i, with the utility functions.    
         for utility in utilities:

@@ -193,6 +193,7 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
         
         # Make log-likelihood functions
 
+        # FIXME: Uncomment!
         # marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(-10,10,100), 0)
         marginal_log_likelihoods = [lambda x: np.zeros(np.shape(x))]*len(positives)
         # from IPython.Debugger import Pdb

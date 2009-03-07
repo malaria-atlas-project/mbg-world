@@ -19,7 +19,7 @@ covariates=False
 disttol=10/6378.
 ttol=1/12.
 
-N_param_vals = 200
+N_param_vals = 20
 N_per_param = 500
 N_nearest = 40
 N_age_samps = 1000

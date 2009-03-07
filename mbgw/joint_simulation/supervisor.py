@@ -13,8 +13,6 @@ from mbgw import st_cov_fun
 from parse_and_check import *
 import time
 
-# TODO: Record which index in the trace file corresponds to each realization.
-
 import os
 curpath = os.getcwd()
 import mbgw
@@ -73,7 +71,6 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     if not mask.shape == grid_shape[:2]:
         raise ValueError, 'You screwed up the shapes.'
 
-    # FIXME: Uncomment the ValueError
     # Check that all data are in bounds
     data_locs = meta.logp_mesh[:]    
     bad = []
@@ -87,8 +84,6 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         bad[:,1] *= rad_to_deg
         bad[:,2] += 2009
         raise ValueError, 'The following data locations [lon,lat,t] are out of bounds: \n'+str(bad)
-        # from warnings import warn
-        # warn('The following data locations [lon,lat,t] are out of bounds: \n'+str(bad))
 
     # Find the mesh indices closest to the data locations
     data_mesh_indices = np.empty(data_locs.shape, dtype=np.int)
@@ -133,15 +128,12 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     for i in xrange(len(indices)):
         print 'Realization %i of %i'%(i,N)
         
-        # TODO: Fill in meanfun for real when you get the urban mesh from Pete
         this_M = trace.group0.M[indices[i]]
         mean_ondata = this_M(data_locs)
         covariate_mesh = np.zeros(grid_shape[:2])
         for key in meta.covariate_names[0]:
             this_coef = trace.PyMCsamples.col(key+'_coef')[indices[i]]
-            # FIXME Uncomment when master urban mesh available.
             mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
-            # FIXME bring in covariates
             this_pred_covariate = get_covariate_submesh(key, grid_lims) * this_coef
             covariate_mesh += this_pred_covariate
 
