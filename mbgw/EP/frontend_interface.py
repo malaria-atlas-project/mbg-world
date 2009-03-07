@@ -4,7 +4,7 @@
 ####################################
 
 import matplotlib
-matplotlib.interactive(False)
+matplotlib.interactive(True)
 import matplotlib.pyplot as pl
 import numpy as np
 import os
@@ -261,8 +261,6 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
         cur_samps = np.vstack((cur_samps,make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=10)))
         
         mp = model_posteriors[i]
-        # FIXME: Comment!
-        mp *= 0
         mp -= pm.flib.logsum(mp)
         mp = np.exp(mp)
         
@@ -278,7 +276,8 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
 
         # Sample from predictive distribution at output points conditionally on simulated dataset i.        
         these_samps = np.empty((0,N_output))        
-        for j in unique_indices:
+        for ui in xrange(len(unique_indices)):
+            j = unique_indices[ui]
             
             # Draw samples conditional on simulated dataset i and posterior slice j.
             lm, lv = likelihood_means[i][j], likelihood_variances[i][j]
@@ -286,7 +285,7 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             M, C, V = copy(Ms[jj]), copy(Cs[jj]), Vs[jj]
             # Draw enough values to fill in all the slots that are set to j
             # in the importance resample.
-            these_samps = np.vstack((these_samps,make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=10*n_copies[j])))
+            these_samps = np.vstack((these_samps,make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=10*n_copies[ui])))
         
         # Reduce predictive samples, conditional on simulated dataset i, with the utility functions.    
         for utility in utilities:

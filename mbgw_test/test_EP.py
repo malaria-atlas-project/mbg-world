@@ -19,7 +19,7 @@ covariates=False
 disttol=10/6378.
 ttol=1/12.
 
-N_param_vals = 20
+N_param_vals = 500
 N_per_param = 500
 N_nearest = 40
 N_age_samps = 1000
@@ -79,5 +79,5 @@ correction_factor_array = known_age_corr_factors(np.arange(lo_age, up_age), N_ag
 # ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors =\
 #     pred_samps(pred_mesh*deg_to_rad, pred_mesh*deg_to_rad, N_exam, tracefile, trace_thin, N_param_vals, N_per_param, N_nearest, correction_factor_array)
 
-update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, utilities=[np.std])
+update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, utilities=[np.std, np.mean])
 # update_posterior(input_pts, output_pts, utilities=[np.std, np.var])
