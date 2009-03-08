@@ -47,7 +47,7 @@ def get_covariate_submesh(name, grid_lims):
     return getattr(mbgw.auxiliary_data, name).data[nrows-grid_lims['bottomRow']:nrows-grid_lims['topRow']+1,
                                                     grid_lims['leftCol']-1:grid_lims['rightCol']][::-1,:].T
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, relp=1e-3, mask_name=None):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, relp=1e-3, mask_name=None, n_in_trace=None):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -91,8 +91,8 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         for j in xrange(3):
             data_mesh_indices[i,j] = np.argmin(np.abs(data_locs[i,j] - axes[j]))
 
-    
-    n_in_trace=len(trace.group0.C) 
+    if n_in_trace is None:
+        n_in_trace=len(trace.group0.C) 
     spacing = (n_in_trace-burn)/n
     indices = np.arange(burn, n_in_trace, spacing)
     N = len(indices)    
@@ -128,6 +128,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     for i in xrange(len(indices)):
         print 'Realization %i of %i'%(i,N)
         
+        # Pull mean information out of trace
         this_M = trace.group0.M[indices[i]]
         mean_ondata = this_M(data_locs)
         covariate_mesh = np.zeros(grid_shape[:2])
@@ -137,6 +138,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
             this_pred_covariate = get_covariate_submesh(key, grid_lims) * this_coef
             covariate_mesh += this_pred_covariate
 
+        # Pull covariance information out of trace
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 

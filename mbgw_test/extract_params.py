@@ -1,6 +1,7 @@
+from numpy import array
 
 # main input hdf5  file of simulated realisations of f
-filename = '/home/pwg/Desktop/test_sim_Af.hdf5'
+filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
 
 # location for export of raw extractions (as they come off each distributed instance)
 exportPath = '/home/pwg/mbg-world/extraction/DistributedOutput/'
@@ -31,3 +32,7 @@ HiResLowResRatio=5
 
 # parameter determining number of rows of the coarser grid (5km) to process at a time. Default is 1. (currently unsupported)
 rowsInslice5km=5 
+
+# what summary stats do we want to generate for meanPR, PAR etc in each country? If none, then set to None
+summaryStats={'mean':'mean','SD':'SD','quantiles':array([0,0.025,0.25,0.5,0.75,0.975,1])}
+#summaryStats=None

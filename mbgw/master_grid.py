@@ -10,10 +10,10 @@ AM_lims = {'topRow': 421,
 'leftCol': 1,
 'rightCol': 1307}
 
-AF_lims = {'topRow': 303,
+AF_lims = {'topRow': 1,
 'bottomRow': 1605,
 'leftCol': 1623,
-'rightCol': 3471
+'rightCol': 3515
 }
 
 AS_lims = {'topRow': 1,
