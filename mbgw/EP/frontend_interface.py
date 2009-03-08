@@ -4,7 +4,7 @@
 ####################################
 
 import matplotlib
-matplotlib.interactive(True)
+matplotlib.interactive(False)
 import matplotlib.pyplot as pl
 import numpy as np
 import os

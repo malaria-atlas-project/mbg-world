@@ -190,8 +190,6 @@ class EP(pm.Sampler):
             log_ratio = joint_term-ind_term
         # Protect against negative 'variances' (which are acceptable)
         else:
-            from IPython.Debugger import Pdb
-            Pdb(color_scheme='Linux').set_trace()
             V = V.astype('complex')
             V_ind = V_ind.astype('complex')
             C_joint = C_joint.astype('complex')
@@ -200,13 +198,12 @@ class EP(pm.Sampler):
             ind_term = -.5*np.sum((np.log(2.*np.pi*V_ind) + dev**2/V_ind))
 
             val,vec = np.linalg.eig(C_joint)            
-            dev = np.asarray(np.dot(dev,vec)).ravel()
-            joint_term = -.5*np.sum((np.log(2.*np.pi*val))) + np.dot(dev, dev/val)
+            sq = np.asarray(np.dot(dev,vec/np.sqrt(val))).ravel()
+            joint_term = -.5*(np.sum((np.log(2.*np.pi*val))) + np.dot(sq, sq))
 
             log_ratio = np.real(joint_term-ind_term)
-            # Pdb(color_scheme='Linux').set_trace()   
         
-        if np.sum(self.p) + log_ratio > 10000:
+        if np.sum(self.p) + log_ratio > 10000 or np.any(np.isnan(log_ratio)):
             from IPython.Debugger import Pdb
             Pdb(color_scheme='Linux').set_trace()   
         
