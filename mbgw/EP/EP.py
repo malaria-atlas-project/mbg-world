@@ -190,6 +190,8 @@ class EP(pm.Sampler):
             log_ratio = joint_term-ind_term
         # Protect against negative 'variances' (which are acceptable)
         else:
+            from IPython.Debugger import Pdb
+            Pdb(color_scheme='Linux').set_trace()
             V = V.astype('complex')
             V_ind = V_ind.astype('complex')
             C_joint = C_joint.astype('complex')

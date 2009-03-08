@@ -12,7 +12,7 @@ import pickle
 import EP_MAP
 from IPython.Debugger import Pdb
 import pymc as pm
-from copy import copy
+from copy import copy, deepcopy
 from tables import openFile, FloatAtom
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
 from mbgw.agepr import a
@@ -74,7 +74,7 @@ def make_pt_fig(pt, cur_val, samps, output_fname, output_path, outfigs_transpare
     pl.xlabel(r'$x$')
     pl.ylabel(r'$p(x)$')
     special_x = np.random.normal()
-    print 'Current value: ',cur_val
+    # print 'Current value: ',cur_val
     pl.plot([cur_val, cur_val],[0,h.max()],line_color,linewidth=2,label='Current value')
     pl.title('Utility function: standard deviation')
     l=pl.legend(loc=0)
@@ -113,7 +113,7 @@ def one_point_mean(res, nmonths, i):
     return np.mean(res[start:stop])
         
 
-def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=1000):
+def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=100000):
     
     npr = pred_mesh.shape[0]
     nsm = samp_mesh.shape[0]
@@ -144,8 +144,6 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
         C_mesh = C(pred_mesh, pred_mesh)
         M_mesh = M(pred_mesh)
         
-            
-
     # Sample at prediction points: do jointly
     Vp = np.diag(C_mesh)
     Vp += V
@@ -164,12 +162,15 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
     if np.any(np.isnan(outp)):
         raise ValueError, 'NaN in results!'
     
-    # Compress to annual means and return
-    results = []
+    # Do requested temporal mean to each sample, location and return
+    meanifying_mat = np.zeros((len(nmonths), len(Vp)))
     for i in xrange(len(nmonths)):
-        results.append(one_point_mean(outp, nmonths, i))
-        
-    return results
+        start = np.sum(nmonths[:i])
+        stop = np.sum(nmonths[:i+1])
+        meanifying_mat[i,start:stop] = 1./(stop-start)
+    results = np.dot(meanifying_mat, outp)
+    
+    return results.T
 
 def dtrm_disc_sample(p):
     n = len(p)
@@ -181,7 +182,7 @@ def dtrm_disc_sample(p):
         
 
 # @backend
-def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std]):
+def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std], nsamp_per_val=1000):
     """
     Inputs and outputs will be pickled as tuples.
 
@@ -257,8 +258,9 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
         
         # Sample from predictive distribution at output points.
         ii = ind_outer[i]
-        M, C, V = copy(Ms[ii]), copy(Cs[ii]), Vs[ii]
-        cur_samps = np.vstack((cur_samps,make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=10)))
+        M, C, V = deepcopy(Ms[ii]), deepcopy(Cs[ii]), Vs[ii]
+        new_samps=make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=nsamp_per_val)
+        cur_samps = np.vstack((cur_samps,new_samps))
         
         mp = model_posteriors[i]
         mp -= pm.flib.logsum(mp)
@@ -282,10 +284,11 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             # Draw samples conditional on simulated dataset i and posterior slice j.
             lm, lv = likelihood_means[i][j], likelihood_variances[i][j]
             jj = ind_inner[j]
-            M, C, V = copy(Ms[jj]), copy(Cs[jj]), Vs[jj]
+            M, C, V = deepcopy(Ms[jj]), deepcopy(Cs[jj]), Vs[jj]
             # Draw enough values to fill in all the slots that are set to j
             # in the importance resample.
-            these_samps = np.vstack((these_samps,make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=10*n_copies[ui])))
+            new_samps = make_justpix_samples(samp_mesh,pred_mesh,M,C,V,correction_factor_array,lm,lv,dout.nmonths,lo_age_out,up_age_out,nsamp=nsamp_per_val*n_copies[ui])
+            these_samps = np.vstack((these_samps,new_samps))
         
         # Reduce predictive samples, conditional on simulated dataset i, with the utility functions.    
         for utility in utilities:
