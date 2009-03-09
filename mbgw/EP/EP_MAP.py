@@ -32,7 +32,7 @@ def norm_dens(x,mu,V):
 def visualize(M_pri, C_pri, E, lps, nug):
     import matplotlib
     matplotlib.interactive(True)
-    k=2
+    k=0
     x = linspace(E.M[k] - 4.*np.sqrt(E.C[k,k]), E.M[k] + 4.*np.sqrt(E.C[k,k]), 100)
     
     pri_real = norm_dens(x, M_pri[k], C_pri[k,k])
@@ -40,31 +40,35 @@ def visualize(M_pri, C_pri, E, lps, nug):
     def this_lp(x, k=k, norms=norms):
         return np.array([pm.flib.logsum(lps[k](xi + norms)) - np.log((len(norms))) for xi in x])
     like_real = this_lp(x)
+    where_real_notnan = np.where(1-np.isnan(like_real))
+    x_realplot = x[where_real_notnan]
+    like_real = like_real[where_real_notnan]
     like_real = np.exp(like_real - like_real.max())
     like_approx = norm_dens(x, E.mu[k], E.V[k] + nug[k])
-    post_real = like_real * pri_real
+    post_real = like_real * pri_real[where_real_notnan]
 
-    smoove_mat = np.asarray(pm.gp.cov_funs.gaussian.euclidean(x,x,amp=1,scale=.1))
+    smoove_mat = np.asarray(pm.gp.cov_funs.gaussian.euclidean(x_realplot,x_realplot,amp=1,scale=.1))
     smoove_mat /= np.sum(smoove_mat, axis=0)
     like_real = np.dot(smoove_mat, like_real)
+    like_real /= like_real.max()      
     post_real = np.dot(smoove_mat, post_real)
-    post_real /= post_real.max()
-    like_real /= like_real.max()       
+    post_real /= post_real.max() 
 
     post_approx = norm_dens(x, E.M[k], E.C[k,k])
     
     # figure(1, figsize=(9,6))
     clf()
     plot(x, pri_real, 'g:', linewidth=2, label='Prior')
-    plot(x, like_real, 'b-.', linewidth=2, label='Likelihood')
+    plot(x_realplot, like_real, 'b-.', linewidth=2, label='Likelihood')
     plot(x, like_approx, 'r-.', linewidth=2, label='Approx. likelihood')
-    plot(x, post_real, 'b-', linewidth=2, label='Posterior')
+    plot(x_realplot, post_real, 'b-', linewidth=2, label='Posterior')
     plot(x, post_approx, 'r-', linewidth=2, label='Approx. posterior')
     legend(loc=0).legendPatch.set_alpha(0.)
     xlabel(r'$f(x)$')
     axis('tight')
+    title('Prior variance %f, likelihood variance %f'%(C_pri[k,k], E.V[k]+nug[k]))
 
-    # Pdb(color_scheme='Linux').set_trace()   
+    Pdb(color_scheme='Linux').set_trace()   
     # savefig('figs/post%i.pdf'%k, transparent=True)    
 
 
@@ -203,7 +207,6 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
             C_pri = Cs[j](samp_mesh, samp_mesh)
             
             # Fit for a posterior of f + epsilon
-            # E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=np.hstack((np.zeros(N_samp), np.ones(N_pred)*np.Inf)))    
             this_nug.fill(Vs[j])
             E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=this_nug)      
             try:          
@@ -215,10 +218,8 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
                 model_posteriors[-1].append(-np.inf)
             likelihood_means[-1].append(E.mu)
             likelihood_variances[-1].append(E.V)
-            # if jj%100==0:
-            #     print '\t Sample %i of %i'%(jj,N_per_param)
-            #     visualize(M_pri, C_pri, E, marginal_log_likelihoods, this_nug)            
+            # visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)            
+
             
-            # predictive_samples[-1].append(draw_prediction(M_pred, sig_pred, N_pred, age_distribution, ages, N_age_samps))
         print time.time() - t 
     return ind_outer, ind_inner, Ms, Cs, Vs, np.asarray(likelihood_means), np.asarray(likelihood_variances), np.asarray(model_posteriors)

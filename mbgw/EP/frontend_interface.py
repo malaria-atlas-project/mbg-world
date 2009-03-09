@@ -119,6 +119,9 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
     nsm = samp_mesh.shape[0]
     fac_array = fac_array
     
+    # from IPython.Debugger import Pdb
+    # Pdb(color_scheme='Linux').set_trace()   
+    
     if lm is not None:
         # Observe according to EP likelihood
         try:

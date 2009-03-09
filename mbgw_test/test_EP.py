@@ -19,8 +19,8 @@ covariates=False
 disttol=10/6378.
 ttol=1/12.
 
-N_param_vals = 20
-N_per_param = 20
+N_param_vals = 500
+N_per_param = 500
 N_nearest = 40
 N_age_samps = 1000
 lo_age = 2
@@ -67,7 +67,7 @@ t_pred = np.array([2007]*4)-2009
 pred_mesh = np.vstack((lon_pred, lat_pred, t_pred)).T
 
 # N_exam = np.array([1000,3000,2000,4000])    
-N_exam = np.array([1,1,1,1]) 
+N_exam = np.array([1,1,1,1])
 input_pts = [{'lon': lon_pred[i], 'lat': lat_pred[i], 'month': 1, 'year': 2009, 'lo_age': 2, 'up_age': 10, 'n': N_exam[i]}\
                 for i in range(4)]
 output_pts =  [{'lon': lon_pred[i], 'lat': lat_pred[i], 'year': 2009, 'month': 1, 'lo_age': 2, 'up_age': 10, 'nmonths': 2} for i in range(4)]
