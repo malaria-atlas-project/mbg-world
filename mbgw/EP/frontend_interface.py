@@ -4,7 +4,7 @@
 ####################################
 
 import matplotlib
-matplotlib.interactive(False)
+matplotlib.interactive(True)
 import matplotlib.pyplot as pl
 import numpy as np
 import os
@@ -113,7 +113,7 @@ def one_point_mean(res, nmonths, i):
     return np.mean(res[start:stop])
         
 
-def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=100000):
+def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=10000):
     
     npr = pred_mesh.shape[0]
     nsm = samp_mesh.shape[0]
