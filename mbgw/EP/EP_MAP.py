@@ -149,7 +149,23 @@ def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest)
         
     return Ms, Cs, Vs
 
-def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug):
+def simulate_data(M_pri, C_pri, N_samp, V, N_exam, N_age_samps, correction_factor_array, age_lims):
+    """Called by pred_samps in the outer loop to simulate data."""
+    # Draw P' from prior.
+    f_samp = pm.rmv_normal_cov(M_pri, C_pri + eye(N_samp)*V)
+
+    # Get ages, number positive, and normalized age distribution for prediction
+    ages, positives, age_distribution = ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims)
+
+    # Make log-likelihood functions
+    marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(-10,10,100), 0)
+    return marginal_log_likelihoods, positives
+
+def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=False):
+    """
+    Called by pred_samps in the inner loop to update the posterior given 
+    simulated data.
+    """
     E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=this_nug)      
     try:          
         this_P = E.fit(10000)
@@ -157,27 +173,15 @@ def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug):
         cls, inst, tb = sys.exc_info()
         print 'Error: %s'%inst.message
         this_P = -np.inf
+    if debug:
+        visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)
     return this_P, E.mu, E.V
-    # visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)
 
-def simulate_data(M_pri, C_pri, N_samp, V, N_exam, N_age_samps, correction_factor_array, age_lims, positive_observations):
-    # Draw P' from prior.
-    f_samp = pm.rmv_normal_cov(M_pri, C_pri + eye(N_samp)*V)
-
-    # Get ages, number positive, and normalized age distribution for prediction
-    ages, positives, age_distribution = ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims)
-    positive_observations.append(positives)
-
-    # Make log-likelihood functions
-    marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(-10,10,100), 0)
-    return marginal_log_likelihoods
-
-# EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, N_outer, N_inner, N_nearest, din.lo_age, din.up_age, correction_factor_arrays)    
 def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array):
     """
-    This function is meant to be called directly by the frontend. It returns the prior means 
-    and covariances, as well as the products of the EP algorithm, for a single simulated 
-    dataset.
+    This function is meant to be called directly by the frontend. It returns 
+    the prior means and covariances, as well as the products of the EP algorithm, 
+    for a single simulated dataset.
     """
     N_age_samps = correction_factor_array.shape[1]
     obs_on_f = True
@@ -190,8 +194,7 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
     Ms, Cs, Vs = observed_gp_params(np.vstack((samp_mesh, pred_mesh)), tracefile, trace_thin, trace_burn, N_nearest)
 
     N_param_vals, N_per_param = min(N_param_vals, len(Vs)), min(N_per_param, len(Vs))    
-    ind_outer = np.array(np.linspace(0,len(Vs)-1,N_param_vals),dtype=int)
-    ind_inner = np.array(np.linspace(0,len(Vs)-1,N_per_param),dtype=int)
+    ind_outer, ind_inner = np.array(np.linspace(0,len(Vs)-1,N_param_vals),dtype=int), np.array(np.linspace(0,len(Vs)-1,N_per_param),dtype=int)
     
     # Parameter values
     for ii in xrange(N_param_vals):
@@ -200,11 +203,12 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
         i = ind_outer[ii]        
         mps, lms, lvs = [], [], []
         
-        marginal_log_likelihoods = simulate_data(Ms[i](samp_mesh), Cs[i](samp_mesh, samp_mesh), N_samp, Vs[i], N_exam, N_age_samps, correction_factor_array, age_lims, positive_observations)
+        marginal_log_likelihoods, pos = simulate_data(Ms[i](samp_mesh), Cs[i](samp_mesh, samp_mesh), N_samp, Vs[i], N_exam, N_age_samps, correction_factor_array, age_lims)
 
-        # Update posterior given simulated data
+        positive_observations.append(pos)
         this_nug = np.empty(N_samp)
         for jj in xrange(N_per_param):
+            # Update posterior given simulated data
             j = ind_inner[jj]
             M_pri, C_pri = Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh)
             this_nug.fill(Vs[j])
