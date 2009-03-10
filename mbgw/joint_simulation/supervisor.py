@@ -12,7 +12,7 @@ from fast_krige import *
 from mbgw import st_cov_fun
 from parse_and_check import *
 import time
-
+from mbgw.master_grid import *
 import os
 curpath = os.getcwd()
 import mbgw
@@ -23,20 +23,6 @@ from rpy import r
 r.source("CONDSIMpreloop.R")
 r.source("CONDSIMmonthloop.R")
 os.chdir(curpath)
-
-# Conversions
-rad_to_km = 6378.1/np.pi
-km_to_rad = 1./rad_to_km
-rad_to_deg = 180./np.pi
-deg_to_rad = 1./rad_to_deg
-
-# Master grid:
-ncols = 6281
-nrows = 1605
-xllc = -91.45003542
-yllc = -29.23335764
-cellsize = 0.04166665
-
 
 __all__ = ['create_realization', 'create_many_realizations','reduce_realizations']
 

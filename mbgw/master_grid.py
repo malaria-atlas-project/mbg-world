@@ -29,3 +29,8 @@ KE_lims = {'topRow' : 789,
 'rightCol' : 3203
 }
 
+rad_to_km = 6378.1/np.pi
+km_to_rad = 1./rad_to_km
+rad_to_deg = 180./np.pi
+deg_to_rad = 1./rad_to_deg
+

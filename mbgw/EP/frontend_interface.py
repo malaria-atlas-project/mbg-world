@@ -16,18 +16,9 @@ from copy import copy, deepcopy
 from tables import openFile, FloatAtom
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
 from mbgw.agepr import a
+from mbgw.master_grid import *
 
 __all__ = ['frontend', 'backend', 'update_posterior', 'scratch_cleanup']
-
-# Two problems now:
-# - The normalizing constant apparently can be off for large, negative variances. Check it very carefully.
-# - Observing with negative variances is probably buggy. The current run is replacing negative variances with NaN,
-#   and the filtered output should have the same SD as the current samples if all is well.
-
-rad_to_km = 6378.1/np.pi
-km_to_rad = 1./rad_to_km
-rad_to_deg = 180./np.pi
-deg_to_rad = 1./rad_to_deg
 
 def frontend(fun):
 	def new_fun(*args):
@@ -305,24 +296,24 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
     dout = np.rec.fromrecords([output_pt.values() for output_pt in output_pts], names=output_pts[0].keys())
 
     pred_mesh, samp_mesh, pt = ra_to_mesh(din, dout)
-        
+
     # Correction factors for each set of age limits.
     age_lims, correction_factor_array, lo_age_out, up_age_out = ra_to_age_info(din, dout)
 
     # Find posteriors with EP algorithm
     ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors = \
         EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, age_lims, correction_factor_array)
-    
+
     # Adjust for failures
     N_outer, N_inner, N_utilities = len(ind_outer), len(ind_inner), len(utilities)
     cur_samps, pred_samps, cur_vals = result_containers(utilities, N_outer, N_output, N_utilities)
-    
+
     for i in xrange(N_outer):
         
         # Sample from predictive distribution at output points.
         ii = ind_outer[i]
         M, C, V = deepcopy(Ms[ii]), deepcopy(Cs[ii]), Vs[ii]
-        new_samps=make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=nsamp_per_val)
+        new_samps = make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=nsamp_per_val)
         cur_samps = np.vstack((cur_samps,new_samps))
         
         unique_indices, n_copies = resample_with_mp(model_posteriors[i])
