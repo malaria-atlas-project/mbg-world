@@ -121,20 +121,16 @@ def one_point_mean(res, nmonths, i):
     start = np.sum(nmonths[:i])
     stop = np.sum(nmonths[:i+1])
     return np.mean(res[start:stop])
-        
-def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=10000):
-    """Converts the outputs of the EP algorithm into """
-    npr = pred_mesh.shape[0]
-    nsm = samp_mesh.shape[0]
-    fac_array = fac_array
     
-    # from IPython.Debugger import Pdb
-    # Pdb(color_scheme='Linux').set_trace()   
-    
+def robust_observe_and_eval(lm, M, C, samp_mesh, nug, pred_mesh, nsm):
+    """
+    Evaluates and observes a mean and covariance, and returns their evaluation on a
+    prediction mesh. Works even for negative 'observation variance'.
+    """
     if lm is not None:
         # Observe according to EP likelihood
         try:
-            pm.gp.observe(M,C,samp_mesh,lm,lv+V)
+            pm.gp.observe(M,C,samp_mesh,lm,nug)
             C_mesh = C(pred_mesh, pred_mesh)
             M_mesh = M(pred_mesh)
         except np.linalg.LinAlgError:
@@ -145,20 +141,20 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
             C_samp = C(samp_mesh, samp_mesh).copy()
             M_samp = M(samp_mesh)
 
-            np.ravel(C_samp)[::nsm+1] += lv + V # Add lv+V to diagonal of C_samp in place
+            np.ravel(C_samp)[::nsm+1] += nug # Add lv+V to diagonal of C_samp in place
             C_samp_I = C_samp.I
 
             C_off = C(samp_mesh, pred_mesh)
             C_mesh -= C_off.T * C_samp_I * C_off
             M_mesh += np.ravel(np.dot(C_off.T * C_samp_I , (lm - M_samp)))
-            
+
     else:
         C_mesh = C(pred_mesh, pred_mesh)
         M_mesh = M(pred_mesh)
-        
-    # Sample at prediction points: do jointly
-    Vp = np.diag(C_mesh)
-    Vp += V
+    return C_mesh, M_mesh
+
+def simulate_on_pred(nsamp, Vp, M_mesh, nmonths, fac_array, lo_age, up_age):
+    """Simulates data on the prediction mesh over the requested time period."""
     outp = (np.random.normal(size=(nsamp,len(Vp)))*np.sqrt(Vp) + M_mesh)
     outp = pm.flib.invlogit(outp.ravel()).reshape((nsamp,len(Vp))).T
 
@@ -170,21 +166,50 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
             this_fac_array = fac_array[lo_age[i]:up_age[i], np.random.randint(fac_array.shape[1])]
             these_facs[month,:] = this_fac_array[np.random.randint(this_fac_array.shape[0], size=nsamp)]
         outp[np.sum(nmonths[:i]):np.sum(nmonths[:i+1]),:] *= these_facs
-    
+
     if np.any(np.isnan(outp)):
         raise ValueError, 'NaN in results!'
-    
-    # Do requested temporal mean to each sample, location and return
+    return outp
+
+def make_meanifying_matrix(nmonths, Vp):
+    """Returns a matrix that takes the required temporal means."""
     meanifying_mat = np.zeros((len(nmonths), len(Vp)))
     for i in xrange(len(nmonths)):
         start = np.sum(nmonths[:i])
         stop = np.sum(nmonths[:i+1])
         meanifying_mat[i,start:stop] = 1./(stop-start)
+    return meanifying_mat
+
+def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=10000):
+    """
+    Converts the outputs of the EP algorithm into predictive samples at the output
+    locations averaged over the requested time period.
+    """
+    npr = pred_mesh.shape[0]
+    nsm = samp_mesh.shape[0]
+    fac_array = fac_array
+    
+    if lv is not None:
+        obs_nug = lv + V
+    else:
+        obs_nug = None
+    C_mesh, M_mesh = robust_observe_and_eval(lm, M, C, samp_mesh, obs_nug, pred_mesh, nsm)
+        
+    # Sample at prediction points: do jointly
+    Vp = np.diag(C_mesh) + V
+    outp = simulate_on_pred(nsamp, Vp, M_mesh, nmonths, fac_array, lo_age, up_age)
+    
+    # Do requested temporal mean to each sample, location and return
+    meanifying_mat = make_meanifying_matrix(nmonths, Vp)
     results = np.dot(meanifying_mat, outp)
     
     return results.T
 
 def dtrm_disc_sample(p):
+    """
+    Like a categorical sample, generated using cdf inversion, where the input
+    uniform samples are forced to be actually uniformly spaced over the interval.
+    """
     n = len(p)
     pn = np.floor(np.cumsum(p)*n)
     samp = np.empty(n, dtype=int)
