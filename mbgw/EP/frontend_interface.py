@@ -308,19 +308,6 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             pl.close('all')
             output_info[i][utility.__name__]=make_pt_fig(pt, cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()   
+    # from IPython.Debugger import Pdb
+    # Pdb(color_scheme='Linux').set_trace()   
     # return output_info
-    
-    # Create output_info
-    # dum_objs = []
-    # output_info = []
-    # pl.figure()
-    # for i in xrange(N_output):
-    #     dum_objs.append([])
-    #     pt = dout[i]
-    #     pt_info = {'lon': pt.lon, 'lat': pt.lat, 'year': pt.year, 'lower age': pt.lo_age, 'upper age': pt.up_age, 'random number': str(np.random.random())}
-    #     this_out_tup = (pt_info, make_pt_fig(pt, cur_utilities[i], pred_utility_samps[:,i], str(id(dum_objs[-1]))))
-    #     output_info.append(this_out_tup)
-    # 
-    # return (path,(img_lon.min(), img_lat.min()), (img_lon.max(), img_lat.max()), output_info)
