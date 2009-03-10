@@ -9,10 +9,11 @@ import mbgw
 from mbgw.joint_simulation import *
 import tables as tb
 from fast_krige import *
-from mbgw import st_cov_fun
+import st_cov_fun
 from parse_and_check import *
 import time
 from mbgw.master_grid import *
+from mbgw import auxiliary_data
 import os
 curpath = os.getcwd()
 import mbgw

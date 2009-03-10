@@ -1,4 +1,6 @@
 # Master grid:
+from numpy import pi
+
 ncols=         6281
 nrows=         1605
 xllc = -91.45003542
@@ -29,8 +31,8 @@ KE_lims = {'topRow' : 789,
 'rightCol' : 3203
 }
 
-rad_to_km = 6378.1/np.pi
+rad_to_km = 6378.1/pi
 km_to_rad = 1./rad_to_km
-rad_to_deg = 180./np.pi
+rad_to_deg = 180./pi
 deg_to_rad = 1./rad_to_deg
 
