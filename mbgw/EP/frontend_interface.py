@@ -217,6 +217,19 @@ def dtrm_disc_sample(p):
     samp[1:] = np.diff(pn)
     return samp
         
+def resample_with_mp(mp):
+    """Takes log model posteriors and returns a 'sample' from them."""
+    mp = mp - pm.flib.logsum(mp)
+    mp = np.exp(mp)
+
+    # Resample the slices of the posterior conditional on simulated dataset i.
+    # indices=pm.rcategorical(mp, size=N_inner)
+    index_samp = dtrm_disc_sample(mp)
+    where_pos = np.where(index_samp>0)
+    unique_indices = where_pos[0]
+    n_copies = index_samp[where_pos]
+    return unique_indices, n_copies
+    # return output_info        
 
 # @backend
 def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std], nsamp_per_val=1000):
@@ -248,24 +261,18 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             is the path to a png image.
     """
     
-    N_input = len(input_pts)
-    N_output = len(output_pts)
-        
+    N_input, N_output = len(input_pts), len(output_pts)
     # Convert dictionaries to record arrays for easier handling
     din = np.rec.fromrecords([input_pt.values() for input_pt in input_pts], names=input_pts[0].keys())
     dout = np.rec.fromrecords([output_pt.values() for output_pt in output_pts], names=output_pts[0].keys())
-
     for pt in (din,dout):
         for attr in ('lon','lat'):
             pt[attr] *= deg_to_rad
-    
-    samp_mesh = make_EP_inputs(din)
-    pred_mesh = add_times(make_EP_inputs(dout), dout.nmonths)
+    samp_mesh, pred_mesh = make_EP_inputs(din), add_times(make_EP_inputs(dout), dout.nmonths)
         
     # Correction factors for each set of age limits.
     lo_age_in, up_age_in = regularize_ages(din.lo_age, din.up_age) 
     lo_age_out, up_age_out = regularize_ages(dout.lo_age, dout.up_age)     
-    
     age_lims = zip(lo_age_in, up_age_in)
     correction_factor_array = known_age_corr_factors(np.arange(0,27), 1000)
 
@@ -274,8 +281,7 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
         EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, age_lims, correction_factor_array)
     
     # Adjust for failures
-    N_outer = len(ind_outer)
-    N_inner = len(ind_inner)
+    N_outer, N_inner = len(ind_outer), len(ind_inner)
     
     # Generate current and predictive utilities
     N_utilities = len(utilities)
@@ -299,16 +305,7 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
         new_samps=make_justpix_samples(samp_mesh, pred_mesh, M, C, V, correction_factor_array, None, None, dout.nmonths, lo_age_out, up_age_out, nsamp=nsamp_per_val)
         cur_samps = np.vstack((cur_samps,new_samps))
         
-        mp = model_posteriors[i]
-        mp -= pm.flib.logsum(mp)
-        mp = np.exp(mp)
-        
-        # Resample the slices of the posterior conditional on simulated dataset i.
-        # indices=pm.rcategorical(mp, size=N_inner)
-        index_samp = dtrm_disc_sample(mp)
-        where_pos = np.where(index_samp>0)
-        unique_indices = where_pos[0]
-        n_copies = index_samp[where_pos]
+        unique_indices, n_copies = resample_with_mp(model_posteriors[i])
         
         # unique_indices = set(indices)
         print '%i indices of %i used.'%(len(unique_indices),N_inner)
@@ -343,5 +340,4 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             output_info[i][utility.__name__]=make_pt_fig(pt, cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
 
     from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()   
-    # return output_info
+    Pdb(color_scheme='Linux').set_trace()
