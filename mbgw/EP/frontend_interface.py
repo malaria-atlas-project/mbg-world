@@ -17,7 +17,7 @@ from tables import openFile, FloatAtom
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
 from mbgw.agepr import a
 
-__all__ = ['frontend', 'backend', 'update_posterior']
+__all__ = ['frontend', 'backend', 'update_posterior', 'scratch_cleanup']
 
 # Two problems now:
 # - The normalizing constant apparently can be off for large, negative variances. Check it very carefully.
@@ -30,13 +30,11 @@ rad_to_deg = 180./np.pi
 deg_to_rad = 1./rad_to_deg
 
 def frontend(fun):
-    """A decorator. Pickles incoming arguments, passes them into a function, and unpickles the result."""
 	def new_fun(*args):
 		return pickle.loads(fun(pickle.dumps(args)))
 	return new_fun
 
 def backend(fun):
-    """A decorator. Unpickless incoming arguments, passes them into a function, and pickles the result."""
 	def new_fun(*args):
 	    if len(args)==0:
 	        return pickle.dumps(fun())
@@ -319,6 +317,6 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
             pl.close('all')
             output_info[i][utility.__name__]=make_pt_fig(pt, cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
 
-    # from IPython.Debugger import Pdb
-    # Pdb(color_scheme='Linux').set_trace()   
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()   
     # return output_info

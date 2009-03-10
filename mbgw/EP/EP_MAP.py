@@ -77,7 +77,7 @@ def visualize(M_pri, C_pri, E, lps, nug):
     # savefig('figs/post%i.pdf'%k, transparent=True)    
 
 
-def ages_and_data(N_exam, N_age_samps, f_samp, i, correction_factor_array, age_lims):
+def ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims):
     """Called by pred_samps. Simulates ages of survey participants and data given f."""
     
     N_samp = len(f_samp)
@@ -149,6 +149,29 @@ def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest)
         
     return Ms, Cs, Vs
 
+def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug):
+    E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=this_nug)      
+    try:          
+        this_P = E.fit(10000)
+    except:
+        cls, inst, tb = sys.exc_info()
+        print 'Error: %s'%inst.message
+        this_P = -np.inf
+    return this_P, E.mu, E.V
+    # visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)
+
+def simulate_data(M_pri, C_pri, N_samp, V, N_exam, N_age_samps, correction_factor_array, age_lims, positive_observations):
+    # Draw P' from prior.
+    f_samp = pm.rmv_normal_cov(M_pri, C_pri + eye(N_samp)*V)
+
+    # Get ages, number positive, and normalized age distribution for prediction
+    ages, positives, age_distribution = ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims)
+    positive_observations.append(positives)
+
+    # Make log-likelihood functions
+    marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(-10,10,100), 0)
+    return marginal_log_likelihoods
+
 # EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, N_outer, N_inner, N_nearest, din.lo_age, din.up_age, correction_factor_arrays)    
 def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array):
     """
@@ -157,28 +180,16 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
     dataset.
     """
     N_age_samps = correction_factor_array.shape[1]
-    # print 1, time.time() - t
     obs_on_f = True
-    
-    combo_mesh = np.vstack((samp_mesh, pred_mesh))
-    N_pred = pred_mesh.shape[0]
-    N_samp = samp_mesh.shape[0]
-    
-    model_posteriors = []
-    positive_observations = []
-    likelihood_means = []
-    likelihood_variances = []
+    N_pred, N_samp = pred_mesh.shape[0], samp_mesh.shape[0]
+    model_posteriors, positive_observations, likelihood_means, likelihood_variances = [], [], [], []
     
     # Get mean, covariance and nugget from the MCMC trace.
     # Mean and covariance will have been observed at the most relevant
     # (nearest to prediction and/or sampling locations) data locations.
-    # t = time.time()
-    Ms, Cs, Vs = observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest)
-    # print 2, time.time() - t
-    
-    N_param_vals = min(N_param_vals, len(Vs))
-    N_per_param = min(N_per_param, len(Vs))
-    
+    Ms, Cs, Vs = observed_gp_params(np.vstack((samp_mesh, pred_mesh)), tracefile, trace_thin, trace_burn, N_nearest)
+
+    N_param_vals, N_per_param = min(N_param_vals, len(Vs)), min(N_per_param, len(Vs))    
     ind_outer = np.array(np.linspace(0,len(Vs)-1,N_param_vals),dtype=int)
     ind_inner = np.array(np.linspace(0,len(Vs)-1,N_per_param),dtype=int)
     
@@ -187,46 +198,28 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
         print 'Parameter sample %i of %i'%(ii, N_param_vals)
         t = time.time()
         i = ind_outer[ii]        
-
-        model_posteriors.append([])
-        likelihood_means.append([])
-        likelihood_variances.append([])
-
-        M_pri = Ms[i](samp_mesh)
-        C_pri = Cs[i](samp_mesh, samp_mesh)
-
-        # Draw P' from prior.
-        f_samp = pm.rmv_normal_cov(M_pri, C_pri + eye(N_samp)*Vs[i])
-
-        # Get ages, number positive, and normalized age distribution for prediction
-        ages, positives, age_distribution = ages_and_data(N_exam, N_age_samps, f_samp, i, correction_factor_array, age_lims)
-        positive_observations.append(positives)
+        mps, lms, lvs = [], [], []
         
-        # Make log-likelihood functions
-        marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(-10,10,100), 0)
+        marginal_log_likelihoods = simulate_data(Ms[i](samp_mesh), Cs[i](samp_mesh, samp_mesh), N_samp, Vs[i], N_exam, N_age_samps, correction_factor_array, age_lims, positive_observations)
 
         # Update posterior given simulated data
         this_nug = np.empty(N_samp)
         for jj in xrange(N_per_param):
             j = ind_inner[jj]
-            
-            M_pri = Ms[j](samp_mesh)
-            C_pri = Cs[j](samp_mesh, samp_mesh)
+            M_pri, C_pri = Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh)
+            this_nug.fill(Vs[j])
             
             # Fit for a posterior of f + epsilon
-            this_nug.fill(Vs[j])
-            E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=this_nug)      
-            try:          
-                this_P = E.fit(10000)
-                model_posteriors[-1].append(this_P)
-            except:
-                cls, inst, tb = sys.exc_info()
-                print 'Error: %s'%inst.message
-                model_posteriors[-1].append(-np.inf)
-            likelihood_means[-1].append(E.mu)
-            likelihood_variances[-1].append(E.V)
-            # visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)            
+            mp, lm, lv = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug)
 
+            mps.append(mp)
+            lms.append(lm)
+            lvs.append(lv)
             
-        print time.time() - t 
+        model_posteriors.append(mps)
+        likelihood_means.append(lms)
+        likelihood_variances.append(lvs)
+
+        print time.time() - t             
+
     return ind_outer, ind_inner, Ms, Cs, Vs, np.asarray(likelihood_means), np.asarray(likelihood_variances), np.asarray(model_posteriors)
