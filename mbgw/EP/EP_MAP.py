@@ -177,6 +177,10 @@ def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=F
         visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)
     return this_P, E.mu, E.V
 
+def multi_append(tup, *lists):
+    """Utility function for appending a new value to multiple lists."""
+    [l.append(t) for l,t in zip(lists,tup)]
+
 def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array):
     """
     This function is meant to be called directly by the frontend. It returns 
@@ -214,16 +218,10 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
             this_nug.fill(Vs[j])
             
             # Fit for a posterior of f + epsilon
-            mp, lm, lv = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug)
-
-            mps.append(mp)
-            lms.append(lm)
-            lvs.append(lv)
-            
-        model_posteriors.append(mps)
-        likelihood_means.append(lms)
-        likelihood_variances.append(lvs)
-
+            res = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug)
+            multi_append(res, mps, lms, lvs)
+        
+        multi_append((mps, lms, lvs), model_posteriors, likelihood_means, likelihood_variances)    
         print time.time() - t             
 
     return ind_outer, ind_inner, Ms, Cs, Vs, np.asarray(likelihood_means), np.asarray(likelihood_variances), np.asarray(model_posteriors)
