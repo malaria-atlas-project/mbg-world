@@ -25,11 +25,16 @@ __all__ = ['visualize', 'ages_and_data', 'observed_gp_params', 'pred_samps']
 obs_on_f = False
 
 def norm_dens(x,mu,V):
+    """The normal density, without proportionality constant."""
     out = np.exp(-(x-mu)**2/2./V)
     out /= out.max()
     return out
 
 def visualize(M_pri, C_pri, E, lps, nug):
+    """
+    Shows the EP algorithm's approximate posterior superimposed on the true posterior.
+    Requires a fitted EP object as an input.
+    """
     import matplotlib
     matplotlib.interactive(True)
     k=0
@@ -73,9 +78,7 @@ def visualize(M_pri, C_pri, E, lps, nug):
 
 
 def ages_and_data(N_exam, N_age_samps, f_samp, i, correction_factor_array, age_lims):
-    """
-    Called by pred_samps. Simulates data given f.
-    """
+    """Called by pred_samps. Simulates ages of survey participants and data given f."""
     
     N_samp = len(f_samp)
     
@@ -148,7 +151,11 @@ def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest)
 
 # EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, N_outer, N_inner, N_nearest, din.lo_age, din.up_age, correction_factor_arrays)    
 def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array):
-    
+    """
+    This function is meant to be called directly by the frontend. It returns the prior means 
+    and covariances, as well as the products of the EP algorithm, for a single simulated 
+    dataset.
+    """
     N_age_samps = correction_factor_array.shape[1]
     # print 1, time.time() - t
     obs_on_f = True

@@ -17,7 +17,7 @@ from tables import openFile, FloatAtom
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
 from mbgw.agepr import a
 
-# __all__ = ['frontend', 'backend', 'PR_samps', 'make_pt_fig', 'make_img_patch', 'scratch_cleanup', 'make_EP_inputs', 'make_pred_meshes', 'make_samples', 'update_posterior']
+__all__ = ['frontend', 'backend', 'update_posterior']
 
 # Two problems now:
 # - The normalizing constant apparently can be off for large, negative variances. Check it very carefully.
@@ -30,11 +30,13 @@ rad_to_deg = 180./np.pi
 deg_to_rad = 1./rad_to_deg
 
 def frontend(fun):
+    """A decorator. Pickles incoming arguments, passes them into a function, and unpickles the result."""
 	def new_fun(*args):
 		return pickle.loads(fun(pickle.dumps(args)))
 	return new_fun
 
 def backend(fun):
+    """A decorator. Unpickless incoming arguments, passes them into a function, and pickles the result."""
 	def new_fun(*args):
 	    if len(args)==0:
 	        return pickle.dumps(fun())
@@ -43,10 +45,15 @@ def backend(fun):
 	return new_fun
 
 def age_to_bin(age, a=a):
+    """Finds the bin in a to which 'age' belongs."""
     return np.where(a>=age)[0][0]
     
 def regularize_ages(lo_age, up_age):
-    lo_age= np.array(map(age_to_bin, lo_age))
+    """
+    Takes actual, year ages and maps them into the bins used in the age-correction model.
+    This is needed because the age-correction model divides ages into 5-year bins after 15.
+    """
+    lo_age = np.array(map(age_to_bin, lo_age))
     up_age = np.array(map(age_to_bin, up_age))
     if np.any(up_age<lo_age):
         raise ValueError
@@ -54,6 +61,10 @@ def regularize_ages(lo_age, up_age):
     return lo_age, up_age
 
 def PR_samps(mesh, Ms, Cs, Vs, ind, facs):
+    """
+    Converts a mean function, covariance function, nugget and array of correction factors
+    to a sample for the average of parasite rate over a given spatiotemporal mesh.
+    """
     nm = mesh.shape[0]        
     samps = np.empty((len(ind), nm))
     for i in ind:
@@ -64,9 +75,7 @@ def PR_samps(mesh, Ms, Cs, Vs, ind, facs):
     return np.mean(samps,axis=1)
     
 def make_pt_fig(pt, cur_val, samps, output_fname, output_path, outfigs_transparent=False, hist_color=(0,.1,.5), line_color='r-'):
-    """
-    Creates a png file from a point, writes it to disk and returns the path.
-    """
+    """Creates a png file from a point, writes it to disk and returns the path."""
     output_fname += '.png'
     # pl.close('all')
     pl.figure()
@@ -85,17 +94,20 @@ def make_pt_fig(pt, cur_val, samps, output_fname, output_path, outfigs_transpare
 
 @backend
 def scratch_cleanup():
+    """Cleans out the image cache."""
     for file in os.listdir('web_scratch'):
         os.remove('web_scratch/'+file)
 
 def make_EP_inputs(din):
+    """
+    Converts an input record array containing lat, lon, year and month columns to
+    a spatiotemporal mesh that the gp package can handle.
+    """
     samp_mesh = np.vstack((din.lon, din.lat, din.year + (din.month-1)/12. - 2009)).T
     return samp_mesh
 
 def add_times(pred_mesh, nmonths):
-    """
-    Expands the prediction mesh to the requested number of months.
-    """
+    """Expands the prediction mesh to the requested number of months."""
     new_pred_mesh = np.empty((0, 3))
     for i in xrange(pred_mesh.shape[0]):
         p = np.repeat(np.atleast_2d(pred_mesh[i]), nmonths[i], axis=0)
@@ -112,9 +124,8 @@ def one_point_mean(res, nmonths, i):
     stop = np.sum(nmonths[:i+1])
     return np.mean(res[start:stop])
         
-
 def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_age,up_age,nsamp=10000):
-    
+    """Converts the outputs of the EP algorithm into """
     npr = pred_mesh.shape[0]
     nsm = samp_mesh.shape[0]
     fac_array = fac_array
