@@ -13,12 +13,14 @@ from agepr import *
 # a_lo = range(15) + range(15,70,5)
 # a_hi = range(15) + range(19,74,5)
 
-hfp = openFile('parameter_model.hdf5')
+__root__ = mbgw.__path__[0] + '/../datafiles/auxiliary_data/'
+
+hfp = openFile(__root__+'parameter_model.hdf5')
 proot = hfp.root.chain1.PyMCsamples
     
 F_trace, P_trace = proot.col('F_pred'), proot.col('P_pred')
 
-hfa = openFile('age_dist_model.hdf5')
+hfa = openFile(__root__+'age_dist_model.hdf5')
 aroot = hfa.root.chain1.PyMCsamples
 
 S_trace = aroot.col('S_pred')
