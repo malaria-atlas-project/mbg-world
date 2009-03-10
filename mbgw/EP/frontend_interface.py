@@ -72,7 +72,7 @@ def PR_samps(mesh, Ms, Cs, Vs, ind, facs):
 
     return np.mean(samps,axis=1)
     
-def make_pt_fig(pt, cur_val, samps, output_fname, output_path, outfigs_transparent=False, hist_color=(0,.1,.5), line_color='r-'):
+def make_pt_fig(cur_val, samps, output_fname, output_path, outfigs_transparent=False, hist_color=(0,.1,.5), line_color='r-'):
     """Creates a png file from a point, writes it to disk and returns the path."""
     output_fname += '.png'
     # pl.close('all')
@@ -231,6 +231,44 @@ def resample_with_mp(mp):
     return unique_indices, n_copies
     # return output_info        
 
+def ra_to_mesh(din, dout):
+    """Converts the input and output record arrays into meshes."""
+    for pt in (din,dout):
+        for attr in ('lon','lat'):
+            pt[attr] *= deg_to_rad
+    samp_mesh, pred_mesh = make_EP_inputs(din), add_times(make_EP_inputs(dout), dout.nmonths)
+    return pred_mesh, samp_mesh, pt
+
+def ra_to_age_info(din, dout):
+    """Converts the input and output record arrays into age information."""
+    lo_age_in, up_age_in = regularize_ages(din.lo_age, din.up_age) 
+    lo_age_out, up_age_out = regularize_ages(dout.lo_age, dout.up_age)     
+    age_lims = zip(lo_age_in, up_age_in)
+    correction_factor_array = known_age_corr_factors(np.arange(0,27), 1000)
+    return age_lims, correction_factor_array, lo_age_out, up_age_out
+
+def result_containers(utilities, N_outer, N_output, N_utilities):
+    """Creates containers to hold the updated posterior."""
+    # To hold samples from the predictive distribution of utility
+    pred_samps = dict(zip([utility.__name__ for utility in utilities], 
+                    [np.empty((N_outer, N_output)) for i in xrange(N_utilities)]))
+    # To hold the current utility
+    cur_vals =  dict(zip([utility.__name__ for utility in utilities], 
+                    [np.empty(N_output) for i in xrange(N_utilities)]))
+    # To hold current samples at prediction points.
+    cur_samps = np.empty((0, N_output))
+    return cur_samps, pred_samps, cur_vals
+
+def create_output_info(N_output, utilities, cur_vals, pred_samps):
+    """Creates the output_info object to return to the """
+    output_info = []
+    for i in xrange(N_output):
+        output_info.append({})
+        for utility in utilities:
+            pl.close('all')
+            output_info[i][utility.__name__]=make_pt_fig(cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
+    return output_info
+
 # @backend
 def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std], nsamp_per_val=1000):
     """
@@ -265,39 +303,21 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
     # Convert dictionaries to record arrays for easier handling
     din = np.rec.fromrecords([input_pt.values() for input_pt in input_pts], names=input_pts[0].keys())
     dout = np.rec.fromrecords([output_pt.values() for output_pt in output_pts], names=output_pts[0].keys())
-    for pt in (din,dout):
-        for attr in ('lon','lat'):
-            pt[attr] *= deg_to_rad
-    samp_mesh, pred_mesh = make_EP_inputs(din), add_times(make_EP_inputs(dout), dout.nmonths)
+
+    pred_mesh, samp_mesh, pt = ra_to_mesh(din, dout)
         
     # Correction factors for each set of age limits.
-    lo_age_in, up_age_in = regularize_ages(din.lo_age, din.up_age) 
-    lo_age_out, up_age_out = regularize_ages(dout.lo_age, dout.up_age)     
-    age_lims = zip(lo_age_in, up_age_in)
-    correction_factor_array = known_age_corr_factors(np.arange(0,27), 1000)
+    age_lims, correction_factor_array, lo_age_out, up_age_out = ra_to_age_info(din, dout)
 
     # Find posteriors with EP algorithm
     ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors = \
         EP_MAP.pred_samps(pred_mesh, samp_mesh, din.n, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, age_lims, correction_factor_array)
     
     # Adjust for failures
-    N_outer, N_inner = len(ind_outer), len(ind_inner)
+    N_outer, N_inner, N_utilities = len(ind_outer), len(ind_inner), len(utilities)
+    cur_samps, pred_samps, cur_vals = result_containers(utilities, N_outer, N_output, N_utilities)
     
-    # Generate current and predictive utilities
-    N_utilities = len(utilities)
-    # To hold samples from the predictive distribution of utility
-    pred_samps = dict(zip([utility.__name__ for utility in utilities], 
-                    [np.empty((N_outer, N_output)) for i in xrange(N_utilities)]))
-    # To hold the current utility
-    cur_vals =  dict(zip([utility.__name__ for utility in utilities], 
-                    [np.empty(N_output) for i in xrange(N_utilities)]))
-    # To hold current samples at prediction points.
-    cur_samps = np.empty((0, N_output))
-    
-    # Pdb(color_scheme='Linux').set_trace()   
     for i in xrange(N_outer):
-        
-        # print 'Point predictions: outer %i'%i
         
         # Sample from predictive distribution at output points.
         ii = ind_outer[i]
@@ -306,18 +326,15 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
         cur_samps = np.vstack((cur_samps,new_samps))
         
         unique_indices, n_copies = resample_with_mp(model_posteriors[i])
-        
-        # unique_indices = set(indices)
         print '%i indices of %i used.'%(len(unique_indices),N_inner)
 
         # Sample from predictive distribution at output points conditionally on simulated dataset i.        
-        these_samps = np.empty((0,N_output))        
+        these_samps = np.empty((0,N_output))
         for ui in xrange(len(unique_indices)):
             j = unique_indices[ui]
             
             # Draw samples conditional on simulated dataset i and posterior slice j.
-            lm, lv = likelihood_means[i][j], likelihood_variances[i][j]
-            jj = ind_inner[j]
+            lm, lv, jj = likelihood_means[i][j], likelihood_variances[i][j], ind_inner[j]
             M, C, V = deepcopy(Ms[jj]), deepcopy(Cs[jj]), Vs[jj]
             # Draw enough values to fill in all the slots that are set to j
             # in the importance resample.
@@ -332,12 +349,7 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
     for utility in utilities:
         cur_vals[utility.__name__] = np.apply_along_axis(utility, 0, cur_samps)
     
-    output_info = []
-    for i in xrange(N_output):
-        output_info.append({})
-        for utility in utilities:
-            pl.close('all')
-            output_info[i][utility.__name__]=make_pt_fig(pt, cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
+    output_info = create_output_info(N_output, utilities, cur_vals, pred_samps)
 
     from IPython.Debugger import Pdb
     Pdb(color_scheme='Linux').set_trace()
