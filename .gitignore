@@ -2,3 +2,8 @@
 *.so
 *.o
 *.hdf5
+build
+dist
+datafiles
+*.egg-info
+*.log
