@@ -3,38 +3,50 @@ import mbgw
 from mbgw import EP
 import nose,  warnings
 from numpy import *
-from pymc import normal_like
 from scipy import integrate
+
+# FIXME: Known failure modes: 
+#  - negative variance is too small, so there is no posterior density. You can protect against this. 
+#  - With negative variance, sometimes sum(p) is huge. Is this wrong?
 
 n_digits = 4
 iter = 10000
 tol = .0001
 
+def normal_like(x, mu, t):
+    like = - 0.5 * t * (x-mu)**2
+    # like = like + 0.5*log(0.5*t/pi)
+    return like
+
+def matsqrt(K):
+    e,v = linalg.eigh(K)
+    out= v*sqrt(e.astype('complex'))
+    return out
+
 def geto_observe(M, C, V, val):
-    sig = linalg.cholesky(C+diag(V))
+    try:
+        sig = linalg.cholesky(C+diag(V))
+    except:
+        sig = matsqrt(C+diag(V))
     C_sig = linalg.solve(sig, C)
     C_post = C - dot(C_sig.T, C_sig)
     M_post = M + dot(linalg.solve(sig.T, C_sig).T, val-M)
-    return M_post, C_post
+    return M_post.astype('float'), C_post.astype('float')
 
 def standard_EP_t(M_pri, C_pri, nugs, obs_mus, obs_Vs, mu_guess=None, V_guess=None):    
     N = len(M_pri)
-    lps = [lambda x, m=obs_mus[i], v=obs_Vs[i]: array([normal_like(xi, m, 1./v) for xi in x]) for i in xrange(N)]
-
-    # print obs_mus, obs_Vs
-    # Independently observe with the inferred 'mean' and 'variance'.
-    M_post, C_post = geto_observe(M_pri, C_pri, obs_Vs + nugs, obs_mus)
-    # print M_post
-    # print C_post
-    # print
+    lps = [lambda x, m=obs_mus[i], v=obs_Vs[i]: normal_like(x,m,1./v) for i in xrange(N)]
 
     # Do EP algorithm
     E = EP.EP(M_pri, C_pri, lps, nugs, mu_guess, V_guess)
     E.fit(iter, tol=tol)        
     
+    # Independently observe with the inferred 'mean' and 'variance'.
+    M_post, C_post = geto_observe(M_pri, C_pri, obs_Vs + nugs, obs_mus)
+    
     # Make sure the observing arithmetic is going right.
     assert_almost_equal(M_post, E.M, n_digits)
-    assert_almost_equal(C_post, E.C, n_digits)
+    assert_almost_equal(C_post/E.C, E.C*0+1., n_digits)
     
     # Make sure it's correctly finding mu and V
     assert_almost_equal(E.mu, obs_mus, n_digits)
@@ -85,8 +97,8 @@ class test_EP(object):
         
     def test_neg_V(self):
         # Moderate-sized negative variance and nugget.
-        obs_Vs = -diag(self.C_pri)*.2
-        nugs = -diag(self.C_pri)*.2
+        obs_Vs = -diag(self.C_pri)*3
+        nugs = diag(self.C_pri)*.2
         
         # 'mean' and log-probability functions.
         obs_mus = random.normal(size=self.N)
@@ -121,7 +133,7 @@ if __name__ == '__main__':
     tester.test_expectations()
     tester.test_low_V()
     tester.test_hi_V()
-    # tester.test_neg_V()
+    tester.test_neg_V()
     tester.test_tiny_V()
     # nose.runmodule()
 

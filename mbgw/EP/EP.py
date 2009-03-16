@@ -95,9 +95,10 @@ class EP(pm.Sampler):
         moments = []
         for f in funs:
             moments.append(integrate.simps(post_vec * f(x), dx=d(x)) / p)
-        
-        # from IPython.Debugger import Pdb
-        # Pdb(color_scheme='Linux').set_trace()   
+
+        if np.any(np.isnan(moments)):
+            from IPython.Debugger import Pdb
+            Pdb(color_scheme='Linux').set_trace()   
         
         return (p,) + tuple(moments)
                         
@@ -261,7 +262,10 @@ class EP(pm.Sampler):
 
             log_ratio = np.real(joint_term-ind_term)
         
-        if np.sum(self.p) + log_ratio > 10000 or np.any(np.isnan(log_ratio)):
+        if np.sum(self.p) + log_ratio > 10000:
+            print 'Warning, HUGE p'
+
+        if np.any(np.isnan(log_ratio)):
             from IPython.Debugger import Pdb
             Pdb(color_scheme='Linux').set_trace()   
         
