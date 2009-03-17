@@ -7,7 +7,6 @@ from scipy import integrate
 
 # FIXME: Known failure modes: 
 #  - negative variance is too small, so there is no posterior density. You can protect against this. 
-#  - With negative variance, sometimes sum(p) is huge. Is this wrong?
 
 n_digits = 4
 iter = 10000
@@ -105,6 +104,20 @@ class test_EP(object):
         
         standard_EP_t(self.M_pri, self.C_pri, nugs, obs_mus, obs_Vs)
         
+    def test_small_neg_V(self):
+        # Negative variance that is smaller than prior variance + nugget.
+        obs_Vs = -diag(self.C_pri)
+        nugs = diag(self.C_pri)*.2
+        
+        # 'mean' and log-probability functions.
+        obs_mus = random.normal(size=self.N)
+
+        try:
+            standard_EP_t(self.M_pri, self.C_pri, nugs, obs_mus, obs_Vs)
+            raise AssertionError, 'Improper posterior failed to trigger error in estimate_envelopes'
+        except RuntimeError:
+            pass
+        
     def test_hi_V(self):
         # High variance and nugget.
         obs_Vs = ones(self.N)*100000
@@ -127,13 +140,25 @@ class test_EP(object):
         obs_mus = random.normal(size=self.N)
         
         standard_EP_t(self.M_pri, self.C_pri, nugs, obs_mus, obs_Vs)
+
+def call_and_check(meth):
+    try:
+        meth()
+    except AssertionError:
+        import sys
+        cls, inst, tb = sys.exc_info()
+        print 'Assertion error in %s: \n%s'%(meth.__name__, inst.message)
         
 if __name__ == '__main__':
-    tester = test_EP()
-    tester.test_expectations()
-    tester.test_low_V()
-    tester.test_hi_V()
-    tester.test_neg_V()
-    tester.test_tiny_V()
-    # nose.runmodule()
+    
+    while True:
+        print 'Running all tests'
+        tester = test_EP()
+        call_and_check(tester.test_expectations)
+        call_and_check(tester.test_low_V)
+        call_and_check(tester.test_hi_V)
+        call_and_check(tester.test_small_neg_V)
+        call_and_check(tester.test_neg_V)
+        call_and_check(tester.test_tiny_V)
+        # nose.runmodule()
 

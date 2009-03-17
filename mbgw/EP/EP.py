@@ -33,10 +33,13 @@ def estimate_envelopes(f, max_guess, env_guess, threshold, ftol=.001):
     lo = optimize.fmin(compose(obj_fn, f, map_to_lower), x0=np.log(env_guess), full_output=False, disp=0)
     hi = optimize.fmin(compose(obj_fn, f, map_to_upper), x0=np.log(env_guess), full_output=False, disp=0)
     
-    # from IPython.Debugger import Pdb
-    # Pdb(color_scheme='Linux').set_trace()   
+    mlo = map_to_lower(lo)
+    mhi = map_to_upper(hi)
     
-    return map_to_lower(lo), map_to_upper(hi)
+    if mlo[0] >= mhi[0]:
+        raise RuntimeError, 'Bounding procedure failed, suspect improper posterior.'
+    
+    return mlo, mhi
 
 class EP(pm.Sampler):
 
