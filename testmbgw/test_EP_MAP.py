@@ -40,14 +40,7 @@ km_to_rad = 1./rad_to_km
 rad_to_deg = 180./pi
 deg_to_rad = 1./rad_to_deg
 
-lat_pred = array([8.89, 9.5, 1.17, 1.39])
-lon_pred = array([-1.54, .08, 39.44, 38.12])
-t_pred = array([2007]*4)-2009
-
-pred_mesh = vstack((lon_pred, lat_pred, t_pred)).T
-age_lims = [(lo_age, up_age)]*len(lon_pred)
-
-
+# TODO: With large N, correction_factors.known_age_corr_likelihoods_f is by far the bottleneck. You can optimize it there.
     
 # class test_mbgw(TestCase):
 class test_EP_MAP(object):
@@ -69,17 +62,24 @@ class test_EP_MAP(object):
             bin_sds = sqrt(age_distribution[j] * (1-age_distribution[j]) / 10000.)
             assert(all(abs(age_distribution[j]-empirical_age_distributions[j]) < 4*bin_sds))
     
-    def test_small_sample(self):
+    def test_pred_samps(self):
+        lat_pred = array([8.89, 9.5, 1.17, 1.39])
+        lon_pred = array([-1.54, .08, 39.44, 38.12])
+        t_pred = array([2007]*4)-2009
 
-        N_exam = array([1,1,1,1])*1
+        pred_mesh = vstack((lon_pred, lat_pred, t_pred)).T
+        age_lims = [(lo_age, up_age)]*len(lon_pred)
+
+        N_exam = ones(len(lat_pred))*100
+                
         input_pts = [{'lon': lon_pred[i], 'lat': lat_pred[i], 'month': 1, 'year': 2009, 'lo_age': 2, 'up_age': 10, 'n': N_exam[i]}\
-                        for i in range(4)]
-        output_pts =  [{'lon': lon_pred[i], 'lat': lat_pred[i], 'year': 2009, 'month': 1, 'lo_age': 2, 'up_age': 10, 'nmonths': 2} for i in range(4)]
+                        for i in range(len(lat_pred))]
+        output_pts =  [{'lon': lon_pred[i], 'lat': lat_pred[i], 'year': 2009, 'month': 1, 'lo_age': 2, 'up_age': 10, 'nmonths': 2} for i in range(len(lat_pred))]
 
         correction_factor_array = mbgw.correction_factors.known_age_corr_factors(arange(0,27), 1000)
 
         ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors =\
-            mbgw.EP.pred_samps(pred_mesh*deg_to_rad, pred_mesh*deg_to_rad, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array, debug=False)
+            mbgw.EP.pred_samps(pred_mesh*deg_to_rad, pred_mesh*deg_to_rad, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array, debug=True)
         # from IPython.Debugger import Pdb
         # Pdb(color_scheme='Linux').set_trace()   
 
@@ -87,7 +87,7 @@ class test_EP_MAP(object):
 
 if __name__ == '__main__':
     tester = test_EP_MAP()
-    # tester.test_small_sample()
+    tester.test_pred_samps()
     # tester.check_ages_and_data()
     # test_EP_MAP().test_low_V()
     # warnings.simplefilter('ignore',  FutureWarning)

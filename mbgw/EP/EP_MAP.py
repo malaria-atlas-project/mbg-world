@@ -42,8 +42,10 @@ def visualize(M_pri, C_pri, E, lps, nug):
     
     pri_real = norm_dens(x, M_pri[k], C_pri[k,k])
     norms = np.random.normal(size=10000)*np.sqrt(nug[k])
+
     def this_lp(x, k=k, norms=norms):
         return np.array([pm.flib.logsum(lps[k](xi + norms)) - np.log((len(norms))) for xi in x])
+
     like_real = this_lp(x)
     where_real_notnan = np.where(1-np.isnan(like_real))
     x_realplot = x[where_real_notnan]
@@ -61,11 +63,15 @@ def visualize(M_pri, C_pri, E, lps, nug):
 
     post_approx = norm_dens(x, E.M[k], E.C[k,k])
     
+    post_approx /= post_approx.sum()
+    post_real /= post_real.sum()
+    pri_real *= post_real.max()
+    
     # figure(1, figsize=(9,6))
     clf()
     plot(x, pri_real, 'g:', linewidth=2, label='Prior')
-    plot(x_realplot, like_real, 'b-.', linewidth=2, label='Likelihood')
-    plot(x, like_approx, 'r-.', linewidth=2, label='Approx. likelihood')
+    # plot(x_realplot, like_real, 'b-.', linewidth=2, label='Likelihood')
+    # plot(x, like_approx, 'r-.', linewidth=2, label='Approx. likelihood')
     plot(x_realplot, post_real, 'b-', linewidth=2, label='Posterior')
     plot(x, post_approx, 'r-', linewidth=2, label='Approx. posterior')
     legend(loc=0).legendPatch.set_alpha(0.)
