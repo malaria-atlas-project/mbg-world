@@ -45,22 +45,21 @@ def standard_EP_t(M_pri, C_pri, nugs, obs_mus, obs_Vs, mu_guess=None, V_guess=No
     
     # Make sure the observing arithmetic is going right.
     assert_almost_equal(M_post, E.M, n_digits)
-    assert_almost_equal(C_post/E.C, E.C*0+1., n_digits)
+    assert_almost_equal(C_post/E.C, E.C*0+1., n_digits-2)
     
     # Make sure it's correctly finding mu and V
     assert_almost_equal(E.mu, obs_mus, n_digits)
-    assert_almost_equal(E.V*0+1., (obs_Vs+nugs)/(E.V+nugs), n_digits)
+    assert_almost_equal(E.V*0+1., (obs_Vs+nugs)/(E.V+nugs), n_digits-2)
         
     return E, M_post, C_post
     
 # class test_mbgw(TestCase):
-class test_EP(object):
+class test_EP(TestCase):
     
     N = 3
     M_pri = random.normal(size=N)
     sig_pri = random.normal(size=(N, N))
     C_pri = dot(sig_pri.T, sig_pri)
-    # print M_pri, '\n', C_pri
     
     def test_expectations(self):
         f = lambda x: normal_like(x, -pi, 1./2)
@@ -140,25 +139,27 @@ class test_EP(object):
         obs_mus = random.normal(size=self.N)
         
         standard_EP_t(self.M_pri, self.C_pri, nugs, obs_mus, obs_Vs)
+    
 
 def call_and_check(meth):
     try:
         meth()
-    except AssertionError:
+    except (RuntimeError, AssertionError):
         import sys
         cls, inst, tb = sys.exc_info()
-        print 'Assertion error in %s: \n%s'%(meth.__name__, inst.message)
+        print 'Assertion or runtime error in %s: \n%s'%(meth.__name__, inst.message)
+        
         
 if __name__ == '__main__':
     
-    while True:
-        print 'Running all tests'
-        tester = test_EP()
-        call_and_check(tester.test_expectations)
-        call_and_check(tester.test_low_V)
-        call_and_check(tester.test_hi_V)
-        call_and_check(tester.test_small_neg_V)
-        call_and_check(tester.test_neg_V)
-        call_and_check(tester.test_tiny_V)
-        # nose.runmodule()
+    # while True:
+    #     print 'Running all tests'
+    #     tester = test_EP()
+    #     call_and_check(tester.test_expectations)
+    #     call_and_check(tester.test_low_V)
+    #     call_and_check(tester.test_hi_V)
+    #     call_and_check(tester.test_small_neg_V)
+    #     call_and_check(tester.test_neg_V)
+    #     call_and_check(tester.test_tiny_V)
+    nose.runmodule()
 

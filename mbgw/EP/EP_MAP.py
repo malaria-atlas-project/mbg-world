@@ -54,9 +54,9 @@ def visualize(M_pri, C_pri, E, lps, nug):
 
     smoove_mat = np.asarray(pm.gp.cov_funs.gaussian.euclidean(x_realplot,x_realplot,amp=1,scale=.1))
     smoove_mat /= np.sum(smoove_mat, axis=0)
-    like_real = np.dot(smoove_mat, like_real)
+    # like_real = np.dot(smoove_mat, like_real)
     like_real /= like_real.max()      
-    post_real = np.dot(smoove_mat, post_real)
+    # post_real = np.dot(smoove_mat, post_real)
     post_real /= post_real.max() 
 
     post_approx = norm_dens(x, E.M[k], E.C[k,k])
@@ -73,20 +73,22 @@ def visualize(M_pri, C_pri, E, lps, nug):
     axis('tight')
     title('Prior variance %f, likelihood variance %f'%(C_pri[k,k], E.V[k]+nug[k]))
 
-    Pdb(color_scheme='Linux').set_trace()   
+    # Pdb(color_scheme='Linux').set_trace()   
     # savefig('figs/post%i.pdf'%k, transparent=True)    
 
 
-def ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims):
+def ages_and_data(N_exam, f_samp, correction_factor_array, age_lims):
     """Called by pred_samps. Simulates ages of survey participants and data given f."""
     
     N_samp = len(f_samp)
+    N_age_samps = correction_factor_array.shape[1]
     
-    # Get a sample for the age distribution in the 2-10 age class
-    age_distribution = {}
-    for l in set(age_lims):
-        age_distribution[l] = S_trace[np.random.randint(S_trace.shape[0]),0,l[0]:l[1]+1]
-        age_distribution[l] /= np.sum(age_distribution[l])
+    # Get samples for the age distribution at the observation points.
+    age_distribution = []
+    for i in xrange(N_samp):
+        l = age_lims[i]
+        age_distribution.append(S_trace[np.random.randint(S_trace.shape[0]),0,l[0]:l[1]+1])
+        age_distribution[-1] /= np.sum(age_distribution[-1])
     
     # Draw age for each individual, draw an age-correction profile for each location,
     # compute probability of positive for each individual, see how many individuals are
@@ -94,7 +96,7 @@ def ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims
     A = []
     pos = []
     for s in xrange(N_samp):
-        A.append(np.array(pm.rcategorical(age_distribution[age_lims[s]], size=N_exam[s]),dtype=int) + age_lims[s][0])
+        A.append(np.array(pm.rcategorical(age_distribution[s], size=N_exam[s]),dtype=int) + age_lims[s][0])
         P_samp = pm.invlogit(f_samp[s].ravel())*correction_factor_array[:,np.random.randint(N_age_samps)][A[-1]]
         pos.append(pm.rbernoulli(P_samp))
     
@@ -155,10 +157,14 @@ def simulate_data(M_pri, C_pri, N_samp, V, N_exam, N_age_samps, correction_facto
     f_samp = pm.rmv_normal_cov(M_pri, C_pri + eye(N_samp)*V)
 
     # Get ages, number positive, and normalized age distribution for prediction
-    ages, positives, age_distribution = ages_and_data(N_exam, N_age_samps, f_samp, correction_factor_array, age_lims)
+    ages, positives, age_distribution = ages_and_data(N_exam, f_samp, correction_factor_array, age_lims)
+    
+    sig = sqrt(diag(C_pri))
+    lo = M_pri - sig*5
+    hi = M_pri + sig*5
 
     # Make log-likelihood functions
-    marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(-10,10,100), 0)
+    marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(lo.min(),hi.max(),500), 0)
     return marginal_log_likelihoods, positives
 
 def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=False):
@@ -174,14 +180,14 @@ def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=F
         print 'Error: %s'%inst.message
         this_P = -np.inf
     if debug:
-        visualize(Ms[j](samp_mesh), Cs[j](samp_mesh, samp_mesh), E, marginal_log_likelihoods, this_nug)
+        visualize(M_pri, C_pri, E, marginal_log_likelihoods, this_nug)
     return this_P, E.mu, E.V
 
 def multi_append(tup, *lists):
     """Utility function for appending a new value to multiple lists."""
     [l.append(t) for l,t in zip(lists,tup)]
 
-def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array):
+def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array, debug=False):
     """
     This function is meant to be called directly by the frontend. It returns 
     the prior means and covariances, as well as the products of the EP algorithm, 
@@ -218,7 +224,7 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
             this_nug.fill(Vs[j])
             
             # Fit for a posterior of f + epsilon
-            res = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug)
+            res = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug)
             multi_append(res, mps, lms, lvs)
         
         multi_append((mps, lms, lvs), model_posteriors, likelihood_means, likelihood_variances)    

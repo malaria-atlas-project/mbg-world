@@ -87,6 +87,9 @@ class EP(pm.Sampler):
 
         p = integrate.simps(post_vec, dx=d(x))
         
+        if p==0:
+            raise RuntimeError, 'Unconditional likelihood is zero. You can make this happen less often by computing p with log-sums, and computing moments with rejection sampling.'
+        
         # The expectations of these functions give the first two moments of x without the nugget.
         # Just passing in lambda x:x and lambda x:x**2 would give the first two moments of x
         # _with_ the nugget.
@@ -98,10 +101,6 @@ class EP(pm.Sampler):
         moments = []
         for f in funs:
             moments.append(integrate.simps(post_vec * f(x), dx=d(x)) / p)
-
-        if np.any(np.isnan(moments)):
-            from IPython.Debugger import Pdb
-            Pdb(color_scheme='Linux').set_trace()   
         
         return (p,) + tuple(moments)
                         
