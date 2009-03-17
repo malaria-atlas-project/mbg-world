@@ -41,6 +41,11 @@ def estimate_envelopes(f, max_guess, env_guess, threshold, ftol=.001):
     
     return mlo, mhi
 
+def normal_like(x, mu, t):
+    like = - 0.5 * t * (x-mu)**2
+    like = like + 0.5*np.log(t/2./np.pi)
+    return like
+
 class EP(pm.Sampler):
 
     def __init__(self, M_pri, C_pri, lp, nug, mu_guess=None, V_guess=None):
@@ -77,13 +82,13 @@ class EP(pm.Sampler):
         nug_v = self.nug[i]
         v = pri_v + nug_v
         
-        pri_fn = lambda x: pm.normal_like(x, m, 1./v)
+        pri_fn = lambda x: normal_like(x, m, 1./v)
         like_fn = lambda x: self.lp[i](np.atleast_1d(x)).squeeze()
         post_fn = lambda x: pri_fn(x) + like_fn(x)
         
         lo, hi = estimate_envelopes(post_fn, m, np.sqrt(v), 13.)
         x = np.linspace(lo, hi, N)
-        post_vec = np.exp([post_fn(xi) for xi in x])
+        post_vec = np.exp(post_fn(x))
 
         p = integrate.simps(post_vec, dx=d(x))
         
