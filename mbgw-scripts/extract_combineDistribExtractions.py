@@ -11,10 +11,6 @@ from map_utils import quantile_funs as qs
 from map_utils import checkAndBuildPaths
 from UserDict import UserDict
 
-# import some r functions
-r.source('writeTableWithNames.R')
-writeTableWithNamesPY = r['writeTableWithNames']
-
 # import parameters and check filepaths
 from extract_params import *
 checkAndBuildPaths(filename,VERBOSE=True,BUILD=True)
@@ -25,6 +21,10 @@ checkAndBuildPaths(gr001km_path,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(uniqueSalb_path,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=True)
 
+# import some r functions
+print utilFolder+'GeneralUtility.R'
+r.source(utilFolder+'GeneralUtility.R')
+writeTableWithNamesPY = r['writeTableWithNames']
 
 #############################################################################################################################################
 def deconstructFilename (fname):
