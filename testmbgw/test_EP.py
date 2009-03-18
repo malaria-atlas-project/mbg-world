@@ -62,27 +62,24 @@ class test_EP(TestCase):
     C_pri = dot(sig_pri.T, sig_pri)
     
     def test_expectations(self):
-        f = lambda x: normal_like(x, -pi, 1./2)
-        lo, hi = EP.estimate_envelopes(f, -pi, sqrt(10), 13., ftol=.000000001)
-        
-        funs=[lambda x:x, lambda x:x**2]
-        
-        x = linspace(lo, hi, 1000)
-        dx=x[2]-x[1]
-        post_vec = exp([f(xi) for xi in x])
+        "Makes sure the EP algorithm's method of estimating posterior moments is working."
+        like_mu = random.normal()
+        like_V = random.normal()**2
+        f = lambda x: normal_like(x, like_mu, 1./like_V)
 
-        p = integrate.simps(post_vec, dx=dx)
+        nug = random.normal()**2
+        E = EP.EP(atleast_1d([self.M_pri[0]]), atleast_2d([self.C_pri[0,0]]), [f], [nug])
+        E.M = E.M_pri
+        E.C = E.C_pri
+        p, m1, m2 = E.compute_expectation(0,1000)
         
-        # Return E_pri [like_fn(x)] and the posterior expectations of funs(x).        
-        moments = []
-        for fun in funs:
-            moments.append(integrate.simps(post_vec * fun(x), dx=dx) / p)
+        sum_V = self.C_pri[0,0]+nug+like_V
         
-        # print moments[1]-moments[0]**2-2
-        assert_almost_equal(moments[0], -pi, 3)
-        assert_almost_equal(moments[1]-moments[0]**2, 2, 2)
-            
+        assert_almost_equal(m1, (self.M_pri[0]*(like_V+nug) + like_mu*self.C_pri[0,0])/sum_V, 3)
+        assert_almost_equal(m2-m1**2, self.C_pri[0,0]*(like_V+nug)/sum_V, 2)
+                    
     def test_low_V(self):
+        "Makes sure the EP algorithm produces good results with small observation variance."
         # Moderate-sized positive variance and nugget.
         obs_Vs = random.normal(size=self.N)**2 * .1
         nugs = random.normal(size=self.N)**2 * .3
@@ -93,6 +90,7 @@ class test_EP(TestCase):
         standard_EP_t(self.M_pri, self.C_pri, nugs, obs_mus, obs_Vs, obs_mus, obs_Vs)
         
     def test_neg_V(self):
+        "Makes sure the EP algorithm produces good results with negative observation variance."
         # Moderate-sized negative variance and nugget.
         obs_Vs = -diag(self.C_pri)*3
         nugs = diag(self.C_pri)*.2
@@ -103,6 +101,7 @@ class test_EP(TestCase):
         standard_EP_t(self.M_pri, self.C_pri, nugs, obs_mus, obs_Vs)
         
     def test_small_neg_V(self):
+        "Makes sure the EP algorithm raises an exception if the posterior variance is too small and negative."
         # Negative variance that is smaller than prior variance + nugget.
         obs_Vs = -diag(self.C_pri)
         nugs = diag(self.C_pri)*.2
@@ -117,6 +116,7 @@ class test_EP(TestCase):
             pass
         
     def test_hi_V(self):
+        "Makes sure the EP algorithm produces good results with large observation variance."
         # High variance and nugget.
         obs_Vs = ones(self.N)*100000
         nugs = ones(self.N)*100000
@@ -130,6 +130,7 @@ class test_EP(TestCase):
         assert_almost_equal(C_post, self.C_pri, n_digits-2)
         
     def test_tiny_V(self):
+        "Makes sure the EP algorithm produces good results with very small observation variance."
         # Moderate-sized positive variance and nugget.
         obs_Vs = random.normal(size=self.N)**2 * .00001
         nugs = random.normal(size=self.N)**2 * .00003

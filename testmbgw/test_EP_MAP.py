@@ -62,6 +62,7 @@ class test_EP_MAP(object):
     C_pri = dot(sig_pri.T, sig_pri)
         
     def test_ages_and_data(self):
+        "Makes sure that the ages drawn by ages_and_data match the age distributions."
         N_exam = ones(self.N) * 10000
         A, pos, age_distribution = ages_and_data(N_exam, self.f_samp, self.correction_factor_array, self.age_lims)
         empirical_age_distributions = []
@@ -73,6 +74,7 @@ class test_EP_MAP(object):
             assert(all(abs(age_distribution[j]-empirical_age_distributions[j]) < 4*bin_sds))
     
     def test_fit(self):
+        "Compares EP results with MCMC results with a real age-corrected likelihood."
         nug = random.normal()**2 * .3
         N_exam = ones(self.N) * 100
         lps, pos = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, N_exam, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
@@ -90,6 +92,7 @@ class test_EP_MAP(object):
             return sum([lps[i](eps[i]) for i in xrange(len(eps))])
         
         M = pm.MCMC([x,eps,y])
+        M.use_step_method(pm.AdaptiveMetropolis, [eps, x])
         M.isample(20000)
         
         post_V = var(M.trace('x')[5000:], axis=0)
@@ -102,9 +105,10 @@ class test_EP_MAP(object):
         
         
     def test_pred_samps(self):
-        lat_pred = pm.runiform(-5., 5., size=4)
+        "A dry run in Kenya."
+        lat_pred = pm.runiform(-5., 5., size=4) * deg_to_rad
         # lat_pred = array([8.89, 9.5, 1.17, 1.39])
-        lon_pred = pm.runform(35., 40., size=4)
+        lon_pred = pm.runiform(33., 40., size=4) * deg_to_rad
         # lon_pred = array([-1.54, .08, 39.44, 38.12])
         t_pred = array([2007]*4)-2009
 
