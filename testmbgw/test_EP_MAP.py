@@ -3,7 +3,7 @@ import mbgw
 from mbgw import EP
 import nose,  warnings
 from numpy import *
-from pymc import normal_like
+import pymc as pm
 from mbgw.EP import ages_and_data
 import tables as tb
 
@@ -40,31 +40,72 @@ km_to_rad = 1./rad_to_km
 rad_to_deg = 180./pi
 deg_to_rad = 1./rad_to_deg
 
+n_digits = 4
+iter = 10000
+tol = .0001
+
 # TODO: With large N, correction_factors.known_age_corr_likelihoods_f is by far the bottleneck. You can optimize it there.
     
 # class test_mbgw(TestCase):
 class test_EP_MAP(object):
     
-    N = random.randint(2,20)
+    # N = random.randint(2,20)
+    N = 4
+    
     f_samp = random.normal(size=N)
-    al = random.randint(0,5,size=N)
+    al = random.randint(1,12,size=N)
     al = vstack((al, al+random.randint(30, size=N))).T
     age_lims = [tuple(ali) for ali in al]
     correction_factor_array = mbgw.correction_factors.known_age_corr_factors(arange(0,27), 1000)
+    M_pri = random.normal(size=N)
+    sig_pri = random.normal(size=(N, N))
+    C_pri = dot(sig_pri.T, sig_pri)
         
     def test_ages_and_data(self):
         N_exam = ones(self.N) * 10000
         A, pos, age_distribution = ages_and_data(N_exam, self.f_samp, self.correction_factor_array, self.age_lims)
         empirical_age_distributions = []
+        
         for j in xrange(self.N):
             A_ind = A[j]-self.age_lims[j][0]
             empirical_age_distributions.append(array([sum(A_ind==i) for i in xrange(len(age_distribution[j]))]) / 10000.)
             bin_sds = sqrt(age_distribution[j] * (1-age_distribution[j]) / 10000.)
             assert(all(abs(age_distribution[j]-empirical_age_distributions[j]) < 4*bin_sds))
     
+    def test_fit(self):
+        nug = random.normal()**2 * .3
+        N_exam = ones(self.N) * 100
+        lps, pos = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, N_exam, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
+
+        # Do EP algorithm
+        E = EP.EP(self.M_pri, self.C_pri, lps, nug*ones(self.N))
+        E.fit(iter, tol=tol)
+        # from IPython.Debugger import Pdb
+        # Pdb(color_scheme='Linux').set_trace()   
+        
+        x = pm.MvNormalCov('x', self.M_pri, self.C_pri)
+        eps = pm.Normal('eps', x, 1./nug)
+        @pm.potential
+        def y(eps=eps, lps=lps):
+            return sum([lps[i](eps[i]) for i in xrange(len(eps))])
+        
+        M = pm.MCMC([x,eps,y])
+        M.isample(20000)
+        
+        post_V = var(M.trace('x')[5000:], axis=0)
+        post_M = mean(M.trace('x')[5000:], axis=0)
+        
+        pm.Matplot.plot(M)
+        
+        assert_almost_equal(post_M, E.M, 1)        
+        assert_almost_equal(post_V, diag(E.C), 1)
+        
+        
     def test_pred_samps(self):
-        lat_pred = array([8.89, 9.5, 1.17, 1.39])
-        lon_pred = array([-1.54, .08, 39.44, 38.12])
+        lat_pred = pm.runiform(-5., 5., size=4)
+        # lat_pred = array([8.89, 9.5, 1.17, 1.39])
+        lon_pred = pm.runform(35., 40., size=4)
+        # lon_pred = array([-1.54, .08, 39.44, 38.12])
         t_pred = array([2007]*4)-2009
 
         pred_mesh = vstack((lon_pred, lat_pred, t_pred)).T
@@ -86,11 +127,11 @@ class test_EP_MAP(object):
 
 
 if __name__ == '__main__':
-    tester = test_EP_MAP()
-    tester.test_pred_samps()
+    # tester = test_EP_MAP()
+    # tester.test_fit()
     # tester.check_ages_and_data()
     # test_EP_MAP().test_low_V()
     # warnings.simplefilter('ignore',  FutureWarning)
-    # nose.runmodule()
+    nose.runmodule()
 
 

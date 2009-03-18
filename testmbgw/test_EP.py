@@ -83,7 +83,6 @@ class test_EP(TestCase):
         assert_almost_equal(moments[1]-moments[0]**2, 2, 2)
             
     def test_low_V(self):
-        
         # Moderate-sized positive variance and nugget.
         obs_Vs = random.normal(size=self.N)**2 * .1
         nugs = random.normal(size=self.N)**2 * .3

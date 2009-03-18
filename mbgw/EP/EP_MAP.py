@@ -171,6 +171,7 @@ def simulate_data(M_pri, C_pri, N_samp, V, N_exam, N_age_samps, correction_facto
 
     # Make log-likelihood functions
     marginal_log_likelihoods = known_age_corr_likelihoods_f(positives, ages, correction_factor_array, linspace(lo.min(),hi.max(),500), 0)
+    
     return marginal_log_likelihoods, positives
 
 def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=False):

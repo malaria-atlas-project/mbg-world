@@ -15,21 +15,18 @@ AM_lims = {'topRow': 421,
 AF_lims = {'topRow': 1,
 'bottomRow': 1605,
 'leftCol': 1623,
-'rightCol': 3515
-}
+'rightCol': 3515}
 
 AS_lims = {'topRow': 1,
 'bottomRow': 1391,
 'leftCol': 3459,
-'rightCol': 6281
-}
+'rightCol': 6281}
 
 # FIXME: Replace with real Kenya limits.
 KE_lims = {'topRow' : 789,
 'bottomRow' : 1021,
 'leftCol' : 2999,
-'rightCol' : 3203
-}
+'rightCol' : 3203}
 
 rad_to_km = 6378.1/pi
 km_to_rad = 1./rad_to_km
