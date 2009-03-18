@@ -23,14 +23,14 @@ def subset1kmgrids (region,lims,gridname):
     fullHDF5 = tb.openFile(input_path, mode = "r")    
 
     # get 1km row/cols for this subset from the pre-defined object in mbgw 'master_grid' (NB - the values therein were entered manually after running the R script DefineSubsetCoordinates.R)
-    br=(lims['bottomRow']-1)*resRatio
+    br=(lims['bottomRow'])*resRatio
     tr=(lims['topRow']-1)*resRatio
     lc=(lims['leftCol']-1)*resRatio
-    rc=(lims['rightCol']-1)*resRatio
+    rc=(lims['rightCol'])*resRatio
 
     # define subsetted lat and long vector
-    long = fullHDF5.root.long[lc:(rc+1):1]
-    lat = fullHDF5.root.lat[tr:(br+1):1]
+    long = fullHDF5.root.long[lc:rc:1]
+    lat = fullHDF5.root.lat[tr:br:1]
 
     nrows = len(lat)
     ncols = len(long)
@@ -39,7 +39,7 @@ def subset1kmgrids (region,lims,gridname):
     #print(nrows)
 
     # define subsetted grid
-    gridsubset = fullHDF5.root.data[tr:(br+1):1,lc:(rc+1):1]
+    gridsubset = fullHDF5.root.data[tr:br:1,lc:rc:1]
     #print(mean(gridsubset))
     #print(shape(gridsubset))
     #print (type(gridsubset))
@@ -76,8 +76,8 @@ def subset1kmgrids (region,lims,gridname):
 ################################################################################################################################################
 
 #subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "salblim1km-e")
-subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "gr001km")
-subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e")
-subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km")
-subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "salblim1km-e")
-subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "gr001km")
+#subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "gr001km")
+#subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e")
+#subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km")
+#subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "salblim1km-e")
+#subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "gr001km")
