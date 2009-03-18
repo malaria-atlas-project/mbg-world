@@ -135,6 +135,8 @@ def known_age_corr_likelihoods_f(pos, A, fac_array, f_mesh, nug):
     of N_pos | N_exam, A
     """
 
+    # TODO: Optimize large-N case using CLT of some kind.
+
     # Allocate work and output arrays.
     N_recs = len(A)
     N = fac_array.shape[1]

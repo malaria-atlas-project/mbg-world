@@ -235,6 +235,7 @@ def ra_to_age_info(din, dout):
     lo_age_in, up_age_in = regularize_ages(din.lo_age, din.up_age) 
     lo_age_out, up_age_out = regularize_ages(dout.lo_age, dout.up_age)     
     age_lims = zip(lo_age_in, up_age_in)
+    # FIXME: 1000 is a magic number
     correction_factor_array = known_age_corr_factors(np.arange(0,27), 1000)
     return age_lims, correction_factor_array, lo_age_out, up_age_out
 

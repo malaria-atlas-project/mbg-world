@@ -31,9 +31,9 @@ if __name__ == '__main__':
         pass
     simulate(2, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim.hdf5', 'landSea-e')
 
-    import pylab as pl
-    pl.clf()
-    hr = tb.openFile('test_sim.hdf5').root
-    pl.imshow(hr.realizations[0,:,:,0], extent=[hr.axes[0][0], hr.axes[0][1], hr.axes[1][0], hr.axes[1][1]], interpolation='nearest')
-
-    pl.colorbar()
+    # import pylab as pl
+    # pl.clf()
+    # hr = tb.openFile('test_sim.hdf5').root
+    # pl.imshow(hr.realizations[0,:,:,0], extent=[hr.axes[0][0], hr.axes[0][1], hr.axes[1][0], hr.axes[1][1]], interpolation='nearest')
+    # 
+    # pl.colorbar()
