@@ -10,18 +10,19 @@ import copy as cp
 import pymc as pm
 import mbgw
 import tables as tb
-import pylab as pl
-import matplotlib
-matplotlib.interactive(True)
+#import pylab as pl
+#import matplotlib
+#matplotlib.interactive(True)
 from mbgw.joint_simulation import *
-from mbgw import st_cov_fun
+import st_cov_fun
+from mbgw import correction_factors
 
 # import R functions
 r.source('extract_Rlib.R')
 plotmonthPY = r['plotmonth']
 getTimeMeanPY = r['getTimeMean']
 expandGridResPY=r['expandGridRes']
-
+ 
 # import parameters from param file
 from extract_params import *
 
@@ -454,7 +455,7 @@ def outputExtraction(dict):
     relSuff = '_r'+str(startRel)+'to'+str(endRel)
     
     # export array of mean PR per country per realisation
-    write_array(exportPath+'meanPR'+relSuff+'.txt', dict['countryMeanPRrel'])
+    np.savetxt(exportPath+'meanPR'+relSuff+'.txt', dict['countryMeanPRrel'])
     
     # loop through classification schemes and clases wihtin them and export array of PAR for each
     schemes = dict['PARdict'].keys()    
@@ -470,7 +471,7 @@ def outputExtraction(dict):
             classSuff = '_'+schemes[ss]+'_'+classes[cc]
 
             # export PAR array for this scheme-class
-            savetxt(exportPath+'PAR'+classSuff+relSuff+'.gz', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
+            np.savetxt(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
 
 #a=r.Sys_time()

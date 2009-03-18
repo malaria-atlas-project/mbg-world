@@ -1,5 +1,8 @@
 from numpy import array
 
+# standard path to utility function directory (used to source generic R functions)
+utilFolder = '/home/pwg/map_utils/map_utils/'
+
 # main input hdf5  file of simulated realisations of f
 filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
 
