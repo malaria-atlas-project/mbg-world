@@ -73,6 +73,15 @@ class test_EP_MAP(object):
             bin_sds = sqrt(age_distribution[j] * (1-age_distribution[j]) / 10000.)
             assert(all(abs(age_distribution[j]-empirical_age_distributions[j]) < 4*bin_sds))
     
+    def test_likelihoods(self):
+        "Makes sure that the sparsified likelihood function procedure is reasonable"
+        nug = random.normal()**2 * .3
+        lps_thick, pos_thick = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, ones(self.N) * 10000, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
+        lps_thin, pos_thin = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, ones(self.N) * 1000, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
+        geto_lps_thick = [lambda x: lp(x)**10 for lp in lps_thin]
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
+    
     def test_fit(self):
         "Compares EP results with MCMC results with a real age-corrected likelihood."
         nug = random.normal()**2 * .3
@@ -131,11 +140,12 @@ class test_EP_MAP(object):
 
 
 if __name__ == '__main__':
-    # tester = test_EP_MAP()
+    tester = test_EP_MAP()
+    tester.test_likelihoods()
     # tester.test_fit()
     # tester.check_ages_and_data()
     # test_EP_MAP().test_low_V()
     # warnings.simplefilter('ignore',  FutureWarning)
-    nose.runmodule()
+    # nose.runmodule()
 
 
