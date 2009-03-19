@@ -129,7 +129,58 @@ def known_age_corr_factors(A,N):
 
     return factors
 
-def known_age_corr_likelihoods_f(pos, A, fac_array, f_mesh, nug):
+def outer_small(p1, fac_array, Ai, spi, posi, negi, likes_now):
+    N = fac_array.shape[1]
+    
+    # For each sample from the posterior of r
+    for j in xrange(N):
+        # Compute actual PfPR[A[i]]
+        p2 = fac_array[:,j][Ai]
+
+        # Record likelihood
+        # k1=np.add.outer(np.log(p1),np.log(p2))
+        k1 = np.log(p1)*spi + np.dot(posi,np.log(p2))
+
+        # k2 = log(1.-np.outer(p1,p2))
+        k2 = cfh(p1,p2,negi)
+        # k1 = np.dot(k1,posi)
+        # k2 = np.dot(k2,negi)
+
+        likes_now[j,:] = k1 + k2
+        
+    # Average log-likelihoods.
+    return np.apply_along_axis(logsum,0,likes_now) - log(N)#(mean(likes_now,axis=0))
+
+def outer_large(p1, fac_array, Ai, spi, posi, negi, likes_now):
+    # TODO: Treat case of n sufficiently large as delta function or normal approx if n > npos > 0.
+    # Remember, even if it's a delta function you have the distribution of the correction factors to deal with.
+    # So spline up the correction factor histograms ahead of time, there will be thousands but it's OK.
+    # If n = npos or n = 0, 
+    N = fac_array.shape[1]
+    likes_now *= 0
+    
+    Aset = set(Ai)
+    pos = {}
+    negs = {}
+    sps = {}
+    outs = {}
+    for Au in Aset:
+        where_this_age = where(Ai==Au)[0]
+        pos = sum(posi[where_this_age])
+        tot = len(where_this_age)
+        neg = len(where_this_age) - pos
+        
+        p2 = fac_array[Au,:]
+        k1 = np.add.outer(np.log(p2), np.log(p1))*pos
+        k2 = log(1. - np.outer(p2, p1))*neg
+        
+        likes_now += k1 + k2
+        
+    # Average log-likelihoods.
+    return np.apply_along_axis(logsum,0,likes_now) - log(N)#(mean(likes_now,axis=0))        
+        
+
+def known_age_corr_likelihoods_f(pos, A, fac_array, f_mesh, nug, type=None):
     """
     Computes spline representations over P_mesh for the likelihood 
     of N_pos | N_exam, A
@@ -139,17 +190,13 @@ def known_age_corr_likelihoods_f(pos, A, fac_array, f_mesh, nug):
 
     # Allocate work and output arrays.
     N_recs = len(A)
-    N = fac_array.shape[1]
 
     likelihoods = empty((N_recs, len(f_mesh)))
-    likes_now = empty((N, len(f_mesh)), dtype=float128)
+    likes_now = empty((fac_array.shape[1], len(f_mesh)), dtype=float128)
     splreps = []
     
-    # t1 = 0
-    # t2 = 0
-    # t3 = 0
-    # import time
-
+    p1 = invlogit(f_mesh)
+    
     # For each record
     for i in xrange(N_recs):
         posi = pos[i]
@@ -157,32 +204,17 @@ def known_age_corr_likelihoods_f(pos, A, fac_array, f_mesh, nug):
         spi = np.sum(posi)
         negi = 1.-posi
 
-        # For each sample from the posterior of r
-        for j in xrange(N):
-            # Compute actual PfPR[A[i]]
-            p1 = invlogit(f_mesh + np.random.normal()*np.sqrt(nug))
-            p2 = fac_array[:,j][Ai]
-            
+        if type is None:
+            if len(Ai) < 100:
+                fn = outer_small
+            else:
+                fn = outer_large
+        elif type=='s':
+            fn = outer_small
+        else:
+            fn = outer_large
 
-            # Record likelihood
-            # t1 -= time.time()                    
-            # k1=np.add.outer(np.log(p1),np.log(p2))
-            k1 = np.log(p1)*spi + np.dot(posi,np.log(p2))
-            # k2 = log(1.-np.outer(p1,p2))
-            # t1 += time.time()
-            
-            # t2 -= time.time()
-            k2 = cfh(p1,p2,negi)
-            # k1 = np.dot(k1,posi)
-            # k2 = np.dot(k2,negi)
-            # t2 += time.time()
-            
-            # t3 -= time.time()
-            likes_now[j,:] = k1 + k2
-            # t3 += time.time()
-
-        # Average log-likelihoods.
-        likelihoods[i,:] = np.apply_along_axis(logsum,0,likes_now) - log(N)#(mean(likes_now,axis=0))
+        likelihoods[i,:] = fn(p1, fac_array, Ai, spi, posi, negi, likes_now)
 
         # Clean out occasional infinities on the edges.
         good_indices = where(1-isinf(likelihoods[i,:]))[0]
@@ -197,7 +229,6 @@ def known_age_corr_likelihoods_f(pos, A, fac_array, f_mesh, nug):
             return out.reshape(np.shape(x))
 
         splreps.append(this_fun)        
-    # print t1, t2, t3
     return splreps
 
 def stochastic_known_age_corr_likelihoods(pos, A, fac_array):
