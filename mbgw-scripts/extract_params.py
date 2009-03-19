@@ -4,7 +4,7 @@ from numpy import array
 utilFolder = '/home/pwg/map_utils/map_utils/'
 
 # main input hdf5  file of simulated realisations of f
-filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
+filename = '/home/pwg/Desktop/test_sim_AF.hdf5'
 
 # location for export of raw extractions (as they come off each distributed instance)
 exportPath = '/home/pwg/mbg-world/extraction/DistributedOutput/'
@@ -13,10 +13,10 @@ exportPath = '/home/pwg/mbg-world/extraction/DistributedOutput/'
 exportPathCombined = '/home/pwg/mbg-world/extraction/CombinedOutput/'
 
 # input 1km salb raster of unique spatial IDs
-salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
+salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_AF.hdf5"
 
 # input 1km raster of population per cell
-gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_ken.hdf5"
+gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_AF.hdf5"
 
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
 uniqueSalb_path='/home/pwg/mbg-world/extraction/uniqueSalb.txt'

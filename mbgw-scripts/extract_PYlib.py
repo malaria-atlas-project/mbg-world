@@ -46,7 +46,7 @@ def examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path):
     count=[0]
 
     for i in xrange(0,nrow):
-        #print(r.paste("row",i,"of",nrow))
+        print(r.paste("row",i,"of",nrow))
         chunk=salblim1km.root.data[i,:]
         uniqueSalbCHUNK=unique(chunk)
         NuniqueSalbCHUNK=len(uniqueSalbCHUNK)
@@ -60,11 +60,15 @@ def examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path):
                 count[index]=count[index]+countCHUNK[j]
             else:
                 uniqueSalb=append(uniqueSalb,uniqueSalbCHUNK[j]) 
-                count=append(count,countCHUNK[j]) 
+                count=append(count,countCHUNK[j])
+
+    # remove zero and -9999 from list of unique salbs
+    count = count[(uniqueSalb!=-9999) & (uniqueSalb!=0)] 
+    uniqueSalb = uniqueSalb[(uniqueSalb!=-9999) & (uniqueSalb!=0)] 
 
     uniqueSalb.tofile(uniqueSalb_path,sep=",")
     count.tofile(pixelN_path,sep=",")
-
+#examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path)
 #############################################################################################################################################
 def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
 
@@ -94,16 +98,16 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
     # perform check that the number of rows and columns is the same in both 1km grids
     if len(salblim1km.root.lat) != len(gr001km.root.lat):
         print 'WARNING!! 1km row numbers do not correspond: salblim1km has '+str(len(salblim1km.root.lat))+' and gr001km has '+str(len(gr001km.root.lat))
-    if len(salblim1km.root.long) != HiResLowResRatio*len(hr.lon_axis):
+    if len(salblim1km.root.long) != len(gr001km.root.long):
         print 'WARNING!! col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and gr001km has '+str(len(gr001km.root.long))
 
     # perform check that the number of rows and columns is in the correct ratio to those of input 5km grid
     if len(salblim1km.root.lat) != HiResLowResRatio*len(hr.lat_axis):
         print 'WARNING!! 1km and 5km row numbers do not correspond: salblim1km has '+str(len(salblim1km.root.lat))+' and 5km rows * HiResLowResRatio is '+str(HiResLowResRatio*len(hr.lat_axis))
     if len(salblim1km.root.long) != HiResLowResRatio*len(hr.lon_axis):
-        print 'WARNING!! 1km and 5km col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and 5km cols * HiResLowResRatio is '+str(HiResLowResRatio*len(hr.long_axis))
+        print 'WARNING!! 1km and 5km col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and 5km cols * HiResLowResRatio is '+str(HiResLowResRatio*len(hr.lon_axis))
 
-    # get list of unique salb IDs and count of pixels in each..
+    # get list of unique salb IDs and count of pixels in each.. 
     # ..first check that Salb grid has been pre-examined using examineSalb and lists of unique IDs and N pixels exist, if not then re-run examineSalb
     try:
         uniqueSalb=fromfile(uniqueSalb_path,sep=",")
@@ -112,7 +116,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
         examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path)
 
-    uniqueSalb=fromfile(uniqueSalb_path,sep=",")    
+    uniqueSalb=fromfile(uniqueSalb_path,sep=",")     
     pixelN=fromfile(pixelN_path,sep=",")        
     Nsalb=len(uniqueSalb)    
 
@@ -169,7 +173,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         #from scipy.io import write_array
         #write_array('/home/pwg/MBGWorld/extraction/temp_PRrel1.txt', f_chunk[0,:,:])
         #print(sum(isnan(f_chunk)))
-        f_chunk[isnan(f_chunk)]=0
+        #f_chunk[isnan(f_chunk)]=0
         #print(sum(isnan(f_chunk)))
         ####################################
         #xxx3 = xxx3 + (r.Sys_time() - xxx3a)
@@ -241,12 +245,12 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
             #plotMapPY(f_chunk[0,slice(0,100,1),:])
 
             #xxx6a = r.Sys_time() 
-            # how many unique salb IDs in these rows (after removing -9999 cells from e.g. sea)?
+            # how many unique salb IDs in these rows (after removing -9999 cells and 0 cells from e.g. sea)
             uniqueSalb_ROW = unique(salblim1km_ROW)
-            #uniqueSalb_ROW = uniqueSalb_ROW[uniqueSalb_ROW!=-9999]
+            uniqueSalb_ROW = uniqueSalb_ROW[(uniqueSalb_ROW!=-9999) & (uniqueSalb_ROW!=0) ]
             Nsalb_ROW =len(uniqueSalb_ROW)
 
-            # if we only have -9999 cells in this chunk, then can ignore and go to next chunk (ie. onto next jj)
+            # if we only have -9999 or 0 cells in this chunk, then can ignore and go to next chunk (ie. onto next jj)
             if Nsalb_ROW==0:
                 continue
 
@@ -474,7 +478,7 @@ def outputExtraction(dict):
             np.savetxt(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
 
-#a=r.Sys_time()
-#ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
-#print("TOTAL TIME: "+(str(r.Sys_time()-a)))
-#outputExtraction(ExtractedDict) 
+a=r.Sys_time()
+ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
+print("TOTAL TIME: "+(str(r.Sys_time()-a)))
+outputExtraction(ExtractedDict) 
