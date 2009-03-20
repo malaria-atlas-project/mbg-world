@@ -244,7 +244,7 @@ class EP(pm.Sampler):
                 
             last_V[:] = self.V[:]
             last_mu[:] = self.mu[:]
-        
+                        
             # print self.mu, self.V
             
         V = np.array((self.V+self.nug))
