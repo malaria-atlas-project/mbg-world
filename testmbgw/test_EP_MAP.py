@@ -120,13 +120,16 @@ class test_EP_MAP(object):
         M.use_step_method(pm.AdaptiveMetropolis, [eps, x])
         M.isample(100000)
         
-        post_V = var(M.trace('x')[5000:], axis=0)
-        post_M = mean(M.trace('x')[5000:], axis=0)
+        post_V = var(M.trace('x')[20000:], axis=0)
+        post_M = mean(M.trace('x')[20000:], axis=0)
         
         pm.Matplot.plot(M)
         
         assert_almost_equal(post_M, E.M, 1)        
         assert_almost_equal(post_V, diag(E.C), 1)
+        
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
         
     def test_pred_samps(self):
         "A dry run in Kenya with only one sample point. This test should not work with N>1."
@@ -155,13 +158,13 @@ class test_EP_MAP(object):
 
 
 if __name__ == '__main__':
-    # tester = test_EP_MAP()
+    tester = test_EP_MAP()
     # tester.test_pred_samps()
     # tester.test_likelihoods()
-    # tester.test_fit()
+    tester.test_fit()
     # tester.check_ages_and_data()
     # test_EP_MAP().test_low_V()
     # warnings.simplefilter('ignore',  FutureWarning)
-    nose.runmodule()
+    # nose.runmodule()
 
 
