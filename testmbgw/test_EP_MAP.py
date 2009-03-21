@@ -45,11 +45,9 @@ deg_to_rad = 1./rad_to_deg
 n_digits = 4
 iter = 10000
 tol = .0001
-
-# TODO: With large N, correction_factors.known_age_corr_likelihoods_f is by far the bottleneck. You can optimize it there.
     
-# class test_mbgw(TestCase):
-class test_EP_MAP(object):
+class test_EP_MAP(TestCase):
+# class test_EP_MAP(object):
     
     # N = random.randint(2,20)
     N = 4
@@ -145,7 +143,7 @@ class test_EP_MAP(object):
         pred_mesh = vstack((lon_pred, lat_pred, t_pred)).T
         age_lims = [(lo_age, up_age)]*len(lon_pred)
 
-        N_exam = ones(len(lat_pred))*100
+        N_exam = ones(len(lat_pred))*1000
                 
         input_pts = [{'lon': lon_pred[i], 'lat': lat_pred[i], 'month': 1, 'year': 2009, 'lo_age': 2, 'up_age': 10, 'n': N_exam[i]}\
                         for i in range(len(lat_pred))]
@@ -158,13 +156,13 @@ class test_EP_MAP(object):
 
 
 if __name__ == '__main__':
-    tester = test_EP_MAP()
+    # tester = test_EP_MAP()
     # tester.test_pred_samps()
     # tester.test_likelihoods()
-    tester.test_fit()
+    # tester.test_fit()
     # tester.check_ages_and_data()
     # test_EP_MAP().test_low_V()
     # warnings.simplefilter('ignore',  FutureWarning)
-    # nose.runmodule()
+    nose.runmodule()
 
 
