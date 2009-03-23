@@ -9,8 +9,8 @@ from pymc import invlogit, logit
 from pymc.flib import logsum
 from cf_helper import cfh, cfhs
 # import magic_load
-# magic_load.magic_load('agepr','/home/anand/MAP/Age standardization/agepr/__init__.py')
-from agepr import *
+# magic_load.magic_load('age_pr_datasets','/home/anand/MAP/Age standardization/age_pr_datasets/__init__.py')
+from age_pr_datasets import *
 import auxiliary_data
 
 from scipy import interpolate as interp

@@ -6,7 +6,7 @@
 import pylab as pl
 import pymc as pm
 from numpy import *
-from agepr import *
+from age_pr_datasets import *
 
 def binom_deviance(n,y,p):
     y_hat = n*p

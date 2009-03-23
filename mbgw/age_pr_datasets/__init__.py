@@ -8,7 +8,7 @@ import os
 import numpy as np
 import mbgw
 __root__ = mbgw.__path__[0]
-fnames = os.listdir(__root__+'/agepr')
+fnames = os.listdir(__root__+'/age_pr_datasets')
 
 excl_names = ['cotonou', 'cotedivoire', 'legundi', 'manhica', 'purworejo', 'sukabumi']
 
@@ -39,10 +39,10 @@ methods = {'angola': 'RDT',
 datasets = {}
 for fname in fnames:
     
-    if not fname.split('.')[-1]=='agepr':
+    if not fname.split('.')[-1]=='age_pr_datasets':
         continue
     
-    if fname.replace('.agepr','') in excl_names:
+    if fname.replace('.age_pr_datasets','') in excl_names:
         continue
 
     a_lo = []
@@ -50,7 +50,7 @@ for fname in fnames:
     N = []
     pos = []
     neg = []
-    r = reader(file(__root__+'/agepr/'+fname), delimiter=' ')
+    r = reader(file(__root__+'/age_pr_datasets/'+fname), delimiter=' ')
     r.next()
     
     for line in r:
@@ -61,8 +61,8 @@ for fname in fnames:
         neg.append(int(line[8]))
         
     record = np.rec.fromarrays([a_lo, a_hi, N, pos, neg], names=['a_lo', 'a_hi', 'N', 'pos', 'neg'])
-    datasets[fname.replace('.agepr','')] = record
-    # print fname.replace('.agepr',''), sum(N)
+    datasets[fname.replace('.age_pr_datasets','')] = record
+    # print fname.replace('.age_pr_datasets',''), sum(N)
     
 a = np.hstack((np.arange(15), np.arange(15,75,5)))
 

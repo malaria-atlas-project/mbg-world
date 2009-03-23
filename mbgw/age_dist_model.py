@@ -18,7 +18,7 @@
 
 import pymc as pm
 from numpy import *
-from agepr import *
+from age_pr_datasets import *
 
 N_pops = len(datasets)
 S_guess = exp(-a/20.)
