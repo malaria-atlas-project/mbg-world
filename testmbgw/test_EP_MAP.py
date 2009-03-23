@@ -34,7 +34,8 @@ try:
 except:
     pass
 
-hf = tb.openFile('../datafiles/good-traces/QRYPFPR101108Ken_KenyaThin_Run_11.2.2009_urb_periurb.hdf5')
+root = mbgw.__path__[0]
+hf = tb.openFile(root+'/../datafiles/good-traces/QRYPFPR101108Ken_KenyaThin_Run_11.2.2009_urb_periurb.hdf5')
 tracefile = hf
 
 rad_to_km = 6378.1/pi
@@ -84,10 +85,10 @@ class test_EP_MAP(TestCase):
 
         t1 = time.time()
         lp_small = mbgw.correction_factors.known_age_corr_likelihoods_f(pos, A, self.correction_factor_array, linspace(-5,5,500), nug, 's')[0]
-        print 'Small', time.time() - t1
+        # print 'Small', time.time() - t1
         t2 = time.time()
         lp_large = mbgw.correction_factors.known_age_corr_likelihoods_f(pos, A, self.correction_factor_array, linspace(-5,5,500), nug, 'l')[0]
-        print 'Large', time.time() - t2
+        # print 'Large', time.time() - t2
         
         x = linspace(-5, 5, 100)
         small = lp_small(x)
@@ -125,10 +126,7 @@ class test_EP_MAP(TestCase):
         
         assert_almost_equal(post_M, E.M, 1)        
         assert_almost_equal(post_V, diag(E.C), 1)
-        
-        from IPython.Debugger import Pdb
-        Pdb(color_scheme='Linux').set_trace()   
-        
+                
     def test_pred_samps(self):
         "A dry run in Kenya with only one sample point. This test should not work with N>1."
         

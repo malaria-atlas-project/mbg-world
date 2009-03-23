@@ -35,7 +35,7 @@ for child in example.root.group0._f_listNodes():
 outfile.createTable('/','PyMCsamples',example.root.PyMCsamples.description)
 
 # Create compressed array to hold realizations
-outfile.createCArray('/', 'realizations', Float32Atom(), (highest-lowest,) + sh, chunkshape=example.root.realizations.chunkshape)
+outfile.createCArray('/', 'realizations', Float32Atom(), (highest-lowest,) + sh, chunkshape=example.root.realizations.chunkshape, filters=Filters(complevel=1, complib='zlib'))
 
 for il, ih in iters:
     in_fname = path+'/'+'_'.join(['realizations', trace_id, 'iterations', str(il), str(ih)])+'.hdf5'

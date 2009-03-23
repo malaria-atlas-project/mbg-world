@@ -3,6 +3,8 @@ from pymc import *
 from tables import *
 from numpy import *
 import os,sys
+from mbgw import master_grid
+from mbgw.master_grid import missing_val
 import matplotlib
 import gc
 matplotlib.interactive('False')
@@ -73,7 +75,7 @@ for i in xrange(r.shape[0]):
         out = sl + np.random.normal(size=sh)*np.sqrt(V[i])
         out = invlogit(out.ravel()).reshape(sh)
         out = np.mean(out, axis=2)
-        out = ma.masked_array(out, isnan(out))
+        out = ma.masked_array(out, out==missing_val)
         imshow(out.T)
         colorbar()
         axis('off')

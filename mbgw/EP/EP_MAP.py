@@ -13,7 +13,7 @@ from scipy import interpolate as interp
 import mbgw
 from mbgw import correction_factors
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
-from mbgw.agepr import a
+from mbgw.age_pr_datasets import a
 from IPython.Debugger import Pdb
 import time
 import matplotlib
