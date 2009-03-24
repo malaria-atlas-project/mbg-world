@@ -3,6 +3,8 @@
 # License: Creative Commons BY-NC-SA
 ####################################
 
+from testmbgw import test
+
 # import agepr
 # import st_cov_fun
 # import google_earth

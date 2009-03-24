@@ -1,6 +1,8 @@
 # Master grid:
 from numpy import pi
 
+missing_val = -99999
+
 ncols=         6281
 nrows=         1605
 xllc = -91.45003542

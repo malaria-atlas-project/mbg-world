@@ -9,7 +9,7 @@ config = Configuration('mbgw',parent_package=None,top_path=None)
 
 config.add_extension(name='cf_helper',sources=['mbgw/cf_helper.f'])
 
-config.packages = ["mbgw","mbgw/google_earth","mbgw/joint_simulation","mbgw/agepr","testmbgw"]
+config.packages = ["mbgw","mbgw/google_earth","mbgw/joint_simulation","mbgw/age_pr_datasets","testmbgw"]
 if __name__ == '__main__':
     from numpy.distutils.core import setup
     setup(  version="1.0",
