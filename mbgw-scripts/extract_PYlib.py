@@ -104,7 +104,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
     hf = tb.openFile(filename)    
     hr = hf.root    
     #n_realizations = len(hr.realizations)    
-    n_realizations = (endRel - startRel)+1
+    n_realizations = (endRel - startRel)
     n_rows=len(hr.lat_axis)
     n_cols=len(hr.lon_axis)
     N_facs = int(1e5)    
@@ -500,7 +500,7 @@ def outputExtraction(dict):
     endRel=dict['endRel']
 
     # construct file suffix indicating realisations in question
-    relSuff = '_r'+str(startRel)+'to'+str(endRel)
+    relSuff = '_r'+str(startRel)+'to'+str(endRel-1)
 
     # export array of mean PR per country per realisation
     np.savetxt(exportPath+'meanPR'+relSuff+'.txt', dict['countryMeanPRrel'])
@@ -521,6 +521,10 @@ def outputExtraction(dict):
             # export PAR array for this scheme-class
             np.savetxt(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
+
+ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))
+outputExtraction(ExtractedDict) 
+print "all done from PYlib"
 
 #a=r.Sys_time()
 #ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,10,0,1)
