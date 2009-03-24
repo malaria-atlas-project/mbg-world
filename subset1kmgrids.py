@@ -77,7 +77,9 @@ def subset1kmgrids (region,lims,gridname):
 
 #subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "salblim1km-e")
 #subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "gr001km")
-#subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e")
-#subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km")
+subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e")
+subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salb1km-e")
+subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "lims1km-e")
+subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km")
 #subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "salblim1km-e")
 #subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "gr001km")

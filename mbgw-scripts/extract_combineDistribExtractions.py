@@ -22,7 +22,6 @@ checkAndBuildPaths(uniqueSalb_path,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=True)
 
 # import some r functions
-print utilFolder+'GeneralUtility.R'
 r.source(utilFolder+'GeneralUtility.R')
 writeTableWithNamesPY = r['writeTableWithNames']
 

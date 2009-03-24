@@ -64,5 +64,8 @@ def asc_to_hdf5(fname, path='./',mapView=False,setNaN=False):
 #asc_to_hdf5('salblim1km-e_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/',mapView=True)
 #asc_to_hdf5('gr001km_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/',mapView=True,setNaN=NaN)
 
-asc_to_hdf5('salblim1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
-asc_to_hdf5('gr001km.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True,setNaN=NaN)
+#asc_to_hdf5('salblim1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
+#asc_to_hdf5('salb1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
+#asc_to_hdf5('lims1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
+asc_to_hdf5('gr001km.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True,setNaN=0)
+
