@@ -22,7 +22,7 @@ r.source('extract_Rlib.R')
 plotmonthPY = r['plotmonth']
 getTimeMeanPY = r['getTimeMean']
 expandGridResPY=r['expandGridRes']
- 
+
 # import parameters from param file
 from extract_params import *
 
@@ -38,15 +38,18 @@ checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=True)
 
 
 #############################################################################################################################################
-def examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path):
-    salblim1km = tb.openFile(salblim1km_path, mode = "r")
-    nrow=shape(salblim1km.root.data)[0]
+def examineSalb (salblim1km,uniqueSalb_path={},pixelN_path={},ignore={}):
 
+    # if the salb file is specified with a filepath, import it  
+    if type(salblim1km) == str:
+        salblim1km = tb.openFile(salblim1km, mode = "r")
+
+    nrow=shape(salblim1km.root.data)[0]
     uniqueSalb=[-9999]
     count=[0]
 
     for i in xrange(0,nrow):
-        print(r.paste("row",i,"of",nrow))
+        #print(r.paste("row",i,"of",nrow))
         chunk=salblim1km.root.data[i,:]
         uniqueSalbCHUNK=unique(chunk)
         NuniqueSalbCHUNK=len(uniqueSalbCHUNK)
@@ -62,14 +65,32 @@ def examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path):
                 uniqueSalb=append(uniqueSalb,uniqueSalbCHUNK[j]) 
                 count=append(count,countCHUNK[j])
 
-    # remove zero and -9999 from list of unique salbs
-    count = count[(uniqueSalb!=-9999) & (uniqueSalb!=0)] 
-    uniqueSalb = uniqueSalb[(uniqueSalb!=-9999) & (uniqueSalb!=0)] 
+    # optionally remove stated values (e.g 0 or -9999) from list of unique salbs
+    if len(ignore)>0:
+        for i in xrange(0,len(ignore)):
+            count = count[uniqueSalb!=ignore[i]] 
+            uniqueSalb = uniqueSalb[uniqueSalb!=ignore[i]] 
 
-    uniqueSalb.tofile(uniqueSalb_path,sep=",")
-    count.tofile(pixelN_path,sep=",")
+    # optionally export to file
+    if len(uniqueSalb_path)>0:
+        uniqueSalb.tofile(uniqueSalb_path,sep=",")
+    if len(pixelN_path)>0:    
+        count.tofile(pixelN_path,sep=",")
+        
+    # return unique list and corresponding pixel count as a dictionary
+    returnDict={'uniqueSalb':uniqueSalb,'count':count}
+    return returnDict
 #examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path)
 #############################################################################################################################################
+ 
+#slices=[slice(None,None,None), slice(None,None,None), slice(0,12,None)]
+#a_lo=2
+#a_hi=10
+#n_per=1
+#startRel=0
+#endRel=1
+
+
 def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
 
     ####TEMP
@@ -83,8 +104,9 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
     hf = tb.openFile(filename)    
     hr = hf.root    
     #n_realizations = len(hr.realizations)    
-    n_realizations = (endRel - startRel)+1
+    n_realizations = (endRel - startRel)
     n_rows=len(hr.lat_axis)
+    n_cols=len(hr.lon_axis)
     N_facs = int(1e5)    
 
     # Get nugget variance and age-correction factors    
@@ -114,7 +136,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         pixelN=fromfile(pixelN_path,sep=",")
     except IOError:
         print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
-        examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path)
+        temp=examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path,ignore=np.array([-9999]))
 
     uniqueSalb=fromfile(uniqueSalb_path,sep=",")     
     pixelN=fromfile(pixelN_path,sep=",")        
@@ -165,16 +187,23 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         #xxx3a = r.Sys_time() 
         # Pull out parasite rate chunk (i.e. import n months of block)    
         tot_slice = (slice(MCMCrel,MCMCrel+1,None),) + slices    
-        f_chunk = hr.realizations[tot_slice][::-1,:].T   # hr.realizations=[rel,row,col,month]   #f_chunk = [month,col,row,rel]
-        f_chunk = f_chunk[:,:,:,0]                       #f_chunk = [month,col,row]
+        #f_chunk = hr.realizations[tot_slice][::-1,:,:,:].T   # hr.realizations=[rel,row,col,month]   #f_chunk = [month,col,row,rel]
+        #f_chunk = f_chunk[:,:,:,0]                       #f_chunk = [month,col,row]
+
+        # because pyTables is not working properly, manually loop through each month we want to extract and make a ST 3d matrix
+        n_months = tot_slice[3].stop - tot_slice[3].start
+        f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+        for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+            f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        f_chunk = f_chunk[::-1,:,:,:].T[:,:,:,0]   
 
         ########TEMP###########
         #set missing vlaues in f block to 0
         #from scipy.io import write_array
         #write_array('/home/pwg/MBGWorld/extraction/temp_PRrel1.txt', f_chunk[0,:,:])
-        #print(sum(isnan(f_chunk)))
-        #f_chunk[isnan(f_chunk)]=0
-        #print(sum(isnan(f_chunk)))
+        print(sum(isnan(f_chunk)))
+        f_chunk[isnan(f_chunk)]=0
+        print(sum(isnan(f_chunk)))
         ####################################
         #xxx3 = xxx3 + (r.Sys_time() - xxx3a)
 
@@ -182,7 +211,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         # run check that there are no missing values in this f chunk
         if sum(isnan(f_chunk))>0:
             print "WARNING!! found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
-            return()
+            return(-9999)
 
         # initialise arrays to house running mean PR whilst we loop through chunks and nugget draws..
         countryMeanPRrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
@@ -221,7 +250,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         for jj in xrange(0,n_rows): 
 
             interimCnt=interimCnt+1
-            if interimCnt==10:
+            if interimCnt==100:
                 print('    on slice '+str(jj)+' of '+str(n_rows))
                 interimCnt=0
                     
@@ -237,7 +266,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
             zeroChunk = zeros(product(gr001km_ROW.shape)).reshape(gr001km_ROW.shape)
-            #xxx5 = xxx5 + (r.Sys_time() - xxx5a)
+            #xxx5 = xxx5 + (r.Sys_time() - xxx5a) 
 
             #plotMapPY(salblim1km.root.data[:,:],NODATA=-9999)
             #plotMapPY(salblim1km.root.data[slice(0,100,1),:],NODATA=-9999)
@@ -245,12 +274,12 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
             #plotMapPY(f_chunk[0,slice(0,100,1),:])
 
             #xxx6a = r.Sys_time() 
-            # how many unique salb IDs in these rows (after removing -9999 cells and 0 cells from e.g. sea)
+            # how many unique salb IDs in these rows (after removing -9999 cells from sea and/or non-stable areas)
             uniqueSalb_ROW = unique(salblim1km_ROW)
-            uniqueSalb_ROW = uniqueSalb_ROW[(uniqueSalb_ROW!=-9999) & (uniqueSalb_ROW!=0) ]
+            uniqueSalb_ROW = uniqueSalb_ROW[(uniqueSalb_ROW!=-9999)]
             Nsalb_ROW =len(uniqueSalb_ROW)
 
-            # if we only have -9999 or 0 cells in this chunk, then can ignore and go to next chunk (ie. onto next jj)
+            # if we only have -9999 cells in this chunk, then can ignore and go to next chunk (ie. onto next jj)
             if Nsalb_ROW==0:
                 continue
 
@@ -270,8 +299,9 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                 countryIDmatrix = cp.deepcopy(zeroChunk)
                 countryIDmatrix[salblim1km_ROW==uniqueSalb_ROW[rr]]=1
                 sumCountryID = sumCountryID + sum(countryIDmatrix)
-                tmpdict={str(uniqueSalb_ROW[rr]):cp.deepcopy(countryIDmatrix) }
+                tmpdict={str(uniqueSalb_ROW[rr]):cp.deepcopy(countryIDmatrix)}
                 countryIDdict.update(tmpdict)
+            sumCountryID = sumCountryID + sum(salblim1km_ROW==-9999)    
             #xxx7 = xxx7 + (r.Sys_time() - xxx7a)
             
             # run check that sum of total pixels in all countries in this block match expected total
@@ -306,7 +336,8 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                 # run check that this time-aggregated chunk has same spatial dimensions as time block
                 test=chunk.shape[1:]==chunkTMEAN.shape[1:]
                 if test==False:
-                    print("WARNING !!!!: spatial dimensions of time-aggregated block 'chunkTMEAN' do not match pre-aggregation 'chunk'")
+                    print("WARNING !!!!: spatial dimensions of time-aggregated block 'chunkTMEAN' do not match pre-aggregation 'chunk': EXITING!!")
+                    return(-9999)
 
                 #xxx10a = r.Sys_time()
                 # now expand the 5km PR chunk to match underlying 1km grid
@@ -316,7 +347,15 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                 # run check that this expanded block has correct dimensions
                 test=chunkExp.shape==salblim1km_ROW.shape           
                 if test==False:
-                    print("WARNING !!!!: spatial dimensions of expanded 5km 'chunkExp' do not match 1km covariate chunk 'salblim1km_ROW' ")            
+                    print("WARNING !!!!: spatial dimensions of expanded 5km 'chunkExp' do not match 1km covariate chunk 'salblim1km_ROW': EXITING!! ")            
+                    return(-9999)
+
+                # run check that there are no PR==-9999 pixels (assigned to non-stable pixels in CS code) in stable areas on salblim1km
+                testmatrix = cp.deepcopy(chunkExp)
+                testmatrix[salblim1km_ROW == -9999] = 0
+                if (sum(testmatrix == -9999) > 0):
+                    print ("WARNING!!: ("+str(sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
+                    return(-9999)
 
                 # create an ID matrix for this chunk for each class in each scheme                
                 #xxx11a = r.Sys_time()
@@ -399,7 +438,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                             # run check for nonsensical negative PAR value
                             if PARsum<0.:
                                 print('WARNING!! Negative PAR found - check input population grid. EXITING')
-                                return()
+                                return(-9999)
                     #xxx13 = xxx13 + (r.Sys_time() - xxx13a)
 
         # copy mean PR values for these 500 nugget draws to the main arrays housing all realisations
@@ -451,26 +490,31 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
 #############################################################################################################################################
 def outputExtraction(dict): 
 
+    # check for error output from extractSTaggregations due to NaNs
+    if dict == -9999:
+        print "WARNING!! recieved error output from extractSTaggregations() - will not run outputExtraction()" 
+        return(-9999)
+
     # define which realisations we are dealing with
     startRel=dict['startRel']
     endRel=dict['endRel']
-    
+
     # construct file suffix indicating realisations in question
-    relSuff = '_r'+str(startRel)+'to'+str(endRel)
-    
+    relSuff = '_r'+str(startRel)+'to'+str(endRel-1)
+
     # export array of mean PR per country per realisation
     np.savetxt(exportPath+'meanPR'+relSuff+'.txt', dict['countryMeanPRrel'])
-    
+
     # loop through classification schemes and clases wihtin them and export array of PAR for each
     schemes = dict['PARdict'].keys()    
     Nschemes = len(schemes)
-    
+
     for ss in xrange(0,Nschemes):
         classes = dict['PARdict'][schemes[ss]]['PAR'].keys()
         Nclasses = len(classes)
-        
+
         for cc in xrange(0,Nclasses):
-            
+
             # construct class and scheme suffix
             classSuff = '_'+schemes[ss]+'_'+classes[cc]
 
@@ -478,7 +522,11 @@ def outputExtraction(dict):
             np.savetxt(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
 
-a=r.Sys_time()
-ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
-print("TOTAL TIME: "+(str(r.Sys_time()-a)))
+ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))
 outputExtraction(ExtractedDict) 
+print "all done from PYlib"
+
+#a=r.Sys_time()
+#ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,10,0,1)
+#print("TOTAL TIME: "+(str(r.Sys_time()-a)))
+#outputExtraction(ExtractedDict) 

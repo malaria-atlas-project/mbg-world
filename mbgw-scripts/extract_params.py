@@ -4,7 +4,7 @@ from numpy import array
 utilFolder = '/home/pwg/map_utils/map_utils/'
 
 # main input hdf5  file of simulated realisations of f
-filename = '/home/pwg/Desktop/test_sim_AF.hdf5'
+filename = '/home/pwg/Desktop/realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_10.hdf5'
 
 # location for export of raw extractions (as they come off each distributed instance)
 exportPath = '/home/pwg/mbg-world/extraction/DistributedOutput/'
