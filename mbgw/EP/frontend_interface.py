@@ -251,7 +251,7 @@ def result_containers(utilities, N_outer, N_output, N_utilities):
 def create_output_info(N_output, utilities, cur_vals, pred_samps, outfile_path=None):
     """Creates the output_info object to return to the """
     if outfile_path is None:
-        outfile_path = mbgw.__path__[0]+'/testmbgw'
+        outfile_path = mbgw.__path__[0]+'/../testmbgw'
     output_info = []
     for i in xrange(N_output):
         output_info.append({})

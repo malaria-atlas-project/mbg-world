@@ -16,8 +16,8 @@ covariates=False
 disttol=10/6378.
 ttol=1/12.
 
-N_param_vals = 5
-N_per_param = 5
+N_param_vals = 500
+N_per_param = 500
 N_nearest = 40
 N_age_samps = 1000
 
@@ -42,8 +42,8 @@ n_digits = 4
 iter = 10000
 tol = .0001
 
-class test_EP_frontend(TestCase):
-# class test_EP_frontend(object):
+# class test_EP_frontend(TestCase):
+class test_EP_frontend(object):
         
     def test_robust_observe_and_eval(self):
         """Makes sure that robust_observe_and_eval works with:
@@ -222,10 +222,10 @@ class test_EP_frontend(TestCase):
         fi.update_posterior(ip, op, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, utilities=[np.std, np.mean])
     
 if __name__ == '__main__':
-    nose.runmodule()
-    # tester = test_EP_frontend()
+    # nose.runmodule()
+    tester = test_EP_frontend()
     # tester.test_simulate_on_pred()
     # tester.test_robust_observe_and_eval()
     # tester.test_resample()
-    # tester.test_dryrun()
+    tester.test_dryrun()
     # tester.test_inputs()
