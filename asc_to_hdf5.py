@@ -37,6 +37,7 @@ def asc_to_hdf5(fname, path='./',mapView=False,setNaN=False):
     h5file.root._v_attrs.maxx = long.max()
     h5file.root._v_attrs.miny = lat.min()
     h5file.root._v_attrs.maxy = lat.max()
+    h5file.root._v_attrs.cellsize = cellsize
     
     # Add longitude and latitude to archive, uncompressed. 
     h5file.createArray('/','long',long)
@@ -67,5 +68,6 @@ def asc_to_hdf5(fname, path='./',mapView=False,setNaN=False):
 #asc_to_hdf5('salblim1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
 #asc_to_hdf5('salb1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
 #asc_to_hdf5('lims1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
-asc_to_hdf5('gr001km.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True,setNaN=0)
+#asc_to_hdf5('gr001km.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True,setNaN=0)
+#asc_to_hdf5('lim5kmbnry-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
 

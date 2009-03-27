@@ -11,10 +11,10 @@ a=time.time()
 
 # sepcify some parameters
 STARTREL = 0        # first full realisation to include
-ENDREL = 10        # last full realisation to include (does up to but not including this index)
-NPER = 100           # how many draws of the nugget, per full realisation
-RELPERJOB = 2       # ideally, how many realisations do we want to ascribe to each job?
-MAXJOBS = 7         # how many processes do we want running at a time
+ENDREL = 8        # last full realisation to include (does up to but not including this index)
+NPER = 50           # how many draws of the nugget, per full realisation
+RELPERJOB = 1       # ideally, how many realisations do we want to ascribe to each job?
+MAXJOBS = 8         # how many processes do we want running at a time
 WAITINTERVAL = 30  # wait interval in seconds
 VERBOSE = True      # messages or not
 STDOUTPUT = '/home/pwg/mbg-world/extraction/DistributedOutput/scriptoutput/'   # if string given, this is where the standard output and standard error will be sent, if 0, then none sent
@@ -89,14 +89,14 @@ for ii in xrange(NJOBS):
         cnt=cnt+1
 
     # if number of jobs running has reached MAXJOBS, keep checking for jobs to finish before sending more
-    while returnNjobsRunning(splist)['sumRunning'] >= MAXJOBS:
-        time.sleep(WAITINTERVAL)
+    while ((returnNjobsRunning(splist)['sumRunning'] >= MAXJOBS) & (returnNjobsRunning(splist)['sumRunning']<NJOBS)):
         if VERBOSE: print("waiting to start more jobs at time "+ str(time.time()))
+        time.sleep(WAITINTERVAL)
 
 # once all jobs have been dispatched, wait for all to finish before continuing
 while returnNjobsRunning(splist)['sumRunning'] !=0:
-    time.sleep(WAITINTERVAL)
     if VERBOSE: print("waiting for all jobs to finish at time "+ str(time.time()))
+    time.sleep(WAITINTERVAL)
 
 # check for any jobs that did not execute successfully
 sumSuccess = sum(np.array(returnNjobsRunning(splist)['jobstatus'])==0)

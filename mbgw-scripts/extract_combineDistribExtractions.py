@@ -44,7 +44,7 @@ def deconstructFilename (fname):
        returnList=variable,scheme,classname,startRel,endRel
        return(returnList)
 
-    if variable==str('meanPR'):       
+    if ((variable==str('meanPR')) | (variable==str('BURDEN'))):       
        part2=part1[2].partition('r')
        part3=part2[2].partition('to')
        startRel = int(part3[0])
@@ -63,7 +63,7 @@ def copySubTableToMain(subfname,maintable):
     inputTable = np.loadtxt(exportPath+subfname)
 
     # define start and end columns on global array    
-    name_parts = deconstructFilename (subfname)    
+    name_parts = deconstructFilename(subfname)    
     startRel = name_parts[-2]    
     endRel = name_parts[-1]    
     ncols = inputTable.shape[1]    
@@ -196,7 +196,7 @@ for fname in os.listdir(exportPath):
 
 # get array of unique rel ranges
 uniqueRelRanges=np.unique(relRanges)
-Nunique = uniqueRelRanges.shape[0]
+Nunique = uniqueRelRanges.shape[0] 
 
 # calculate total number of top-level realisations present accross these files
 n_realizations_infiles=0
@@ -216,6 +216,9 @@ blankarray = np.repeat(-9999.,n_realizations_infiles*n_per*Nsalb).reshape(Nsalb,
 
 # loop through all meanPR_* files and add them to global array, then export global array, and optionallly accopmanying summary table
 temp=makeGlobalArray_contVariables('meanPR')
+
+# loop through all BURDEN_* files and add them to global array, then export global array, and optionallly accopmanying summary table
+temp=makeGlobalArray_contVariables('BURDEN')
 
 # loop through all PAR_* files and add them to global arrays, then export global arrays, and optionallly accopmanying summary table
 makeGlobalArray_categoVariables('PAR')

@@ -4,7 +4,7 @@ import tables as tb
 from numpy import *
 
 # set some parameters
-resRatio=5  # ratio between resolution of grids defines in master_grid, and the ones being subsetted here
+#resRatio=5  # ratio between resolution of grids defines in master_grid, and the ones being subsetted here
 datafolder = "/home/pwg/mbg-world/datafiles/auxiliary_data/"
 
 
@@ -12,7 +12,7 @@ datafolder = "/home/pwg/mbg-world/datafiles/auxiliary_data/"
 ################################################################################################################################################
 # using row/col numbers of a subset specified for 5km grids (and stored in master_grid), extract the same subset for corresponding 1km grids
 
-def subset1kmgrids (region,lims,gridname):
+def subsetGlobalGrids (region,lims,gridname,resRatio = 1):
     # build input path for the global grid
     input_path = datafolder+gridname+".hdf5"
 
@@ -75,11 +75,17 @@ def subset1kmgrids (region,lims,gridname):
     outHDF5.close()
 ################################################################################################################################################
 
-#subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "salblim1km-e")
-#subset1kmgrids(region="AM",lims = master_grid.AM_lims,gridname = "gr001km")
-subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e")
-subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "salb1km-e")
-subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "lims1km-e")
-subset1kmgrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km")
-#subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "salblim1km-e")
-#subset1kmgrids(region="AS",lims = master_grid.AS_lims,gridname = "gr001km")
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "salblim1km-e",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "gr001km",resRatio=5)
+
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "salb1km-e",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "lims1km-e",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km",resRatio=5)
+
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "salblim1km-e",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "gr001km",resRatio=5)
+
+subsetGlobalGrids(region="ken",lims = master_grid.KE_lims,gridname = "lim5kmbnry-e_y-x+",resRatio=1)
+
+
