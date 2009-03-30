@@ -10,6 +10,7 @@ import copy as cp
 import pymc as pm
 import mbgw
 import tables as tb
+import time
 #import pylab as pl
 #import matplotlib
 #matplotlib.interactive(True)
@@ -35,6 +36,14 @@ checkAndBuildPaths(salblim1km_path,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(gr001km_path,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(uniqueSalb_path,VERBOSE=True,BUILD=True)
 checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=True)
+
+##############################TEMPPLACEHOLDER
+def PrevPoptoBurden(PRsurface, POPsurface, tyears):
+    burdensurface = POPsurface*PRsurface*tyears
+    return burdensurface
+
+#############################TEMPPLACEHOLDER
+
 
 
 #############################################################################################################################################
@@ -107,7 +116,8 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
     n_realizations = (endRel - startRel)
     n_rows=len(hr.lat_axis)
     n_cols=len(hr.lon_axis)
-    N_facs = int(1e5)    
+    N_facs = int(1e5)
+    N_years = (slices[2].stop - slices[2].start)/12
 
     # Get nugget variance and age-correction factors    
     V = hr.PyMCsamples.col('V')[:]    
@@ -142,17 +152,18 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
     pixelN=fromfile(pixelN_path,sep=",")        
     Nsalb=len(uniqueSalb)    
 
-    # intialise empty arrays (e.g. 87 countries * N realisations) for mean PR and PAR in each class of each scheme..    
+    # intialise empty arrays (e.g. 87 countries * N realisations) for mean PR, Burden, and PAR in each class of each scheme..    
     countryMeanPRrel = repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per)     
+    countryBURDENrel = repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per) 
 
-    # intialise empty arrays (e.g. 87 countries * N realisations) for PAR in each class of each scheme..housed in PAR dictionary PARdict
+    ## intialise empty arrays (e.g. 87 countries * N realisations) for PAR in each class of each scheme..housed in PAR dictionary PARdict
     Nschemes=len(breaksDict)    
     schemeNames=breaksDict.keys()    
     PARdict=cp.deepcopy(breaksDict)
     #xxx1 = xxx1 + (r.Sys_time() - xxx1a)
     
     #xxx2a = r.Sys_time()
-    # ..loop through each classification scheme 
+    ## ..loop through each classification scheme 
     for ss in xrange(0,Nschemes): 
         scheme=schemeNames[ss]   
         breaknames = PARdict[scheme]['BREAKNAMES']
@@ -195,7 +206,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
         for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
             f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
-        f_chunk = f_chunk[::-1,:,:,:].T[:,:,:,0]   
+        f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
 
         ########TEMP###########
         #set missing vlaues in f block to 0
@@ -203,7 +214,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         #write_array('/home/pwg/MBGWorld/extraction/temp_PRrel1.txt', f_chunk[0,:,:])
         print(sum(isnan(f_chunk)))
         f_chunk[isnan(f_chunk)]=0
-        print(sum(isnan(f_chunk)))
+        print(sum(isnan(f_chunk))) 
         ####################################
         #xxx3 = xxx3 + (r.Sys_time() - xxx3a)
 
@@ -213,8 +224,9 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
             print "WARNING!! found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
             return(-9999)
 
-        # initialise arrays to house running mean PR whilst we loop through chunks and nugget draws..
+        # initialise arrays to house running mean PR and running total burden whilst we loop through chunks and nugget draws..
         countryMeanPRrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
+        countryBURDENrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
 
         # initialise corresponding arrays for running PAR (housed in PR dict, so simply ensure reset to zero for this realisation)..
         PARdict_ChunkRunning=cp.deepcopy(breaksDict)
@@ -246,12 +258,15 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
         # loop through each row (or multiple rows in a slice) of 5km realisation grid..
         #n_slices = n_rows/rowsInslice5km
 
+        timea = time.time()
         interimCnt=0 
         for jj in xrange(0,n_rows): 
 
             interimCnt=interimCnt+1
             if interimCnt==100:
                 print('    on slice '+str(jj)+' of '+str(n_rows))
+                print "slice time: "+str(time.time()-timea)
+                timea=time.time()
                 interimCnt=0
                     
             #xxx5a = r.Sys_time() 
@@ -323,14 +338,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                 # aggregate through time to obtain spatial-only array for this nugget-realisation
                 #xxx9a = r.Sys_time()
                 #chunkTMEAN = array([getTimeMeanPY(chunk,TimeDim=1)])
-                #print(shape(chunkTMEAN))
-                #print(mean(chunkTMEAN))
-                #print(type(chunkTMEAN))
                 chunkTMEAN = atleast_2d(np.mean(chunk,0))
-                #print(shape(chunkTMEAN))
-                #print(mean(chunkTMEAN))
-                #print(type(chunkTMEAN))
-                #print(" ")
                 #xxx9 = xxx9 + (r.Sys_time() - xxx9a)
 
                 # run check that this time-aggregated chunk has same spatial dimensions as time block
@@ -357,6 +365,9 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                     print ("WARNING!!: ("+str(sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
                     return(-9999)
 
+                # obtain a burden surface for this chunk as a function of population and PR
+                burdenChunk = PrevPoptoBurden(PRsurface = chunkExp, POPsurface = gr001km_ROW, tyears = N_years)
+                
                 # create an ID matrix for this chunk for each class in each scheme                
                 #xxx11a = r.Sys_time()
                 classIDdict = cp.deepcopy(breaksDict)
@@ -392,7 +403,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                     #    print "WARNING!! sum of pixels in each class in chunk "+str(jj)+" is "+str(sumClassID)+" != expected total ("+str(product(chunkExp.shape))+")"
                 #xxx11 = xxx11 + (r.Sys_time() - xxx11a)
 
-                # loop through each unique country in this chunk: calculate running mean PR and PAR
+                # loop through each unique country in this chunk: calculate running mean PR, running total burden and PAR
                 for rr in xrange(0,Nsalb_ROW):
                 
                     thiscountry_salbLUT = salbLUT_ROW[rr] 
@@ -401,9 +412,13 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                     countryID = countryIDdict[str(uniqueSalb_ROW[rr])]
 
                     #xxx12a = r.Sys_time()
-                    # calculate sum of PR in this country,convert to running mean  using known conutry pixel count, and add to the relevant part of countryMeanPRrel_ChunkRunning
+                    # calculate sum of PR in this country,convert to running mean using known conutry pixel count, and add to the relevant part of countryMeanPRrel_ChunkRunning
                     PRsum = sum(chunkExp*countryID)
                     countryMeanPRrel_ChunkRunning[thiscountry_salbLUT,kk] = countryMeanPRrel_ChunkRunning[thiscountry_salbLUT,kk]+(PRsum/pixelN[thiscountry_salbLUT])
+
+                    # similarly, calculate sum of burden in this country, and add to relevant part of countryBURDENrel_ChunkRunning 
+                    BURDENsum = sum(burdenChunk*countryID)
+                    countryBURDENrel_ChunkRunning[thiscountry_salbLUT,kk] = countryBURDENrel_ChunkRunning[thiscountry_salbLUT,kk]+BURDENsum
                     #xxx12 = xxx12 + (r.Sys_time() - xxx12a)
 
                     #xxx13a = r.Sys_time()
@@ -419,8 +434,7 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                             classID = classIDdict[scheme]['classIDarrays'][thisbreakname]
 
                             # define ID matrix for this country AND this class
-                            #
-                            countryClassID = countryID*classID   
+                            countryClassID = countryID*classID    
                             #xxx13 = xxx13 + (r.Sys_time() - xxx13a)
                             
                             #xxx14a = r.Sys_time()
@@ -441,9 +455,10 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
                                 return(-9999)
                     #xxx13 = xxx13 + (r.Sys_time() - xxx13a)
 
-        # copy mean PR values for these 500 nugget draws to the main arrays housing all realisations
+        # copy mean PR and burden values for these 500 nugget draws to the main arrays housing all realisations
         #xxx17a = r.Sys_time()
         countryMeanPRrel[:,slice(ii*n_per,(ii*n_per)+n_per,1)] = countryMeanPRrel_ChunkRunning
+        countryBURDENrel[:,slice(ii*n_per,(ii*n_per)+n_per,1)] = countryBURDENrel_ChunkRunning
 
         # loop through class schemes
         for ss in xrange(0,Nschemes):
@@ -482,9 +497,10 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
 
     # return dictionary containing:
     # 1. Array of mean PR values per country per realisation (countryMeanPRrel)
-    # 2. dictionary of PAR values per country per realisation, along with classification scheme metadata (PARdict)
+    # 2. Array of burden totals per country per realisation (countryBURDENrel)
+    # 3. dictionary of PAR values per country per realisation, along with classification scheme metadata (PARdict)
 
-    returnDict={"startRel":startRel,"endRel":endRel,"countryMeanPRrel":countryMeanPRrel,"PARdict":PARdict}
+    returnDict={"startRel":startRel,"endRel":endRel,"countryMeanPRrel":countryMeanPRrel,"countryBURDENrel":countryBURDENrel,"PARdict":PARdict}
     return(returnDict)
  
 #############################################################################################################################################
@@ -502,8 +518,9 @@ def outputExtraction(dict):
     # construct file suffix indicating realisations in question
     relSuff = '_r'+str(startRel)+'to'+str(endRel-1)
 
-    # export array of mean PR per country per realisation
+    # export arrays of mean PR and burden per country per realisation
     np.savetxt(exportPath+'meanPR'+relSuff+'.txt', dict['countryMeanPRrel'])
+    np.savetxt(exportPath+'BURDEN'+relSuff+'.txt', dict['countryBURDENrel'])
 
     # loop through classification schemes and clases wihtin them and export array of PAR for each
     schemes = dict['PARdict'].keys()    
@@ -522,11 +539,12 @@ def outputExtraction(dict):
             np.savetxt(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
 
+a=time.time()
 ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))
 outputExtraction(ExtractedDict) 
 print "all done from PYlib"
+print("TOTAL TIME: "+(str(time.time()-a)))
 
-#a=r.Sys_time()
-#ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,10,0,1)
-#print("TOTAL TIME: "+(str(r.Sys_time()-a)))
+#ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
+#print("TOTAL TIME: "+(str(time.time()-a)))
 #outputExtraction(ExtractedDict) 
