@@ -68,7 +68,11 @@ def make_pt_fig(cur_val, samps, output_fname, output_path, outfigs_transparent=F
     """Creates a png file from a point, writes it to disk and returns the path."""
     output_fname += '.png'
     pl.figure()
-    h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
+    try:
+        h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
+    except:
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
     pl.xlabel(r'$x$')
     pl.ylabel(r'$p(x)$')
     pl.plot([cur_val, cur_val],[0,h.max()],line_color,linewidth=2,label='Current value')
