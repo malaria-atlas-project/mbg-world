@@ -13,7 +13,7 @@ import scipy
 
 # N_nearest = 1446
 # N_nearest = 1300
-N_nearest = 100
+N_nearest = 300
 pm.__PyMCThreadPool__.setNumWorkers(0)
 
 __all__ = ['preprocess', 'krige_month', 'ndmeshgrid']

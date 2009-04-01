@@ -29,7 +29,7 @@ if __name__ == '__main__':
         hf.close()
     except:
         pass
-    simulate(2, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim.hdf5', 'landSea-e')
+    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim.hdf5', 'landSea-e')
 
     # import pylab as pl
     # pl.clf()
