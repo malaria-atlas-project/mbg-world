@@ -244,7 +244,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         # Pdb(color_scheme='Linux').set_trace()   
 
         # NaN  the oceans to save storage
-        row[np.where(1-mask[:,::-1])] = np.nan
+        row[np.where(1-mask[:,::-1])] = missing_val
         
         out_arr[real_index,:,:,i] = row          
     t2 = time.time()

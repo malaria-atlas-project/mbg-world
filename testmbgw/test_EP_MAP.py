@@ -1,3 +1,4 @@
+from pylab import *
 from numpy.testing import *
 import mbgw
 from mbgw import EP
@@ -6,6 +7,7 @@ from numpy import *
 import pymc as pm
 from mbgw.EP import ages_and_data
 import tables as tb
+
 
 spatial = True
 with_urban=True
@@ -32,7 +34,8 @@ try:
 except:
     pass
 
-hf = tb.openFile('../datafiles/good-traces/QRYPFPR101108Ken_KenyaThin_Run_11.2.2009_urb_periurb.hdf5')
+root = mbgw.__path__[0]
+hf = tb.openFile(root+'/../datafiles/good-traces/QRYPFPR101108Ken_KenyaThin_Run_11.2.2009_urb_periurb.hdf5')
 tracefile = hf
 
 rad_to_km = 6378.1/pi
@@ -43,11 +46,9 @@ deg_to_rad = 1./rad_to_deg
 n_digits = 4
 iter = 10000
 tol = .0001
-
-# TODO: With large N, correction_factors.known_age_corr_likelihoods_f is by far the bottleneck. You can optimize it there.
     
-# class test_mbgw(TestCase):
-class test_EP_MAP(object):
+class test_EP_MAP(TestCase):
+# class test_EP_MAP(object):
     
     # N = random.randint(2,20)
     N = 4
@@ -56,10 +57,11 @@ class test_EP_MAP(object):
     al = random.randint(1,12,size=N)
     al = vstack((al, al+random.randint(30, size=N))).T
     age_lims = [tuple(ali) for ali in al]
-    correction_factor_array = mbgw.correction_factors.known_age_corr_factors(arange(0,27), 1000)
+    correction_factor_array = mbgw.correction_factors.known_age_corr_factors(arange(0,27), 10000)
     M_pri = random.normal(size=N)
     sig_pri = random.normal(size=(N, N))
     C_pri = dot(sig_pri.T, sig_pri)
+        
         
     def test_ages_and_data(self):
         "Makes sure that the ages drawn by ages_and_data match the age distributions."
@@ -74,18 +76,31 @@ class test_EP_MAP(object):
             assert(all(abs(age_distribution[j]-empirical_age_distributions[j]) < 4*bin_sds))
     
     def test_likelihoods(self):
-        "Makes sure that the sparsified likelihood function procedure is reasonable"
+        "Makes sure that the sparsified likelihood function procedure is reasonable."
+        import time
+        
         nug = random.normal()**2 * .3
-        lps_thick, pos_thick = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, ones(self.N) * 10000, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
-        lps_thin, pos_thin = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, ones(self.N) * 1000, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
-        geto_lps_thick = [lambda x: lp(x)**10 for lp in lps_thin]
-        from IPython.Debugger import Pdb
-        Pdb(color_scheme='Linux').set_trace()   
+        fs = array([0])
+        A, pos, age_distribution = ages_and_data([300], fs, self.correction_factor_array, [self.age_lims[0]])
+
+        t1 = time.time()
+        lp_small = mbgw.correction_factors.known_age_corr_likelihoods_f(pos, A, self.correction_factor_array, linspace(-5,5,500), nug, 's')[0]
+        # print 'Small', time.time() - t1
+        t2 = time.time()
+        lp_large = mbgw.correction_factors.known_age_corr_likelihoods_f(pos, A, self.correction_factor_array, linspace(-5,5,500), nug, 'l')[0]
+        # print 'Large', time.time() - t2
+        
+        x = linspace(-5, 5, 100)
+        small = lp_small(x)
+        large = lp_large(x)
+        
+        assert_almost_equal(small, large, 8)
+    
     
     def test_fit(self):
         "Compares EP results with MCMC results with a real age-corrected likelihood."
         nug = random.normal()**2 * .3
-        N_exam = ones(self.N) * 100
+        N_exam = ones(self.N) * 1000
         lps, pos = EP.EP_MAP.simulate_data(self.M_pri, self.C_pri, self.N, nug, N_exam, self.correction_factor_array.shape[1], self.correction_factor_array, self.age_lims)
 
         # Do EP algorithm
@@ -102,29 +117,31 @@ class test_EP_MAP(object):
         
         M = pm.MCMC([x,eps,y])
         M.use_step_method(pm.AdaptiveMetropolis, [eps, x])
-        M.isample(20000)
+        M.isample(100000)
         
-        post_V = var(M.trace('x')[5000:], axis=0)
-        post_M = mean(M.trace('x')[5000:], axis=0)
+        post_V = var(M.trace('x')[20000:], axis=0)
+        post_M = mean(M.trace('x')[20000:], axis=0)
         
         pm.Matplot.plot(M)
         
         assert_almost_equal(post_M, E.M, 1)        
         assert_almost_equal(post_V, diag(E.C), 1)
-        
-        
+                
     def test_pred_samps(self):
-        "A dry run in Kenya."
-        lat_pred = pm.runiform(-5., 5., size=4) * deg_to_rad
+        "A dry run in Kenya with only one sample point. This test should not work with N>1."
+        
+        N = 1
+        
+        lat_pred = np.atleast_1d(pm.runiform(-5., 5., size=N) * deg_to_rad)
         # lat_pred = array([8.89, 9.5, 1.17, 1.39])
-        lon_pred = pm.runiform(33., 40., size=4) * deg_to_rad
+        lon_pred = np.atleast_1d(pm.runiform(33., 40., size=N) * deg_to_rad)
         # lon_pred = array([-1.54, .08, 39.44, 38.12])
-        t_pred = array([2007]*4)-2009
+        t_pred = np.atleast_1d(array([2007]*N)-2009)
 
         pred_mesh = vstack((lon_pred, lat_pred, t_pred)).T
         age_lims = [(lo_age, up_age)]*len(lon_pred)
 
-        N_exam = ones(len(lat_pred))*100
+        N_exam = ones(len(lat_pred))*1000
                 
         input_pts = [{'lon': lon_pred[i], 'lat': lat_pred[i], 'month': 1, 'year': 2009, 'lo_age': 2, 'up_age': 10, 'n': N_exam[i]}\
                         for i in range(len(lat_pred))]
@@ -134,18 +151,16 @@ class test_EP_MAP(object):
 
         ind_outer, ind_inner, Ms, Cs, Vs, likelihood_means, likelihood_variances, model_posteriors =\
             mbgw.EP.pred_samps(pred_mesh*deg_to_rad, pred_mesh*deg_to_rad, N_exam, tracefile, trace_thin, trace_burn, N_param_vals, N_per_param, N_nearest, age_lims, correction_factor_array, debug=True)
-        # from IPython.Debugger import Pdb
-        # Pdb(color_scheme='Linux').set_trace()   
-
 
 
 if __name__ == '__main__':
-    tester = test_EP_MAP()
-    tester.test_likelihoods()
+    # tester = test_EP_MAP()
+    # tester.test_pred_samps()
+    # tester.test_likelihoods()
     # tester.test_fit()
     # tester.check_ages_and_data()
     # test_EP_MAP().test_low_V()
     # warnings.simplefilter('ignore',  FutureWarning)
-    # nose.runmodule()
+    nose.runmodule()
 
 

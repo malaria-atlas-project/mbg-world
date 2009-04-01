@@ -390,9 +390,9 @@ def create_model(region_name, all_pts, name, scale_params, amp_params, cpus,
         splreps[i] = list(splreps[i])
 
     # Don't worry, these are just reasonable initial values...
-    val_now = pm.logit(np.array(all_pts.PF+1,dtype=float)/(all_pts.EXAMINED+1))
+    val_now = pm.logit(np.array(all_pts.PF+1,dtype=float)/(all_pts.EXAMINED+2))
     if with_stukel:
-        val_now = pm.stukel_logit(np.array(all_pts.PF+1,dtype=float)/(all_pts.EXAMINED+1), a1.value, a2.value)
+        val_now = pm.stukel_logit(np.array(all_pts.PF+1,dtype=float)/(all_pts.EXAMINED+2), a1.value, a2.value)
     
     if data_mesh.shape[0] % chunk == 0:
         additional_index = 0

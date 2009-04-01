@@ -13,7 +13,7 @@ from scipy import interpolate as interp
 import mbgw
 from mbgw import correction_factors
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
-from mbgw.agepr import a
+from mbgw.age_pr_datasets import a
 from IPython.Debugger import Pdb
 import time
 import matplotlib
@@ -22,7 +22,6 @@ matplotlib.interactive(True)
 __all__ = ['visualize', 'ages_and_data', 'observed_gp_params', 'pred_samps']
 
 # Use f or f + epsilon as information?
-obs_on_f = False
 
 def norm_dens(x,mu,V):
     """The normal density, without proportionality constant."""
@@ -38,14 +37,15 @@ def visualize(M_pri, C_pri, E, lps, nug):
     import matplotlib
     matplotlib.interactive(True)
     k=0
-    x = linspace(E.M[k] - 4.*np.sqrt(E.C[k,k]), E.M[k] + 4.*np.sqrt(E.C[k,k]), 100)
+    
+    x = linspace(E.M_pri[k] - 4.*np.sqrt(E.C_pri[k,k]), E.M_pri[k] + 4.*np.sqrt(E.C_pri[k,k]), 500)
     
     pri_real = norm_dens(x, M_pri[k], C_pri[k,k])
     norms = np.random.normal(size=10000)*np.sqrt(nug[k])
-
+    
     def this_lp(x, k=k, norms=norms):
         return np.array([pm.flib.logsum(lps[k](xi + norms)) - np.log((len(norms))) for xi in x])
-
+        
     like_real = this_lp(x)
     where_real_notnan = np.where(1-np.isnan(like_real))
     x_realplot = x[where_real_notnan]
@@ -53,32 +53,44 @@ def visualize(M_pri, C_pri, E, lps, nug):
     like_real = np.exp(like_real - like_real.max())
     like_approx = norm_dens(x, E.mu[k], E.V[k] + nug[k])
     post_real = like_real * pri_real[where_real_notnan]
-
+    
     smoove_mat = np.asarray(pm.gp.cov_funs.gaussian.euclidean(x_realplot,x_realplot,amp=1,scale=.1))
     smoove_mat /= np.sum(smoove_mat, axis=0)
     # like_real = np.dot(smoove_mat, like_real)
-    like_real /= like_real.max()      
     # post_real = np.dot(smoove_mat, post_real)
     post_real /= post_real.max() 
-
+    
     post_approx = norm_dens(x, E.M[k], E.C[k,k])
+    post_approx2 = pri_real * like_approx
+    post_approx2 /= post_approx2.sum()
     
     post_approx /= post_approx.sum()
     post_real /= post_real.sum()
+    like_real *= post_real.max()/like_real.max()      
     pri_real *= post_real.max()
+    like_approx *= post_approx.max() / like_approx.max()
     
     # figure(1, figsize=(9,6))
     clf()
     plot(x, pri_real, 'g:', linewidth=2, label='Prior')
-    # plot(x_realplot, like_real, 'b-.', linewidth=2, label='Likelihood')
-    # plot(x, like_approx, 'r-.', linewidth=2, label='Approx. likelihood')
+    plot(x_realplot, like_real, 'b-.', linewidth=2, label='Likelihood')
+    plot(x, like_approx, 'r-.', linewidth=2, label='Approx. likelihood')
     plot(x_realplot, post_real, 'b-', linewidth=2, label='Posterior')
     plot(x, post_approx, 'r-', linewidth=2, label='Approx. posterior')
+    plot(x, post_approx2, 'g-', linewidth=2, label='Approx. posterior meth 2')
     legend(loc=0).legendPatch.set_alpha(0.)
     xlabel(r'$f(x)$')
     axis('tight')
-    title('Prior variance %f, likelihood variance %f'%(C_pri[k,k], E.V[k]+nug[k]))
-
+    m1r = sum(x[where_real_notnan]*post_real)/sum(post_real)
+    m1em2 = sum(x*post_approx2)/sum(post_approx2)
+    m1em = sum(x*post_approx)/sum(post_approx)
+    m2r = sum(x[where_real_notnan]**2*post_real)/sum(post_real)
+    m2em = sum(x**2*post_approx)/sum(post_approx)
+    m2em2 = sum(x**2*post_approx2)/sum(post_approx2)
+    print 'Posterior means: real: %s, EM: %s EM2: %s' % (m1r, m1em, m1em2)
+    print 'Posterior variances: real: %s, EM: %s EM2: %s' % (m2r-m1r**2, m2em-m1em**2, m2em2-m1em2**2)
+    # title('Prior variance %f, likelihood variance %f'%(C_pri[k,k], E.V[k]+nug[k]))
+    
     # Pdb(color_scheme='Linux').set_trace()   
     # savefig('figs/post%i.pdf'%k, transparent=True)    
 
@@ -117,7 +129,7 @@ def find_closest(x, y, N_nearest):
     closest = np.array(list(set(closest)),dtype=int)
     return closest
     
-def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest):
+def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest, obs_on_f=False):
     """
     Called by pred_samps.  Generates thinned means and covariances, observed at relevant
     data locations, from an MCMC trace.
@@ -181,7 +193,7 @@ def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=F
     """
     E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=this_nug)      
     try:          
-        this_P = E.fit(10000)
+        this_P = E.fit(10000, .0001)
     except:
         cls, inst, tb = sys.exc_info()
         print 'Error: %s'%inst.message

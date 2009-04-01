@@ -14,8 +14,9 @@ from IPython.Debugger import Pdb
 import pymc as pm
 from copy import copy, deepcopy
 from tables import openFile, FloatAtom
+import mbgw
 from mbgw.correction_factors import two_ten_factors, known_age_corr_likelihoods_f, stochastic_known_age_corr_likelihoods, age_corr_factors, S_trace, known_age_corr_factors
-from mbgw.agepr import a
+from mbgw.age_pr_datasets import a
 from mbgw.master_grid import *
 
 __all__ = ['frontend', 'backend', 'update_posterior', 'scratch_cleanup']
@@ -66,17 +67,17 @@ def PR_samps(mesh, Ms, Cs, Vs, ind, facs):
 def make_pt_fig(cur_val, samps, output_fname, output_path, outfigs_transparent=False, hist_color=(0,.1,.5), line_color='r-'):
     """Creates a png file from a point, writes it to disk and returns the path."""
     output_fname += '.png'
-    # pl.close('all')
     pl.figure()
-    h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
+    try:
+        h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
+    except:
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
     pl.xlabel(r'$x$')
     pl.ylabel(r'$p(x)$')
-    special_x = np.random.normal()
-    # print 'Current value: ',cur_val
     pl.plot([cur_val, cur_val],[0,h.max()],line_color,linewidth=2,label='Current value')
     pl.title('Utility function: standard deviation')
     l=pl.legend(loc=0)
-    # pl.axis('tight')
     l.legendPatch.set_alpha(0)
     pl.savefig(output_path+'/'+output_fname, transparent=outfigs_transparent)
     return '/'.join([os.getcwd(), output_path, output_fname])
@@ -87,12 +88,12 @@ def scratch_cleanup():
     for file in os.listdir('web_scratch'):
         os.remove('web_scratch/'+file)
 
-def make_EP_inputs(din):
+def make_EP_inputs(d):
     """
     Converts an input record array containing lat, lon, year and month columns to
     a spatiotemporal mesh that the gp package can handle.
     """
-    samp_mesh = np.vstack((din.lon, din.lat, din.year + (din.month-1)/12. - 2009)).T
+    samp_mesh = np.vstack((d.lon*deg_to_rad, d.lat*deg_to_rad, d.year + d.month/12. - 2009)).T
     return samp_mesh
 
 def add_times(pred_mesh, nmonths):
@@ -100,7 +101,7 @@ def add_times(pred_mesh, nmonths):
     new_pred_mesh = np.empty((0, 3))
     for i in xrange(pred_mesh.shape[0]):
         p = np.repeat(np.atleast_2d(pred_mesh[i]), nmonths[i], axis=0)
-        p[:,2] += np.arange(nmonths[i])
+        p[:,2] += np.arange(nmonths[i])/12.
         new_pred_mesh = np.vstack((new_pred_mesh, p))
     return new_pred_mesh
     
@@ -113,11 +114,12 @@ def one_point_mean(res, nmonths, i):
     stop = np.sum(nmonths[:i+1])
     return np.mean(res[start:stop])
     
-def robust_observe_and_eval(lm, M, C, samp_mesh, nug, pred_mesh, nsm):
+def robust_observe_and_eval(lm, M, C, samp_mesh, nug, pred_mesh):
     """
     Evaluates and observes a mean and covariance, and returns their evaluation on a
     prediction mesh. Works even for negative 'observation variance'.
     """
+    nsm = samp_mesh.shape[0]
     if lm is not None:
         # Observe according to EP likelihood
         try:
@@ -142,10 +144,11 @@ def robust_observe_and_eval(lm, M, C, samp_mesh, nug, pred_mesh, nsm):
     else:
         C_mesh = C(pred_mesh, pred_mesh)
         M_mesh = M(pred_mesh)
-    return C_mesh, M_mesh
+    return M_mesh, C_mesh
 
 def simulate_on_pred(nsamp, Vp, M_mesh, nmonths, fac_array, lo_age, up_age):
     """Simulates data on the prediction mesh over the requested time period."""
+
     outp = (np.random.normal(size=(nsamp,len(Vp)))*np.sqrt(Vp) + M_mesh)
     outp = pm.flib.invlogit(outp.ravel()).reshape((nsamp,len(Vp))).T
 
@@ -184,7 +187,7 @@ def make_justpix_samples(samp_mesh,pred_mesh,M,C,V,fac_array,lm,lv,nmonths,lo_ag
         obs_nug = lv + V
     else:
         obs_nug = None
-    C_mesh, M_mesh = robust_observe_and_eval(lm, M, C, samp_mesh, obs_nug, pred_mesh, nsm)
+    M_mesh, C_mesh = robust_observe_and_eval(lm, M, C, samp_mesh, obs_nug, pred_mesh)
         
     # Sample at prediction points: do jointly
     Vp = np.diag(C_mesh) + V
@@ -224,11 +227,9 @@ def resample_with_mp(mp):
 
 def ra_to_mesh(din, dout):
     """Converts the input and output record arrays into meshes."""
-    for pt in (din,dout):
-        for attr in ('lon','lat'):
-            pt[attr] *= deg_to_rad
-    samp_mesh, pred_mesh = make_EP_inputs(din), add_times(make_EP_inputs(dout), dout.nmonths)
-    return pred_mesh, samp_mesh, pt
+    samp_mesh = make_EP_inputs(din)
+    pred_mesh = add_times(make_EP_inputs(dout), dout.nmonths)
+    return pred_mesh, samp_mesh
 
 def ra_to_age_info(din, dout):
     """Converts the input and output record arrays into age information."""
@@ -251,18 +252,25 @@ def result_containers(utilities, N_outer, N_output, N_utilities):
     cur_samps = np.empty((0, N_output))
     return cur_samps, pred_samps, cur_vals
 
-def create_output_info(N_output, utilities, cur_vals, pred_samps):
+def create_output_info(N_output, utilities, cur_vals, pred_samps, outfile_path=None):
     """Creates the output_info object to return to the """
+    if outfile_path is None:
+        outfile_path = mbgw.__path__[0]+'/../testmbgw'
     output_info = []
     for i in xrange(N_output):
         output_info.append({})
         for utility in utilities:
             pl.close('all')
-            output_info[i][utility.__name__]=make_pt_fig(cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i],str(id(output_info[i]))+'_'+utility.__name__, 'figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
+            output_info[i][utility.__name__]=make_pt_fig(cur_vals[utility.__name__][i], pred_samps[utility.__name__][:,i], str(id(output_info[i]))+'_'+utility.__name__, outfile_path+'/figs', outfigs_transparent=True, hist_color='.8', line_color='r-')
     return output_info
 
+def dicts2rec(dicts):
+    names = dicts[0].keys()
+    arrs =  [np.array([d[key] for d in dicts]) for key in names]
+    return np.rec.fromarrays(arrs, names=','.join(names))
+
 # @backend
-def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std], nsamp_per_val=1000):
+def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N_outer, N_inner, N_nearest, utilities=[np.std], outfile_path=None, nsamp_per_val=1000):
     """
     Inputs and outputs will be pickled as tuples.
 
@@ -293,10 +301,10 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
     
     N_input, N_output = len(input_pts), len(output_pts)
     # Convert dictionaries to record arrays for easier handling
-    din = np.rec.fromrecords([input_pt.values() for input_pt in input_pts], names=input_pts[0].keys())
-    dout = np.rec.fromrecords([output_pt.values() for output_pt in output_pts], names=output_pts[0].keys())
+    din = dicts2rec(input_pts)
+    dout = dicts2rec(output_pts)
 
-    pred_mesh, samp_mesh, pt = ra_to_mesh(din, dout)
+    pred_mesh, samp_mesh = ra_to_mesh(din, dout)
 
     # Correction factors for each set of age limits.
     age_lims, correction_factor_array, lo_age_out, up_age_out = ra_to_age_info(din, dout)
@@ -341,7 +349,7 @@ def update_posterior(input_pts, output_pts, tracefile, trace_thin, trace_burn, N
     for utility in utilities:
         cur_vals[utility.__name__] = np.apply_along_axis(utility, 0, cur_samps)
     
-    output_info = create_output_info(N_output, utilities, cur_vals, pred_samps)
+    output_info = create_output_info(N_output, utilities, cur_vals, pred_samps, outfile_path)
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    # from IPython.Debugger import Pdb
+    # Pdb(color_scheme='Linux').set_trace()
