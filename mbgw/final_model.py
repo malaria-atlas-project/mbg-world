@@ -259,12 +259,13 @@ def create_model(region_name, all_pts, name, scale_params, amp_params, cpus,
                 if np.sum(all_pts.URB_CLS==3) >= 10:
                     this_interp_covariate = all_pts.URB_CLS==3
                 else:
-                    continue
+                    this_interp_covariate = None
             else:
                 this_cov = getattr(auxiliary_data, cname)
                 this_interp_covariate = nearest_interp(this_cov.long[:], this_cov.lat[:], this_cov.data, data_mesh[:,0], data_mesh[:,1])            
-            this_coef = pm.Uninformative(cname + '_coef', value=0.)
-            covariate_dict[cname] = (this_coef, this_interp_covariate)
+            if this_interp_covariate is not None:
+                this_coef = pm.Uninformative(cname + '_coef', value=0.)
+                covariate_dict[cname] = (this_coef, this_interp_covariate)
         
         # Lock down parameters of Stukel's link function to obtain standard logit.
         # These can be freed by removing 'observed' flags, but mixing gets much worse.
@@ -464,7 +465,8 @@ def create_model(region_name, all_pts, name, scale_params, amp_params, cpus,
             vla=hf.createVLArray(hf.root.metadata,weird_attr,ObjectAtom())
             vla.append(l[weird_attr])
         for cname in covariate_names:
-            hf.createArray(hf.root.metadata,cname,covariate_dict[cname][1])    
+            if covariate_dict.has_key(cname):
+                hf.createArray(hf.root.metadata,cname,covariate_dict[cname][1])    
     else:
         print 'Sampler crashed, attempting recovery from database + ' ,crashed_db
         S = pm.MCMC([nondata_stochs,f,eps_p_f_list,tau,eps_p_f,C,M,transformed_spatial_vars],name=name,
