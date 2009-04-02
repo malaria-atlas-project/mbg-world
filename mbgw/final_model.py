@@ -250,10 +250,14 @@ def create_model(region_name, all_pts, name, scale_params, amp_params, cpus,
         covariate_dict = {}
         for cname in covariate_names:
             # hf = openFile(mbgw.__path__[0] + '/auxiliary_data/' + cname + '.hdf5')
-            if cname == 'urb':
-                this_interp_covariate = all_pts.URB_CLS==1
-            elif cname == 'periurb':
+            if cname == 'periurb':
                 this_interp_covariate = all_pts.URB_CLS==2
+                if np.sum(all_pts.URB_CLS==3) < 10:
+                    print 'Warning: Very few urban points, using same coefficient for urban and periurban'
+                    this_interp_covariate += all_pts.URB_CLS==3
+            elif cname == 'urb':
+                if np.sum(all_pts.URB_CLS==3) >= 10:
+                    this_interp_covariate = all_pts.URB_CLS==3
             else:
                 this_cov = getattr(auxiliary_data, cname)
                 this_interp_covariate = nearest_interp(this_cov.long[:], this_cov.lat[:], this_cov.data, data_mesh[:,0], data_mesh[:,1])            

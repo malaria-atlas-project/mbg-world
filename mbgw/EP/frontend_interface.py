@@ -140,7 +140,9 @@ def robust_observe_and_eval(lm, M, C, samp_mesh, nug, pred_mesh):
             C_off = C(samp_mesh, pred_mesh)
             C_mesh -= C_off.T * C_samp_I * C_off
             M_mesh += np.ravel(np.dot(C_off.T * C_samp_I , (lm - M_samp)))
-
+    if np.any(np.diag(C_mesh)<0):
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
     else:
         C_mesh = C(pred_mesh, pred_mesh)
         M_mesh = M(pred_mesh)
