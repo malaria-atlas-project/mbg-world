@@ -61,19 +61,22 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     # Check that all data are in bounds
     data_locs = meta.logp_mesh[:]    
     bad = []
+    in_mesh = np.ones(data_locs.shape[0],dtype=bool)
     for l in data_locs:
         for j in xrange(3):
             if l[j] <= grids[j][0] or l[j] >= grids[j][1]:
+                in_mesh[i]=False
                 bad.append(l)
     if len(bad) > 0:
         bad = np.array(bad)
         bad[:,0] *= rad_to_deg
         bad[:,1] *= rad_to_deg
         bad[:,2] += 2009
-        raise ValueError, 'The following data locations [lon,lat,t] are out of bounds: \n'+str(bad)
+        print 'Warning: The following data locations [lon,lat,t] are out of bounds: \n'+str(bad)
 
     # Find the mesh indices closest to the data locations
     data_mesh_indices = np.empty(data_locs.shape, dtype=np.int)
+
     for i in xrange(len(data_locs)):
         for j in xrange(3):
             data_mesh_indices[i,j] = np.argmin(np.abs(data_locs[i,j] - axes[j]))
@@ -108,8 +111,11 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         [new_node.append(node[index]) for index in indices]
     outfile.root._v_attrs.orig_filename = trace._v_file.filename
     
-    data_locs = data_locs
-    data_mesh_indices = data_mesh_indices
+    data_locs = data_locs[in_mesh]
+    data_mesh_indices = data_mesh_indices[in_mesh]
+    
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
     
     # Scatter this part to many processes
     for i in xrange(len(indices)):
@@ -129,7 +135,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
-        data_vals = trace.PyMCsamples[i]['f']
+        data_vals = trace.PyMCsamples[i]['f'][where_in_mesh]
         create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask)
         outfile.flush()
     outfile.close()
