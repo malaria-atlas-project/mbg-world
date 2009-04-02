@@ -258,6 +258,8 @@ def create_model(region_name, all_pts, name, scale_params, amp_params, cpus,
             elif cname == 'urb':
                 if np.sum(all_pts.URB_CLS==3) >= 10:
                     this_interp_covariate = all_pts.URB_CLS==3
+                else:
+                    continue
             else:
                 this_cov = getattr(auxiliary_data, cname)
                 this_interp_covariate = nearest_interp(this_cov.long[:], this_cov.lat[:], this_cov.data, data_mesh[:,0], data_mesh[:,1])            
