@@ -11,9 +11,6 @@ import tables as tb
 import time
 import scipy
 
-# N_nearest = 1446
-# N_nearest = 1300
-N_nearest = 300
 pm.__PyMCThreadPool__.setNumWorkers(0)
 
 __all__ = ['preprocess', 'krige_month', 'ndmeshgrid']
@@ -46,7 +43,7 @@ def ndmeshgrid(grids, hnode=None):
         return ns
 
 
-def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata):
+def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest):
 
 
     xbi = np.asarray(np.linspace(0,grids[0][2],n_blocks_x+1),dtype=int)
