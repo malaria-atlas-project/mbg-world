@@ -19,6 +19,8 @@ n_jobs = int(sys.argv[3])
 region = sys.argv[4]
 fname = sys.argv[5]
 burn = int(sys.argv[6])
+n_blocks_x = n_blocks_y = int(sys.argv[7])
+N_nearest = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 nmonths = 288 
 start_year = 1985
