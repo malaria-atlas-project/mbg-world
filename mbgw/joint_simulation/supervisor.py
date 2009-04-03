@@ -114,8 +114,8 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     data_locs = data_locs[in_mesh]
     data_mesh_indices = data_mesh_indices[in_mesh]
     
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    # from IPython.Debugger import Pdb
+    # Pdb(color_scheme='Linux').set_trace()
     
     # Scatter this part to many processes
     for i in xrange(len(indices)):
