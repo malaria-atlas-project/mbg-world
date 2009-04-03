@@ -43,7 +43,7 @@ print 'n_jobs: %i'%n_jobs
 print 'region: %s'%region
 print 'fname: %s'%fname
 print 'burn: %i'%burn
-print 'nmonths: %i'%n_months
+print 'nmonths: %i'%nmonths
 print 'start_year: %i'%start_year
 print 'mask_name: %s'%mask_name
 print 'relp: %f'%relp
