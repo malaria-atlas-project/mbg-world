@@ -38,11 +38,11 @@ outfile_name = '/share/scratch/malaria-atlas-project/MAP-outputs/realizations_nb
 # print ('create_many_realizations(%i, %i, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, %s, relp, mask_fname, n_in_trace=%i)'%(my_start, iter_per_job, outfile_name, my_end))
 
 print 'i: %i'%i
-print 'iter_per_job: %i'%i
-print 'n_jobs: %i'%i
-print 'region: %s'%s
-print 'fname: %s'%s
-print 'burn: %i'%i
+print 'iter_per_job: %i'%iter_per_job
+print 'n_jobs: %i'%n_jobs
+print 'region: %s'%region
+print 'fname: %s'%fname
+print 'burn: %i'%burn
 print 'nmonths: %i'%n_months
 print 'start_year: %i'%start_year
 print 'mask_name: %s'%mask_name
