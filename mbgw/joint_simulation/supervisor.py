@@ -34,7 +34,7 @@ def get_covariate_submesh(name, grid_lims):
     return getattr(mbgw.auxiliary_data, name).data[nrows-grid_lims['bottomRow']:nrows-grid_lims['topRow']+1,
                                                     grid_lims['leftCol']-1:grid_lims['rightCol']][::-1,:].T
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, relp=1e-3, mask_name=None, n_in_trace=None):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, N_nearest, relp=1e-3, mask_name=None, n_in_trace=None):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -114,8 +114,8 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     data_locs = data_locs[in_mesh]
     data_mesh_indices = data_mesh_indices[in_mesh]
     
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    # from IPython.Debugger import Pdb
+    # Pdb(color_scheme='Linux').set_trace()
     
     # Scatter this part to many processes
     for i in xrange(len(indices)):
@@ -136,11 +136,11 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
         data_vals = trace.PyMCsamples[i]['f'][where_in_mesh]
-        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask)
+        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest)
         outfile.flush()
     outfile.close()
 
-def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask):
+def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest):
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
     """
@@ -208,7 +208,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     print '\tKriging to bring in data.'    
     print '\tPreprocessing.'
     t1 = time.time()    
-    dev, xbi, ybi, rel_data_ind = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)   
+    dev, xbi, ybi, rel_data_ind = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest)   
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
     
