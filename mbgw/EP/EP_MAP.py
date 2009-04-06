@@ -22,7 +22,6 @@ matplotlib.interactive(True)
 __all__ = ['visualize', 'ages_and_data', 'observed_gp_params', 'pred_samps']
 
 # Use f or f + epsilon as information?
-obs_on_f = False
 
 def norm_dens(x,mu,V):
     """The normal density, without proportionality constant."""
@@ -130,7 +129,7 @@ def find_closest(x, y, N_nearest):
     closest = np.array(list(set(closest)),dtype=int)
     return closest
     
-def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest):
+def observed_gp_params(combo_mesh, tracefile, trace_thin, trace_burn, N_nearest, obs_on_f=False):
     """
     Called by pred_samps.  Generates thinned means and covariances, observed at relevant
     data locations, from an MCMC trace.

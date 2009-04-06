@@ -68,7 +68,11 @@ def make_pt_fig(cur_val, samps, output_fname, output_path, outfigs_transparent=F
     """Creates a png file from a point, writes it to disk and returns the path."""
     output_fname += '.png'
     pl.figure()
-    h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
+    try:
+        h,b,p=pl.hist(samps,10,normed=True,facecolor=hist_color,histtype='stepfilled')
+    except:
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
     pl.xlabel(r'$x$')
     pl.ylabel(r'$p(x)$')
     pl.plot([cur_val, cur_val],[0,h.max()],line_color,linewidth=2,label='Current value')
@@ -136,10 +140,14 @@ def robust_observe_and_eval(lm, M, C, samp_mesh, nug, pred_mesh):
             C_off = C(samp_mesh, pred_mesh)
             C_mesh -= C_off.T * C_samp_I * C_off
             M_mesh += np.ravel(np.dot(C_off.T * C_samp_I , (lm - M_samp)))
-
     else:
         C_mesh = C(pred_mesh, pred_mesh)
         M_mesh = M(pred_mesh)
+    
+    if np.any(np.diag(C_mesh)<0):
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
+    
     return M_mesh, C_mesh
 
 def simulate_on_pred(nsamp, Vp, M_mesh, nmonths, fac_array, lo_age, up_age):
