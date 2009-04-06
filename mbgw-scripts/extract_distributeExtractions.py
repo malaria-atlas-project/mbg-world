@@ -3,6 +3,7 @@ import time
 import subprocess
 import numpy as np
 import tables as tb
+from extract_params import *
 
 #####
 a=time.time()
@@ -12,12 +13,28 @@ a=time.time()
 # sepcify some parameters
 STARTREL = 0        # first full realisation to include
 ENDREL = 8        # last full realisation to include (does up to but not including this index)
-NPER = 50           # how many draws of the nugget, per full realisation
+NPER = 1           # how many draws of the nugget, per full realisation
 RELPERJOB = 1       # ideally, how many realisations do we want to ascribe to each job?
 MAXJOBS = 8         # how many processes do we want running at a time
-WAITINTERVAL = 30  # wait interval in seconds
+WAITINTERVAL = 10  # wait interval in seconds
 VERBOSE = True      # messages or not
-STDOUTPUT = '/home/pwg/mbg-world/extraction/DistributedOutput/scriptoutput/'   # if string given, this is where the standard output and standard error will be sent, if 0, then none sent
+
+
+###########################################################################################################################
+ #TO FIX: NEED A FUNCTION THAT WILL LOOP THROUGH ALL REALISATION FILES AND COUNT REALIZATIONS PRESENT BY FILE SUFFIX
+
+# # import link to hdf5 realisation block in order to query how many realisations are present - to check if these tally with those asked for above..
+#from extract_params import realisations_path
+#from map_utils import checkAndBuildPaths
+#checkAndBuildPaths(realisations_path,VERBOSE=False,BUILD=False)
+#hf = tb.openFile(realisations_path) 
+#RelsInBlock = hf.root.realizations.shape[0]
+
+## run check that number of realisations asked for is actually present in block
+#NREL = ENDREL - STARTREL
+#if(NREL>RelsInBlock):
+#    print "ERROR!! have asked for "+str(NREL)+" realisations but only "+str(RelsInBlock)+ "present in hdf5 block: EXITING!!"
+#    raise ValueError
 
 ###########################################################################################################################
 def returnNjobsRunning(splist):
@@ -40,25 +57,13 @@ def returnNjobsRunning(splist):
 
 ###########################################################################################################################
 
+#def distributeExtractions_country ():
 
 # initialise list to hold subprocess objects (containing info about each subprocess)
 splist = []
 
 # initialise counter for output messages
 if VERBOSE: cnt = 0
-
-# import link to hdf5 realisation block in order to query how many realisations are present - to check if these tally with those asked for above..
-from extract_params import filename
-from map_utils import checkAndBuildPaths
-checkAndBuildPaths(filename,VERBOSE=False,BUILD=False)
-hf = tb.openFile(filename) 
-RelsInBlock = hf.root.realizations.shape[0]
-
-# run check that number of realisations asked for is actually present in block
-NREL = ENDREL - STARTREL
-if(NREL>RelsInBlock):
-    print "ERROR!! have asked for "+str(NREL)+" realisations but only "+str(RelsInBlock)+ "present in hdf5 block: EXITING!!"
-    raise ValueError
 
 # define LUT of start and end realisation for each job
 startRels = np.arange(STARTREL,ENDREL,RELPERJOB)
