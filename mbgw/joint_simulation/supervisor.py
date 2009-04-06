@@ -126,8 +126,12 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         mean_ondata = this_M(data_locs)
         covariate_mesh = np.zeros(grid_shape[:2])
         for key in meta.covariate_names[0]:
-            this_coef = trace.PyMCsamples.col(key+'_coef')[indices[i]]
-            mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
+            try:
+                this_coef = trace.PyMCsamples.col(key+'_coef')[indices[i]]
+            except KeyError:
+                print 'Warning, no column named %s'%key+'_coef'
+                continue
+            mean_ondata += getattr(meta, key)[:][in_mesh] * this_coef
             this_pred_covariate = get_covariate_submesh(key, grid_lims) * this_coef
             covariate_mesh += this_pred_covariate
 
@@ -135,7 +139,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
-        data_vals = trace.PyMCsamples[i]['f'][where_in_mesh]
+        data_vals = trace.PyMCsamples[i]['f'][in_mesh]
         create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest)
         outfile.flush()
     outfile.close()

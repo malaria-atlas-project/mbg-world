@@ -34,7 +34,7 @@ my_start = indices[i]
 my_end = indices[i+1]
 
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_name = '/share/scratch/malaria-atlas-project/MAP-outputs/realizations_nb_%i_%s.hdf5'%(n_blocks_x,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_name = 'realizations_nb_%i_%s.hdf5'%(n_blocks_x,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 # print ('create_many_realizations(%i, %i, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, %s, relp, mask_fname, n_in_trace=%i)'%(my_start, iter_per_job, outfile_name, my_end))
 
 print 'i: %i'%i
