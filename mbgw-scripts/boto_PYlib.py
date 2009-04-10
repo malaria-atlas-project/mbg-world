@@ -24,6 +24,8 @@ def S3connectKeys(keyNo):
 
     a=file(keyPath).read()
     key = a.split(',')[keyNo]
+    key=key.strip("\'")
+    key=key.strip(" \'")
     return(key)
 ##############################################################################################################################
 def getFileAgeMinutes(filekey):
@@ -62,7 +64,7 @@ def uploadDirectoryAsBucket(bucketName,directoryPath,uploadConstituentFiles,over
     a bucket of the same name containing files of the same name.
     
     params to pass:
-    bucketName              :(string) name to give bucket when it is created
+    bucketName              : (string) name to give bucket when it is created
     directoryPath           : (string) full path of directory on local machine that will be copied
     uploadConstituentFiles  : (logical) do we want to upload the files in this directory as objects in the bucket?
     overwriteContent        : (logical) if a file already exists in the bucket do we want to overwrite it? if False then only new files in this directory will be copied to bucket
