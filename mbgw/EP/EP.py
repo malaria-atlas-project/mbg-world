@@ -115,15 +115,14 @@ class EP(pm.Sampler):
         # The expectations of these functions give the first two moments of x without the nugget.
         # Just passing in lambda x:x and lambda x:x**2 would give the first two moments of x
         # _with_ the nugget.
-        nonnug_m1 = lambda x: (m*nug_v + x*pri_v)/v
+        nonnug_m1 = lambda x: ((m*nug_v + x*pri_v)/v).astype('complex')
         nonnug_m2 = lambda x: (nug_v * pri_v)/v + nonnug_m1(x)**2
         funs = [nonnug_m1, nonnug_m2]
         
         # Return E_pri [like_fn(x)] and the posterior expectations of funs(x).        
         moments = []
         for f in funs:
-            cpx_lf = np.log(f(x).astype('complex'))
-            lm = log_simps(cpx_lf + post_vec, d(x), self.coefs)
+            lm = log_simps(np.log(f(x)) + post_vec, d(x), self.coefs)
             
             moments.append(np.real(np.exp(lm - lp)))
         
