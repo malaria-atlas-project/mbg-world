@@ -186,17 +186,16 @@ def simulate_data(M_pri, C_pri, N_samp, V, N_exam, N_age_samps, correction_facto
     
     return marginal_log_likelihoods, positives
 
-def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug=False):
+def fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, errs, debug=False):
     """
     Called by pred_samps in the inner loop to update the posterior given 
     simulated data.
     """
     E = EP(M_pri, C_pri, marginal_log_likelihoods, nug=this_nug)      
     try:          
-        this_P = E.fit(10000, .0001)
+        this_P = E.fit(10001, .0001)
     except:
-        cls, inst, tb = sys.exc_info()
-        print 'Error: %s'%inst.message
+        errs.append(sys.exc_info())
         this_P = -np.inf
     if debug:
         visualize(M_pri, C_pri, E, marginal_log_likelihoods, this_nug)
@@ -236,6 +235,7 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
 
         positive_observations.append(pos)
         this_nug = np.empty(N_samp)
+        errs = []
         for jj in xrange(N_per_param):
             # Update posterior given simulated data
             j = ind_inner[jj]
@@ -243,9 +243,10 @@ def pred_samps(pred_mesh, samp_mesh, N_exam, tracefile, trace_thin, trace_burn, 
             this_nug.fill(Vs[j])
             
             # Fit for a posterior of f + epsilon
-            res = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, debug)
+            res = fit_EP_to_sim_data(M_pri, C_pri, marginal_log_likelihoods, this_nug, errs, debug)
             multi_append(res, mps, lms, lvs)
-        
+        if len(errs)>0:
+            print '%i errors: %s'%(len(errs), '\n\t'.join(list(set([e[1].message for e in errs]))))
         multi_append((mps, lms, lvs), model_posteriors, likelihood_means, likelihood_variances)    
         print time.time() - t             
 

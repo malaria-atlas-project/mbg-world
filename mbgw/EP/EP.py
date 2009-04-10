@@ -12,6 +12,23 @@ from scipy import optimize, integrate
 
 __all__ = ['EP', 'estimate_envelopes']
 
+def simps_coefs(N):
+    "Computes the Simpson's rule coefficients for a vector of length N."
+    coefs = np.empty(N)
+    coefs[0]=coefs[-1]=np.log(1./3)
+    coefs[1::2]=np.log(4./3)
+    coefs[2:-2:2]=np.log(2./3)
+    return coefs
+
+def log_simps(lv, dx, coefs):
+    "Evaluates the Simpson's rule integral of exp(lv) without actually exponentiating."
+    lv_aug = lv+coefs
+    if np.iscomplexobj(lv):
+        ls = pm.flib.logsum_cpx
+    else:
+        ls = pm.flib.logsum
+    return ls(lv_aug) + np.log(dx)
+
 def compose(*fns):
     def out(res):
         for fn in fns[::-1]:
@@ -62,7 +79,7 @@ class EP(pm.Sampler):
         else:
             self.V = V_guess
         # log(expected likelihood).
-        self.p = np.ones(self.Nx, dtype=float)
+        self.p = np.zeros(self.Nx, dtype=float)
         # Log-probability functions
         self.lp = lp
         # 'Nugget' for epsilon
@@ -88,12 +105,11 @@ class EP(pm.Sampler):
         
         lo, hi = estimate_envelopes(post_fn, m, np.sqrt(v), 13.)
         x = np.linspace(lo, hi, N)
-        post_vec = np.exp(post_fn(x))
+        post_vec = post_fn(x)
 
-        p = integrate.simps(post_vec, dx=d(x))
-        
-        if p==0:
-            # You can make this happen less often by computing p with log-sums, and computing moments with rejection sampling.
+        lp = log_simps(post_vec, d(x), self.coefs) 
+
+        if lp==-np.inf:
             raise RuntimeError, 'Unconditional likelihood is zero.'
         
         # The expectations of these functions give the first two moments of x without the nugget.
@@ -106,9 +122,12 @@ class EP(pm.Sampler):
         # Return E_pri [like_fn(x)] and the posterior expectations of funs(x).        
         moments = []
         for f in funs:
-            moments.append(integrate.simps(post_vec * f(x), dx=d(x)) / p)
+            cpx_lf = np.log(f(x).astype('complex'))
+            lm = log_simps(cpx_lf + post_vec, d(x), self.coefs)
+            
+            moments.append(np.real(np.exp(lm - lp)))
         
-        return (p,) + tuple(moments)
+        return (lp,) + tuple(moments)
                         
     def observe(self, i, unobserve=False):
         """
@@ -134,7 +153,7 @@ class EP(pm.Sampler):
             # Pdb(color_scheme='Linux').set_trace()  
             raise RuntimeError, 'Infinite covariance or mean.'
         if np.any(np.diag(new_C)<0):
-            # Pdb(color_scheme='Linux').set_trace()    
+            Pdb(color_scheme='Linux').set_trace()    
             raise RuntimeError, 'Negative diagonal elements of covariance.'
         self.M = new_M
         self.C = new_C
@@ -202,6 +221,8 @@ class EP(pm.Sampler):
         # Make initial observations (usually trivial)
         self.C = self.C_pri.copy()
         self.M = self.M_pri.copy()
+        
+        self.coefs = simps_coefs(N)
         
         for i in xrange(self.Nx):
             self.observe(i)

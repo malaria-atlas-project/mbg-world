@@ -127,7 +127,10 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         covariate_mesh = np.zeros(grid_shape[:2])
         for key in meta.covariate_names[0]:
             this_coef = trace.PyMCsamples.col(key+'_coef')[indices[i]]
-            mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
+            try:
+                mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
+            except:
+                print 'Error: shapes %s, %s, %s'%(getattr(meta, key).shape, meta.ui.shape, np.shape(this_coef))
             this_pred_covariate = get_covariate_submesh(key, grid_lims) * this_coef
             covariate_mesh += this_pred_covariate
 
