@@ -6,8 +6,9 @@ import tables as tb
 from mbgw.master_grid import *
 
 # Establish blocks based on spatial distance only.
-n_blocks_x = 20
-n_blocks_y = 20
+n_blocks_x = 100
+n_blocks_y = 100
+N_nearest = 1000
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """
@@ -22,7 +23,7 @@ def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_
     """
     hf = tb.openFile(fname)
         
-    return create_many_realizations(burn,n, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, relp, mask_name)
+    return create_many_realizations(burn,n, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, N_nearest, relp, mask_name)
 
 if __name__ == '__main__':
     try:
