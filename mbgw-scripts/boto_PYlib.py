@@ -4,7 +4,8 @@
 ####################################
 
 # set location of file containng keys to S3
-keyPath = '/home/pwg/mbg-world/mbgw-scripts/s3code.txt'
+#keyPath = '/root/s3code.txt'
+from extract_params import keyPath
 
 # import libraries
 import boto
@@ -291,7 +292,7 @@ def CheckFileExistsInBucket(bucketName,fileNameInBucket, md5check=None, maxAgeMi
     
     # check this bucket exits
     if (conn.lookup(bucketName) is None):
-        print 'WARNING!!! requested bucket "'+str(bucketName)+'" does not exist on S3 !!!'
+        print 'WARNING!!! requested bucket "'+str(bucketName)+'" does not exist on S3 OR the connection failed using these access keys!!!'
         return(False)
     
     # check this file exists within this bucket

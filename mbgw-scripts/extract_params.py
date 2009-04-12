@@ -1,39 +1,42 @@
 from numpy import array
 
 # standard path to utility function directory (used to source generic R functions)
-utilFolder = '/home/pwg/map_utils/map_utils/'
+utilFolder = '/map_utils/'
+
+# set path to file containg keys for amazon S3
+keyPath = '/root/s3code.txt'
 
 # main input hdf5  file of simulated realisations of f
-realisations_path = '/home/pwg/mbg-world/extraction/realizations/realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = '/realizations/realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 #filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
 
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/home/pwg/mbg-world/extraction/DistributedOutput_country/'
-exportPathDistributed_perpixel = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
+exportPathDistributed_country = '/DistributedOutput_country/'
+exportPathDistributed_perpixel = '/DistributedOutput_perpixel/'
 
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/home/pwg/mbg-world/extraction/CombinedOutput_country/'
-exportPathCombined_perpixel = '/home/pwg/mbg-world/extraction/CombinedOutput_perpixel/'
+exportPathCombined_country = '/CombinedOutput_country/'
+exportPathCombined_perpixel = '/CombinedOutput_perpixel/'
 
 # input 1km salb raster of unique spatial IDs
-salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_AF.hdf5"
+salblim1km_path="/auxiliary_data/salblim1km-e_AF.hdf5"
 #salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
 
 # input 1km and 5km raster of population per cell
-gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_AF.hdf5"
-gr005km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr005km_AF.hdf5"
+gr001km_path="/auxiliary_data/gr001km_AF.hdf5"
+gr005km_path="/auxiliary_data/gr005km_AF.hdf5"
 #gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_ken.hdf5"
 
 # location of 5km hdf5  limits mask
-lim5kmbnry_path="/home/pwg/mbg-world/datafiles/auxiliary_data/lim5kmbnry-e_y-x+_AF.hdf5"
+lim5kmbnry_path="/auxiliary_data/lim5kmbnry-e_y-x+_AF.hdf5"
 #lim5kmbnry_path="/home/pwg/mbg-world/datafiles/auxiliary_data/lim5kmbnry-e_y-x+_ken.hdf5"
 
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
-uniqueSalb_path='/home/pwg/mbg-world/extraction/misc/uniqueSalb.txt'
-pixelN_path='/home/pwg/mbg-world/extraction/misc/pixelN.txt'
+uniqueSalb_path='/misc/uniqueSalb.txt'
+pixelN_path='/misc/pixelN.txt'
 
 # if string given, this is where the standard output and standard error will be sent, if 0, then none sent
-STDOUTPUT = '/home/pwg/mbg-world/extraction/DistributedOutput/scriptoutput/'   
+STDOUTPUT = '/DistributedOutput/scriptoutput/'   
 
 # class definition dictionaries
 breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}
