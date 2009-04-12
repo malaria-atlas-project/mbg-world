@@ -115,9 +115,9 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     data_mesh_indices = data_mesh_indices[in_mesh]
     
     # Total number of pixels in month.
-    npix = (axes[0][1]-axes[0][0])*(axes[1][1]-axes[1][0])
+    npix = grid_shape[0]*grid_shape[1]
     # Maximum number of pixels in tile.
-    npixmax = memmax/4.data_locs.shape[0]
+    npixmax = memmax/4./data_locs.shape[0]
     # Minimum number of tiles needed.
     ntiles = npix/npixmax
     # Blocks.
@@ -146,11 +146,11 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
         data_vals = trace.PyMCsamples[i]['f'][in_mesh]
-        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest)
+        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask)
         outfile.flush()
     outfile.close()
 
-def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest):
+def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask):
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
     """
@@ -180,34 +180,34 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
                     'NCOLS':grid_shape[0]}
     monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
     
-    # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
-    os.chdir(r_path)
-    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
-    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
-    preLoopClassTree, junk = parse_tree(tree_reader)
-    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
-    
-    OutMATlist = preLoopObj['OutMATlist']
-    tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
-    OutMATClassTree, junk = parse_tree(tree_reader)
-    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-    os.chdir(curpath)
-
-    # Create and store unconditional realizations
-    print '\tGenerating unconditional realizations.'
-    t1 = time.time()
-    for i in xrange(grid_shape[2]):
-        os.chdir(r_path)
-        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
-        os.chdir(curpath)
-        OutMATlist= monthObject['OutMATlist']
-        MonthGrid = monthObject['MonthGrid']
-        out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
-    t2 = time.time()
-    print '\t\tDone in %f'%(t2-t1)
-    
-    # delete unneeded R products
-    del OutMATlist, preLoopObj, MonthGrid, monthObject
+    # # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
+    # os.chdir(r_path)
+    # preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
+    # tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+    # preLoopClassTree, junk = parse_tree(tree_reader)
+    # preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    # 
+    # OutMATlist = preLoopObj['OutMATlist']
+    # tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
+    # OutMATClassTree, junk = parse_tree(tree_reader)
+    # OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    # os.chdir(curpath)
+    # 
+    # # Create and store unconditional realizations
+    # print '\tGenerating unconditional realizations.'
+    # t1 = time.time()
+    # for i in xrange(grid_shape[2]):
+    #     os.chdir(r_path)
+    #     monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
+    #     os.chdir(curpath)
+    #     OutMATlist= monthObject['OutMATlist']
+    #     MonthGrid = monthObject['MonthGrid']
+    #     out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
+    # t2 = time.time()
+    # print '\t\tDone in %f'%(t2-t1)
+    # 
+    # # delete unneeded R products
+    # del OutMATlist, preLoopObj, MonthGrid, monthObject
     
     # Figure out pdata
     pdata = np.empty(tdata.shape)
@@ -218,7 +218,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     print '\tKriging to bring in data.'    
     print '\tPreprocessing.'
     t1 = time.time()    
-    dev, xbi, ybi, rel_data_ind = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest)   
+    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)   
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
     
@@ -230,9 +230,8 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         row.fill(0.)
         
         x[:,:,2] = axes[2][i]
-
-        C_eval = C(data_locs, data_locs)      
-        krige_month(C, C_eval, i, data_locs, grid_shape, n_blocks_x, n_blocks_y, rel_data_ind, xbi, ybi, x, dev, row, mask, relp)
+        
+        krige_month(C, i, dl_posdef, grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, x, dev_posdef, row, mask)
                 
         row += covariate_mesh[:,::-1]
         row += M(x)

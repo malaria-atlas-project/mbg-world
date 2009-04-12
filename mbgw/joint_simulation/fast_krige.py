@@ -43,7 +43,7 @@ def ndmeshgrid(grids, hnode=None):
         return ns
 
 
-def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest):
+def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata):
 
 
     xbi = np.asarray(np.linspace(0,grids[0][2],n_blocks_x+1),dtype=int)
@@ -64,40 +64,22 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     import matplotlib
     matplotlib.interactive(True)    
     
-    for j in xrange(n_blocks_x):        
-        for k in xrange(n_blocks_y):
-            # print j,k
-            # from IPython.Debugger import Pdb
-            # Pdb(color_scheme='Linux').set_trace()   
-            this_x = x[xbi[j]:xbi[j+1], ybi[k]:ybi[k+1],:2].reshape(-1,2)
+    C_eval = C(data_locs,data_locs)
+    
+    U, n_posdef, pivots = ichol_full(c=C_eval, reltol=relp)
+    U = U[:n_posdef, :n_posdef]
 
-            C_s = pm.gp.Covariance(pm.gp.cov_funs.exponential.aniso_geo_rad, amp=1, scale=eff_spat_scale, inc=inc, ecc=ecc)
-            approx_dpc = np.asarray(C_s(this_x, data_locs[:,:2]))            
-            # while True:
-            #     try:
-            #         pm.__PyMCThreadPool__._results_queue.get(block=False)
-            #     except:
-            #         break
-            # approx_dpc = pm.gp.cov_funs.exponential.euclidean(this_x, data_locs[:,:2], amp=1, scale=eff_spat_scale)
-            # approx_dpc = np.empty((this_x.shape[0], data_locs.shape[0]))
-            # pm.gp.cov_funs.distances.aniso_geo_rad(approx_dpc, this_x, data_locs[:,:2], inc=inc, ecc=ecc)
-            # pm.gp.cov_funs.isotropic_cov_funs.exponential(approx_dpc/eff_spat_scale)
-            this_rdi = set()
+    dl_posdef = data_locs[pivots[:n_posdef]]
+    dev_posdef = dev[pivots[:n_posdef]]
+
+    # Backsolve data-data covariance against dev
+    pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
+    pm.gp.trisolve(U, dev_posdef, uplo='U', transa='N', inplace=True)
     
-            # Find the points that covary most with points in block.
-            # if len(this_rdi) < N_nearest:
-            for row in approx_dpc:
-                this_rdi.update(np.argsort(row)[-N_nearest:])
-                # this_rdi = list(set(np.ravel(np.argsort(approx_dpc.T,axis=0)[-N_nearest:])))
-            
-            # print '\t%i datapoints, min cov %f'%(len(this_rdi), approx_dpc.min())
-            rel_data_ind[j,k] = np.array(list(this_rdi))
-    
-    
-    return dev, xbi, ybi, rel_data_ind
+    return dev_posdef, xbi, ybi, dl_posdef
         
 
-def krige_month(C, C_eval, i, data_locs, grid_shape, n_blocks_x, n_blocks_y, rel_data_ind, xbi, ybi, x, dev, row, mask, relp):
+def krige_month(C, i, dl_posdef, grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, x, dev_posdef, row, mask):
         
     x_index_start = 0
 
@@ -113,18 +95,6 @@ def krige_month(C, C_eval, i, data_locs, grid_shape, n_blocks_x, n_blocks_y, rel
             # Check if this block contains any land area, otherwise leave the covariance block as zero.
             if np.sum(this_mask) > 0:   
 
-                U, n_posdef, pivots = ichol_full(c=C_eval[rel_data_ind[j,k], :][:, rel_data_ind[j,k]], reltol=relp)
-
-                U = U[:n_posdef, :n_posdef]
-
-                dl_posdef = data_locs[rel_data_ind[j,k]][pivots[:n_posdef]]
-                dev_posdef = dev[rel_data_ind[j,k]][pivots[:n_posdef]]
-
-                # Backsolve data-data covariance against dev
-                pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
-                pm.gp.trisolve(U, dev_posdef, uplo='U', transa='N', inplace=True)
-                             
-                n_posdef = len(dl_posdef)
                 this_C_V = C(dl_posdef, this_x)
                 this_mask = mask[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]]             
 
