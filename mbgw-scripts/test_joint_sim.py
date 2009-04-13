@@ -6,8 +6,8 @@ import tables as tb
 from mbgw.master_grid import *
 
 # Establish blocks based on spatial distance only.
-n_blocks_x = 20
-n_blocks_y = 20
+memmax = 2.5e8
+N_nearest = 1000
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """
@@ -22,14 +22,14 @@ def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_
     """
     hf = tb.openFile(fname)
         
-    return create_many_realizations(burn,n, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, relp, mask_name)
+    return create_many_realizations(burn,n, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name)
 
 if __name__ == '__main__':
     try:
         hf.close()
     except:
         pass
-    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim.hdf5', 'landSea-e')
+    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim_%i_%i.hdf5'%(n_blocks_x, N_nearest), 'landSea-e')
 
     # import pylab as pl
     # pl.clf()

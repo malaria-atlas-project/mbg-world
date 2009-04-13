@@ -8,34 +8,22 @@ from rpy import *
 import numpy as np
 import copy as cp
 import pymc as pm
-import mbgw
 import tables as tb
+import mbgw
 import time
-#import pylab as pl
-#import matplotlib
-#matplotlib.interactive(True)
-from mbgw.joint_simulation import *
 import st_cov_fun
+from mbgw.joint_simulation import *
+from math import sqrt
 from mbgw import correction_factors
+from map_utils import getAsciiheaderFromTemplateHDF5
+from map_utils import exportAscii
 
-# import R functions
+# import R function
 r.source('extract_Rlib.R')
-plotmonthPY = r['plotmonth']
-getTimeMeanPY = r['getTimeMean']
 expandGridResPY=r['expandGridRes']
 
 # import parameters from param file
 from extract_params import *
-
-# check filepaths stated in parameter file
-from map_utils import checkAndBuildPaths
-checkAndBuildPaths(filename,VERBOSE=True,BUILD=True)
-checkAndBuildPaths(exportPath,VERBOSE=True,BUILD=True)
-checkAndBuildPaths(exportPathCombined,VERBOSE=True,BUILD=True)
-checkAndBuildPaths(salblim1km_path,VERBOSE=True,BUILD=True)
-checkAndBuildPaths(gr001km_path,VERBOSE=True,BUILD=True)
-checkAndBuildPaths(uniqueSalb_path,VERBOSE=True,BUILD=True)
-checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=True)
 
 ##############################TEMPPLACEHOLDER
 def PrevPoptoBurden(PRsurface, POPsurface, tyears):
@@ -44,10 +32,22 @@ def PrevPoptoBurden(PRsurface, POPsurface, tyears):
 
 #############################TEMPPLACEHOLDER
 
-
-
 #############################################################################################################################################
 def examineSalb (salblim1km,uniqueSalb_path={},pixelN_path={},ignore={}):
+
+    ''''
+    Takes an input raster with integers definng unique spatial areas (e.g. the salblim1km grid)
+    and calculates two vectors: uniqueSalb is a list of unique integer IDs present in this raster,
+    and count is the corresponding number of pixels in each. These are returned as a dictionary
+    and are optionally exported to txt files.
+    
+    Params to pass are:
+    
+    salblim1km      : either an hdf5 filepath or a numpy array object containing the salb raster
+    uniqueSalb_path : filepath to export uniqueSalb - no export if ommited
+    pixelN_path     : filepath to export count - no export if ommited
+    ignore          : a list containing values of salb to ignore from output lists (e.g. -9999)
+    '''
 
     # if the salb file is specified with a filepath, import it  
     if type(salblim1km) == str:
@@ -89,30 +89,51 @@ def examineSalb (salblim1km,uniqueSalb_path={},pixelN_path={},ignore={}):
     # return unique list and corresponding pixel count as a dictionary
     returnDict={'uniqueSalb':uniqueSalb,'count':count}
     return returnDict
-#examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path)
 #############################################################################################################################################
- 
-#slices=[slice(None,None,None), slice(None,None,None), slice(0,12,None)]
-#a_lo=2
-#a_hi=10
-#n_per=1
-#startRel=0
-#endRel=1
+def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,startRel=None,endRel=None):
 
-
-def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
+    '''
+    Takes an hdf block of one or more realisation of f, and calculates mean PR, total burden, and population at risk (PAR) in each
+    unique spatial unit (e.g. country) specified in the 1km res salblim1km_path file. Also requires 1km population surface specified by 
+    gr001km_path. Compmlies these extractions as a dictionary, which is passed to outputDistributedExtractions_country for export.
+    
+    Params to pass are:
+    
+    slices       : a list of three slice objects definng start,stop,step for lat,long,month respectively.: e.g [slice(None,None,None), slice(None,None,None), slice(0,12,None)]
+    a_lo,a_hi    : lower and upper age to predict for
+    n_per        : how many realisations of the nugget are we simulating
+    FileStartRel : number of first realisation present in the hdf5 file (in filename)
+    FileEndRel   : number of last realisation (up to but not including) present in the hdf5 file (in filename)
+    startRel     : number of first realisation WITHIN THIS FILE that we want to extract over (if ommited will start from 0)
+    endRel       : number of last realisation WITHIN THIS FILE that we want to extract over (if ommited will use last realisation in file)
+    ''' 
 
     ####TEMP
     #XXXa=r.Sys_time()
     #xxx1=xxx2=xxx3=xxx4=xxx5=xxx6=xxx7=xxx8=xxx9=xxx10=xxx11=xxx12=xxx13=xxx14=xxx15=xxx16=xxx17=xxx18=xxx19=xxx20=0
     ########
+
+    # construct filepath for this realisation block, and define link
+    filename = realisations_path
+    filename = filename.replace('FILESTARTREL',str(FileStartRel))
+    filename = filename.replace('FILEENDREL',str(FileEndRel))
+    checkAndBuildPaths(filename,VERBOSE=True,BUILD=False)
+    hf = tb.openFile(filename)    
+    hr = hf.root
+
+    # define default start and end realisations WITHIN AND RELATIVE TO THIS FILE
+    if startRel is None: startRel = 0 
+    if endRel is None: endRel = hr.realizations.shape[0]
     
+    # if either startRel or endRel are specified, run check that the hdf5 file contains sufficient realisations
+    if ((startRel is None) & (endRel is None))==False:
+        if((endRel - startRel)>hr.realizations.shape[0]):
+            print 'ERROR!!! asking for '+str(endRel - startRel)+' realisations from block '+str(filename)+' that has only '+str(hr.realizations.shape[0])+' : EXITING!!!'
+            return(-9999)
+
     #xxx1a = r.Sys_time()
     # define basic parameters
     slices = tuple(slices)     
-    hf = tb.openFile(filename)    
-    hr = hf.root    
-    #n_realizations = len(hr.realizations)    
     n_realizations = (endRel - startRel)
     n_rows=len(hr.lat_axis)
     n_cols=len(hr.lon_axis)
@@ -337,7 +358,6 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
 
                 # aggregate through time to obtain spatial-only array for this nugget-realisation
                 #xxx9a = r.Sys_time()
-                #chunkTMEAN = array([getTimeMeanPY(chunk,TimeDim=1)])
                 chunkTMEAN = atleast_2d(np.mean(chunk,0))
                 #xxx9 = xxx9 + (r.Sys_time() - xxx9a)
 
@@ -495,20 +515,37 @@ def extractSTaggregations (slices,a_lo,a_hi,n_per,startRel,endRel):
     #print '16   : '+str(xxx16)+' ('+str((xxx16/XXX)*100)+'%)'
     #print '17   : '+str(xxx17)+' ('+str((xxx17/XXX)*100)+'%)'
 
-    # return dictionary containing:
+
+    # define absolute startRel and endRel for appropriate output file suffixes
+    startRelOUT = FileStartRel+startRel
+    endRelOUT = FileStartRel+endRel
+    
+    # define dictionary to pass to outputDistributedExtractions_country containing:
     # 1. Array of mean PR values per country per realisation (countryMeanPRrel)
     # 2. Array of burden totals per country per realisation (countryBURDENrel)
     # 3. dictionary of PAR values per country per realisation, along with classification scheme metadata (PARdict)
 
-    returnDict={"startRel":startRel,"endRel":endRel,"countryMeanPRrel":countryMeanPRrel,"countryBURDENrel":countryBURDENrel,"PARdict":PARdict}
-    return(returnDict)
- 
+    returnDict={"startRel":startRelOUT,"endRel":endRelOUT,"countryMeanPRrel":countryMeanPRrel,"countryBURDENrel":countryBURDENrel,"PARdict":PARdict}
+    
+    # export extracted arrays 
+    outputDistributedExtractions_country(returnDict)
+    
+    #return(returnDict)
 #############################################################################################################################################
-def outputExtraction(dict): 
+def outputDistributedExtractions_country(dict): 
 
-    # check for error output from extractSTaggregations due to NaNs
+    ''''
+    Takes a dictionary which is output from extractSummaries_country and exports 
+    .txt files of mean PR, burden, and PAR extractions by country.
+    
+    Params to pass are:
+    
+    dict      : output from outputDistributedExtractions_country
+    '''
+
+    # check for error output from extractSummaries_country due to NaNs
     if dict == -9999:
-        print "WARNING!! recieved error output from extractSTaggregations() - will not run outputExtraction()" 
+        print "WARNING!! recieved error output from extractSummaries_country() - will not run outputDistributedExtractions_country()" 
         return(-9999)
 
     # define which realisations we are dealing with
@@ -516,11 +553,11 @@ def outputExtraction(dict):
     endRel=dict['endRel']
 
     # construct file suffix indicating realisations in question
-    relSuff = '_r'+str(startRel)+'to'+str(endRel-1)
+    relSuff = '_r'+str(startRel)+'to'+str(endRel)
 
     # export arrays of mean PR and burden per country per realisation
-    np.savetxt(exportPath+'meanPR'+relSuff+'.txt', dict['countryMeanPRrel'])
-    np.savetxt(exportPath+'BURDEN'+relSuff+'.txt', dict['countryBURDENrel'])
+    np.savetxt(exportPathDistributed_country+'meanPR_country'+relSuff+'.txt', dict['countryMeanPRrel'])
+    np.savetxt(exportPathDistributed_country+'BURDEN_country'+relSuff+'.txt', dict['countryBURDENrel'])
 
     # loop through classification schemes and clases wihtin them and export array of PAR for each
     schemes = dict['PARdict'].keys()    
@@ -536,15 +573,220 @@ def outputExtraction(dict):
             classSuff = '_'+schemes[ss]+'_'+classes[cc]
 
             # export PAR array for this scheme-class
-            np.savetxt(exportPath+'PAR'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
+            np.savetxt(exportPathDistributed_country+'PAR_country'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
 #############################################################################################################################################
+def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,totalN,startRel=None,endRel=None,BURDEN=False):
 
-a=time.time()
-ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))
-outputExtraction(ExtractedDict) 
-print "all done from PYlib"
-print("TOTAL TIME: "+(str(time.time()-a)))
+    '''
+    Takes an hdf block of one or more realisations of f, and calculates running arrays that can subsequently be combined using combineDistribExtractions_perpixel()
+    to calculate per-pixel summaries (mean and StdDev) of posterior distributions of PR and burden. Also calculates posterior
+    probability of membership to every class in every scheme (specified by breaksDict), most likely class in each scheme, and
+    probability of membership to that most likely class. Export gzipped arrays for subsequent import and combining in combineDistribExtractions_perpixel() 
+        
+    Params to pass are:
+    
+    slices       : a list of three slice objects defining start,stop,step for lat,long,month respectively.: e.g [slice(None,None,None), slice(None,None,None), slice(0,12,None)]
+    a_lo,a_hi    : lower and upper age to predict for
+    n_per        : how many realisations of the nugget are we simulating
+    FileStartRel : number of first realisation present in the hdf5 file (in filename)
+    FileEndRel   : number of last realisation (up to but not including) present in the hdf5 file (in filename)
+    totalN       : the total number of realisations (i.e. denominator in posterior mean) i.e n_per * n_realizations
+    startRel     : number of first realisation WITHIN THIS FILE that we want to extract over (if ommited will start from 0)
+    endRel       : number of last realisation WITHIN THIS FILE that we want to extract over (if ommited will use last realisation in file)
+    BURDEN       : do we want to perform calculations for burden - default is no.
+    ''' 
 
-#ExtractedDict = extractSTaggregations([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,1,0,1)
-#print("TOTAL TIME: "+(str(time.time()-a)))
-#outputExtraction(ExtractedDict) 
+    # construct filepath for this realisation block, and define link
+    filename = realisations_path
+    filename = filename.replace('FILESTARTREL',str(FileStartRel))
+    filename = filename.replace('FILEENDREL',str(FileEndRel))
+    checkAndBuildPaths(filename,VERBOSE=False,BUILD=False)
+    hf = tb.openFile(filename)    
+    hr = hf.root
+
+    # define default start and end realisations WITHIN AND RELATIVE TO THIS FILE
+    if startRel is None: startRel = 0 
+    if endRel is None: endRel = hr.realizations.shape[0]
+    
+    # if either startRel or endRel are specified, run check that the hdf5 file contains sufficient realisations
+    if ((startRel is None) & (endRel is None))==False:
+        if((endRel - startRel)>hr.realizations.shape[0]):
+            print 'ERROR!!! asking for '+str(endRel - startRel)+' realisations from block '+str(filename)+' that has only '+str(hr.realizations.shape[0])+' : EXITING!!!'
+            return(-9999)
+
+    #xxx1a = r.Sys_time()
+    # define basic parameters
+    slices = tuple(slices)     
+    n_realizations = (endRel - startRel)
+    n_rows=len(hr.lat_axis)
+    n_cols=len(hr.lon_axis)
+    N_facs = int(1e5)
+    N_years = (slices[2].stop - slices[2].start)/12
+
+    # Get nugget variance and age-correction factors    
+    V = hr.PyMCsamples.col('V')[:]    
+    facs = mbgw.correction_factors.age_corr_factors_from_limits(a_lo, a_hi, N_facs)    
+
+    # if we are extracting burden summaries, import 5km population grid
+    if BURDEN==True:
+        gr005km = tb.openFile(gr005km_path)
+
+    # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
+    zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
+
+    # initialise zero matrices that will house running totals
+    meanPR = cp.deepcopy(zeroMap)
+    meanPR2 = cp.deepcopy(zeroMap)
+    if BURDEN==True:
+        meanBUR = cp.deepcopy(zeroMap)    
+        meanBUR2 = cp.deepcopy(zeroMap)
+
+    # initialise dictionary to house probability of class membership running arrays for each sceme/class
+    Nschemes=len(breaksDict)    
+    schemeNames=breaksDict.keys()    
+    PCMdict=cp.deepcopy(breaksDict)
+    
+    ## ..loop through each classification scheme 
+    for ss in xrange(0,Nschemes): 
+        scheme=schemeNames[ss]   
+        breaknames = PCMdict[scheme]['BREAKNAMES']
+        Nclasses=len(breaknames) 
+
+        # define additional sub-dictionary to add to PCMdict to house arrays for PCM per class per scheme
+        PCM = {}
+
+        # .. for each class within each scheme..
+        for cc in xrange(0,Nclasses):
+            thisbreakname = breaknames[cc]
+            
+            # define an empty array for this scheme-class to house PCM
+            blankarray = {thisbreakname: cp.deepcopy(zeroMap) }
+
+            # add this blank array to interim PAR dictionary
+            PCM.update(blankarray)
+
+        # add this sub-dictionary to PCMdict for this scheme
+        PCM = {'PCM':PCM}
+        PCMdict[scheme].update(PCM)
+
+    # loop through each realisation
+    for ii in xrange(0,n_realizations): #1:500 realisations n_realizations   
+    
+        # define which realisation this relates to in global set from MCMC
+        MCMCrel = startRel+ii 
+
+        print "realisation "+str(FileStartRel+MCMCrel)+" of set "+str(FileStartRel)+" to "+str(FileEndRel)+" ("+str(n_realizations)+" realisations)"    
+
+        #xxx3a = r.Sys_time() 
+        # Pull out parasite rate chunk (i.e. import n months of block)    
+        tot_slice = (slice(MCMCrel,MCMCrel+1,None),) + slices    
+        #f_chunk = hr.realizations[tot_slice][::-1,:,:,:].T   # hr.realizations=[rel,row,col,month]   #f_chunk = [month,col,row,rel]
+        #f_chunk = f_chunk[:,:,:,0]                       #f_chunk = [month,col,row]
+
+        # because pyTables is not working properly, manually loop through each month we want to extract and make a ST 3d matrix
+        n_months = tot_slice[3].stop - tot_slice[3].start
+        f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+        for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+            f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+
+        ########TEMP###########
+        #set missing vlaues in f block to 0
+        #print(sum(np.isnan(f_chunk)))
+        f_chunk[np.isnan(f_chunk)]=0
+        #print(sum(np.isnan(f_chunk)))
+        ####################################
+        
+        # run check that there are no missing values in this f chunk
+        if sum(sum(sum(np.isnan(f_chunk))))>0:
+            print "WARNING!! found "+str(sum(np.isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
+            return(-9999)
+
+        # loop through n_per draws of the nugget..
+        cnt=0
+        for kk in xrange(0,n_per):
+
+            cnt=cnt+1
+            if cnt==1:
+                print '    on nug rel '+str(kk)+' of '+str(n_per)
+                cnt=0 
+            
+            # add nugget component, apply inverse logit, apply age-correction factor
+            #xxx8a = r.Sys_time()
+            chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            chunk = pm.invlogit(chunk.ravel())
+            chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
+            chunk = chunk.reshape(f_chunk.shape).squeeze()
+            #xxx8 = xxx8 + (r.Sys_time() - xxx8a)
+
+            # aggregate through time to obtain spatial-only array for this nugget-realisation
+            chunkTMEAN = np.atleast_2d(np.mean(chunk,0))
+            #print('sum of chunkTMEAN '+str(sum(sum(chunkTMEAN))))
+
+
+            #hdrDict = getAsciiheaderFromTemplateHDF5(lim5kmbnry_path)
+            #exportAscii(chunkTMEAN,exportPathDistributed_perpixel+"chunkTmean.asc",hdrDict)
+            #return()
+            
+            # increment runing mean PR matrices 
+            meanPR = meanPR + (chunkTMEAN/totalN)
+            meanPR2 = meanPR2 + (np.square(chunkTMEAN)/totalN)
+            
+            # get burden realisation for this PR and increment running burden matrix
+            if BURDEN==True:
+                burdenChunk = PrevPoptoBurden(PRsurface = chunkTMEAN, POPsurface = gr005km.root.data[:,:], tyears = N_years)
+                meanBUR = meanBUR + (burdenChunk/totalN)
+                meanBUR2 = meanBUR2 + (np.square(burdenChunk)/totalN)
+            
+            # increment running class membership total arrays for each scheme/class
+            ## ..loop through each classification scheme 
+            for ss in xrange(0,Nschemes): 
+                scheme=schemeNames[ss]   
+                breaknames = PCMdict[scheme]['BREAKNAMES']
+                Nclasses=len(breaknames) 
+                breaks = PCMdict[scheme]['BREAKS']
+               
+                # .. for each class within each scheme..
+                for cc in xrange(0,Nclasses):
+                    thisbreakname = breaknames[cc]
+        
+                    # define an ID matrix to identify those pixels in this map in this class
+                    classID = cp.deepcopy(zeroMap)
+                    classID[(chunkTMEAN>=breaks[cc]) & (chunkTMEAN < breaks[cc+1])]=1 
+
+                    # update class membership running probability array
+                    PCMdict[scheme]['PCM'][thisbreakname] = PCMdict[scheme]['PCM'][thisbreakname] + (classID/totalN)
+
+            
+    # export running arrays for this set of realisations
+
+    ## construct file suffix indicating realisations in question
+    startRelOUT = FileStartRel+startRel
+    endRelOUT = FileStartRel+endRel
+    relSuff = '_r'+str(startRelOUT)+'to'+str(endRelOUT)
+
+    ## export running meanPR and meanPR2 array
+    np.savetxt(exportPathDistributed_perpixel+"meanPR_perpixel"+relSuff+".gz",meanPR)
+    np.savetxt(exportPathDistributed_perpixel+"meanPR2_perpixel"+relSuff+".gz",meanPR2)
+
+
+    if BURDEN==True:
+        ## export running meanBUR and meanBUR2 array
+        np.savetxt(exportPathDistributed_perpixel+"meanBUR_perpixel"+relSuff+".gz",meanBUR)
+        np.savetxt(exportPathDistributed_perpixel+"meanBUR2_perpixel"+relSuff+".gz",meanBUR2)
+
+    ## for each classification scheme, export running PCM arrays for each scheme/class
+    for ss in xrange(0,Nschemes):             
+        scheme=schemeNames[ss]                
+        breaknames = PCMdict[scheme]['BREAKNAMES']             
+        Nclasses=len(breaknames)
+
+        # .. for each class within each scheme..            
+        for cc in xrange(0,Nclasses):            
+            thisbreakname = breaknames[cc]
+
+            # whilst at this loop location, export PCM for this scheme/class as ascii
+            np.savetxt(exportPathDistributed_perpixel+'PCM_perpixel_'+scheme+'_'+thisbreakname+relSuff+".gz",PCMdict[scheme]['PCM'][thisbreakname])
+
+    return()  
+#############################################################################################################################################

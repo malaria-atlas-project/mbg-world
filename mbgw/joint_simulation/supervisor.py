@@ -34,7 +34,7 @@ def get_covariate_submesh(name, grid_lims):
     return getattr(mbgw.auxiliary_data, name).data[nrows-grid_lims['bottomRow']:nrows-grid_lims['topRow']+1,
                                                     grid_lims['leftCol']-1:grid_lims['rightCol']][::-1,:].T
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, N_nearest, relp=1e-3, mask_name=None, n_in_trace=None):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp=1e-3, mask_name=None, n_in_trace=None):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -114,6 +114,15 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     data_locs = data_locs[in_mesh]
     data_mesh_indices = data_mesh_indices[in_mesh]
     
+    # Total number of pixels in month.
+    npix = grid_shape[0]*grid_shape[1]
+    # Maximum number of pixels in tile.
+    npixmax = memmax/4./data_locs.shape[0]
+    # Minimum number of tiles needed.
+    ntiles = npix/npixmax
+    # Blocks.
+    n_blocks_x = n_blocks_y = np.ceil(np.sqrt(ntiles))
+    
     # from IPython.Debugger import Pdb
     # Pdb(color_scheme='Linux').set_trace()
     
@@ -126,11 +135,12 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         mean_ondata = this_M(data_locs)
         covariate_mesh = np.zeros(grid_shape[:2])
         for key in meta.covariate_names[0]:
-            this_coef = trace.PyMCsamples.col(key+'_coef')[indices[i]]
             try:
-                mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
-            except:
-                print 'Error: shapes %s, %s, %s'%(getattr(meta, key).shape, meta.ui.shape, np.shape(this_coef))
+                this_coef = trace.PyMCsamples.col(key+'_coef')[indices[i]]
+            except KeyError:
+                print 'Warning, no column named %s'%key+'_coef'
+                continue
+            mean_ondata += getattr(meta, key)[:][in_mesh] * this_coef
             this_pred_covariate = get_covariate_submesh(key, grid_lims) * this_coef
             covariate_mesh += this_pred_covariate
 
@@ -138,7 +148,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
-        data_vals = trace.PyMCsamples[i]['f'][where_in_mesh]
+        data_vals = trace.PyMCsamples[i]['f'][in_mesh]
         create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest)
         outfile.flush()
     outfile.close()

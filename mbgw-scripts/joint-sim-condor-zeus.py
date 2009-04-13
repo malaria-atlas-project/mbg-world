@@ -9,8 +9,7 @@ import sys
 print 'Imports done'
 
 # Establish blocks based on spatial distance only.
-n_blocks_x = 10
-n_blocks_y = 10
+memmax = 2.5e8
 N_nearest = 300
 
 i = int(sys.argv[1])
@@ -19,7 +18,7 @@ n_jobs = int(sys.argv[3])
 region = sys.argv[4]
 fname = sys.argv[5]
 burn = int(sys.argv[6])
-n_blocks_x = n_blocks_y = int(sys.argv[7])
+memmax = int(sys.argv[7])
 N_nearest = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 nmonths = 288 
@@ -34,7 +33,7 @@ my_start = indices[i]
 my_end = indices[i+1]
 
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_name = '/share/scratch/malaria-atlas-project/MAP-outputs/realizations_nb_%i_%s.hdf5'%(n_blocks_x,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_name = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 # print ('create_many_realizations(%i, %i, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, %s, relp, mask_fname, n_in_trace=%i)'%(my_start, iter_per_job, outfile_name, my_end))
 
 print 'i: %i'%i
@@ -48,8 +47,7 @@ print 'start_year: %i'%start_year
 print 'mask_name: %s'%mask_name
 print 'relp: %f'%relp
 print 'grid_lims: %s'%str(grid_lims)
-print 'n_blocks_x: %i'%n_blocks_x
-print 'n_blocks_y: %i'%n_blocks_y
+print 'memmax: %i'%n_blocks_x
 print 'N_nearest: %i'%N_nearest
 
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, N_nearest, relp, mask_name, n_in_trace = my_end)
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end)

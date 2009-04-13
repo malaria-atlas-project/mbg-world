@@ -70,4 +70,4 @@ def asc_to_hdf5(fname, path='./',mapView=False,setNaN=False):
 #asc_to_hdf5('lims1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
 #asc_to_hdf5('gr001km.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True,setNaN=0)
 #asc_to_hdf5('lim5kmbnry-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
-
+#asc_to_hdf5('gr005km_AF.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)

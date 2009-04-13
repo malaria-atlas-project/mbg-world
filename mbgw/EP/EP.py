@@ -79,9 +79,9 @@ class EP(pm.Sampler):
         else:
             self.V = V_guess
         # log(expected likelihood).
-        self.p = np.zeros(self.Nx, dtype=float)
+        self.lp = np.zeros(self.Nx, dtype=float)
         # Log-probability functions
-        self.lp = lp
+        self.lpf = lp
         # 'Nugget' for epsilon
         self.nug = np.resize(nug, self.Nx)
         # Prior mean and covariance of theta
@@ -100,7 +100,7 @@ class EP(pm.Sampler):
         v = pri_v + nug_v
         
         pri_fn = lambda x: normal_like(x, m, 1./v)
-        like_fn = lambda x: self.lp[i](np.atleast_1d(x)).squeeze()
+        like_fn = lambda x: self.lpf[i](np.atleast_1d(x)).squeeze()
         post_fn = lambda x: pri_fn(x) + like_fn(x)
         
         lo, hi = estimate_envelopes(post_fn, m, np.sqrt(v), 13.)
@@ -151,9 +151,10 @@ class EP(pm.Sampler):
         if np.any(np.isinf(new_M)) or np.any(np.isinf(new_M)):
             # Pdb(color_scheme='Linux').set_trace()  
             raise RuntimeError, 'Infinite covariance or mean.'
-        if np.any(np.diag(new_C)<0):
-            Pdb(color_scheme='Linux').set_trace()    
-            raise RuntimeError, 'Negative diagonal elements of covariance.'
+        # This catches in the unobserve phase... how can that be?
+        # if np.any(np.diag(new_C)<0):
+        #     Pdb(color_scheme='Linux').set_trace()    
+        #     raise RuntimeError, 'Negative diagonal elements of covariance.'
         self.M = new_M
         self.C = new_C
         self.M.flags['WRITEABLE'] = False
@@ -174,9 +175,9 @@ class EP(pm.Sampler):
             return
             
         self.observe(i, unobserve=True)
-        self.p[i], m1, m2 = self.compute_expectation(i, N)
+        self.lp[i], m1, m2 = self.compute_expectation(i, N)
         
-        if not np.isinf(self.p[i]):
+        if not np.isinf(self.lp[i]):
 
             V_post = m2 - m1*m1
             mu_post = m1
@@ -200,7 +201,7 @@ class EP(pm.Sampler):
         else:
             print 'Zero probability'
             self.observe(i)
-            self.p[i] = -np.Inf
+            self.lp[i] = -np.Inf
         
         # print '\t\t',i, self.V[i], self.mu[i]
         
@@ -210,6 +211,17 @@ class EP(pm.Sampler):
     def update_sweep(self, N):
         for i in xrange(self.Nx):
             self.update_item(i, N)
+    
+    def _set_C(self, new_C):
+        self._C = new_C
+        new_C.flags['WRITEABLE']=False
+        # This will catch the first time C's diagonal is negative fo sho.
+        if np.any(np.diag(new_C)<0):
+            from IPython.Debugger import Pdb
+            Pdb(color_scheme='Linux').set_trace()
+    def _get_C(self):
+        return self._C
+    C = property(_get_C, _set_C)
     
     def fit(self, N, tol=.01):
         """
@@ -290,11 +302,11 @@ class EP(pm.Sampler):
 
             log_ratio = np.real(joint_term-ind_term)
         
-        if np.sum(self.p) + log_ratio > 10000:
+        if np.sum(self.lp) + log_ratio > 10000:
             print 'Warning, HUGE p'
 
         if np.any(np.isnan(log_ratio)):
             from IPython.Debugger import Pdb
             Pdb(color_scheme='Linux').set_trace()   
         
-        return np.sum(self.p) + log_ratio
+        return np.sum(self.lp) + log_ratio
