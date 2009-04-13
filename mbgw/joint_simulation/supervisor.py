@@ -34,7 +34,7 @@ def get_covariate_submesh(name, grid_lims):
     return getattr(mbgw.auxiliary_data, name).data[nrows-grid_lims['bottomRow']:nrows-grid_lims['topRow']+1,
                                                     grid_lims['leftCol']-1:grid_lims['rightCol']][::-1,:].T
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, outfile_name, N_nearest, relp=1e-3, mask_name=None, n_in_trace=None):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp=1e-3, mask_name=None, n_in_trace=None):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -113,6 +113,15 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     
     data_locs = data_locs[in_mesh]
     data_mesh_indices = data_mesh_indices[in_mesh]
+    
+    # Total number of pixels in month.
+    npix = grid_shape[0]*grid_shape[1]
+    # Maximum number of pixels in tile.
+    npixmax = memmax/4./data_locs.shape[0]
+    # Minimum number of tiles needed.
+    ntiles = npix/npixmax
+    # Blocks.
+    n_blocks_x = n_blocks_y = np.ceil(np.sqrt(ntiles))
     
     # from IPython.Debugger import Pdb
     # Pdb(color_scheme='Linux').set_trace()
