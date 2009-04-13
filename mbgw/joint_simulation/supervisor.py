@@ -169,48 +169,48 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
 
     Cp = C.params
     
-    # Prepare input dictionaries
-    covParamObj = {'Scale': Cp['scale'][0]*rad_to_km,
-                    'amp': Cp['amp'][0], 
-                    'inc': Cp['inc'][0], 
-                    'ecc': Cp['ecc'][0], 
-                    't.lim.corr': Cp['tlc'][0], 
-                    'scale.t': Cp['st'][0], 
-                    'sin.frac': Cp['sf'][0]}
-    gridParamObj = {'YLLCORNER': grids[1][0]*rad_to_deg, 
-                    'CELLSIZE': (grids[1][1]-grids[1][0])/(grids[1][2]-1.)*rad_to_deg, 
-                    'NROWS':grid_shape[1],
-                    'NCOLS':grid_shape[0]}
-    monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
-    
-    # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
-    os.chdir(r_path)
-    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
-    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
-    preLoopClassTree, junk = parse_tree(tree_reader)
-    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
-    
-    OutMATlist = preLoopObj['OutMATlist']
-    tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
-    OutMATClassTree, junk = parse_tree(tree_reader)
-    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-    os.chdir(curpath)
-
-    # Create and store unconditional realizations
-    print '\tGenerating unconditional realizations.'
-    t1 = time.time()
-    for i in xrange(grid_shape[2]):
-        os.chdir(r_path)
-        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
-        os.chdir(curpath)
-        OutMATlist= monthObject['OutMATlist']
-        MonthGrid = monthObject['MonthGrid']
-        out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
-    t2 = time.time()
-    print '\t\tDone in %f'%(t2-t1)
-    
-    # delete unneeded R products
-    del OutMATlist, preLoopObj, MonthGrid, monthObject
+    # # Prepare input dictionaries
+    # covParamObj = {'Scale': Cp['scale'][0]*rad_to_km,
+    #                 'amp': Cp['amp'][0], 
+    #                 'inc': Cp['inc'][0], 
+    #                 'ecc': Cp['ecc'][0], 
+    #                 't.lim.corr': Cp['tlc'][0], 
+    #                 'scale.t': Cp['st'][0], 
+    #                 'sin.frac': Cp['sf'][0]}
+    # gridParamObj = {'YLLCORNER': grids[1][0]*rad_to_deg, 
+    #                 'CELLSIZE': (grids[1][1]-grids[1][0])/(grids[1][2]-1.)*rad_to_deg, 
+    #                 'NROWS':grid_shape[1],
+    #                 'NCOLS':grid_shape[0]}
+    # monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
+    # 
+    # # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
+    # os.chdir(r_path)
+    # preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
+    # tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+    # preLoopClassTree, junk = parse_tree(tree_reader)
+    # preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    # 
+    # OutMATlist = preLoopObj['OutMATlist']
+    # tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
+    # OutMATClassTree, junk = parse_tree(tree_reader)
+    # OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    # os.chdir(curpath)
+    # 
+    # # Create and store unconditional realizations
+    # print '\tGenerating unconditional realizations.'
+    # t1 = time.time()
+    # for i in xrange(grid_shape[2]):
+    #     os.chdir(r_path)
+    #     monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
+    #     os.chdir(curpath)
+    #     OutMATlist= monthObject['OutMATlist']
+    #     MonthGrid = monthObject['MonthGrid']
+    #     out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
+    # t2 = time.time()
+    # print '\t\tDone in %f'%(t2-t1)
+    # 
+    # # delete unneeded R products
+    # del OutMATlist, preLoopObj, MonthGrid, monthObject
     
     # Figure out pdata
     pdata = np.empty(tdata.shape)
@@ -220,7 +220,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     # Bring in data.
     print '\tKriging to bring in data.'    
     print '\tPreprocessing.'
-    t1 = time.time()    
+    t1 = time.time()  
     dev, xbi, ybi, rel_data_ind = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest)   
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
@@ -241,26 +241,26 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         row += M(x)
         row += out_arr[real_index,:,:,i]
 
-        # import pylab as pl
-        # import matplotlib
-        # matplotlib.interactive(True)
-        # pl.close('all')
-        # pl.figure(figsize=(8,14))
-        # pl.subplot(1,2,1)
-        # pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot)
-        # pl.colorbar()
-        # pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)        
-        # pl.axis('off')
-        # pl.subplot(1,2,2)
-        # row = pm.invlogit((row + np.random.normal(size=row.shape)*np.sqrt(2)).ravel()).reshape(row.shape)
-        # row[np.where(1-mask[:,::-1])] = 0
-        # pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot,vmin=-.5,vmax=1.5)
-        # pl.colorbar()        
-        # pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)                
-        # pl.axis('off')     
-        # pl.savefig('row%i.pdf'%i)   
-        # from IPython.Debugger import Pdb
-        # Pdb(color_scheme='Linux').set_trace()   
+        import pylab as pl
+        import matplotlib
+        matplotlib.interactive(True)
+        pl.close('all')
+        pl.figure(figsize=(8,14))
+        pl.subplot(1,2,1)
+        pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot)
+        pl.colorbar()
+        pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)        
+        pl.axis('off')
+        pl.subplot(1,2,2)
+        row = pm.invlogit((row + np.random.normal(size=row.shape)*np.sqrt(2)).ravel()).reshape(row.shape)
+        row[np.where(1-mask[:,::-1])] = 0
+        pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot,vmin=-.5,vmax=1.5)
+        pl.colorbar()        
+        pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)                
+        pl.axis('off')     
+        pl.savefig('row%i.pdf'%i)   
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
 
         # NaN  the oceans to save storage
         row[np.where(1-mask[:,::-1])] = missing_val

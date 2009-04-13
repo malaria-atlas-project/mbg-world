@@ -45,7 +45,6 @@ def ndmeshgrid(grids, hnode=None):
 
 def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest):
 
-
     xbi = np.asarray(np.linspace(0,grids[0][2],n_blocks_x+1),dtype=int)
     ybi = np.asarray(np.linspace(0,grids[1][2],n_blocks_y+1),dtype=int)
 
@@ -59,10 +58,6 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     eff_spat_scale = scale/np.sqrt(2)
     # C_s = pm.gp.Covariance(pm.gp.cov_funs.exponential.aniso_geo_rad, amp=1, scale=eff_spat_scale, inc=inc, ecc=ecc)
     rel_data_ind = np.empty((n_blocks_x, n_blocks_y), dtype=object)
-
-    from pylab import *
-    import matplotlib
-    matplotlib.interactive(True)    
     
     for j in xrange(n_blocks_x):        
         for k in xrange(n_blocks_y):

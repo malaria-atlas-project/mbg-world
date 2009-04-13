@@ -7,7 +7,7 @@ from mbgw.master_grid import *
 
 # Establish blocks based on spatial distance only.
 memmax = 2.5e8
-N_nearest = 1000
+N_nearest = 2000
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         hf.close()
     except:
         pass
-    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim_%i_%i.hdf5'%(n_blocks_x, N_nearest), 'landSea-e')
+    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim_%i_%i.hdf5'%(memmax, N_nearest), 'landSea-e')
 
     # import pylab as pl
     # pl.clf()
