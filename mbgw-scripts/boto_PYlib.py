@@ -4,7 +4,8 @@
 ####################################
 
 # set location of file containng keys to S3
-keyPath = '/home/pwg/mbg-world/mbgw-scripts/s3code.txt'
+#keyPath = '/root/s3code.txt'
+from extract_params import keyPath
 
 # import libraries
 import boto
@@ -24,6 +25,8 @@ def S3connectKeys(keyNo):
 
     a=file(keyPath).read()
     key = a.split(',')[keyNo]
+    key=key.strip("\'")
+    key=key.strip(" \'")
     return(key)
 ##############################################################################################################################
 def getFileAgeMinutes(filekey):
@@ -62,7 +65,7 @@ def uploadDirectoryAsBucket(bucketName,directoryPath,uploadConstituentFiles,over
     a bucket of the same name containing files of the same name.
     
     params to pass:
-    bucketName              :(string) name to give bucket when it is created
+    bucketName              : (string) name to give bucket when it is created
     directoryPath           : (string) full path of directory on local machine that will be copied
     uploadConstituentFiles  : (logical) do we want to upload the files in this directory as objects in the bucket?
     overwriteContent        : (logical) if a file already exists in the bucket do we want to overwrite it? if False then only new files in this directory will be copied to bucket
@@ -289,7 +292,7 @@ def CheckFileExistsInBucket(bucketName,fileNameInBucket, md5check=None, maxAgeMi
     
     # check this bucket exits
     if (conn.lookup(bucketName) is None):
-        print 'WARNING!!! requested bucket "'+str(bucketName)+'" does not exist on S3 !!!'
+        print 'WARNING!!! requested bucket "'+str(bucketName)+'" does not exist on S3 OR the connection failed using these access keys!!!'
         return(False)
     
     # check this file exists within this bucket

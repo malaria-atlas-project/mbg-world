@@ -117,6 +117,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     filename = realisations_path
     filename = filename.replace('FILESTARTREL',str(FileStartRel))
     filename = filename.replace('FILEENDREL',str(FileEndRel))
+    checkAndBuildPaths(filename,VERBOSE=True,BUILD=False)
     hf = tb.openFile(filename)    
     hr = hf.root
 
@@ -584,7 +585,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         
     Params to pass are:
     
-    slices       : a list of three slice objects definng start,stop,step for lat,long,month respectively.: e.g [slice(None,None,None), slice(None,None,None), slice(0,12,None)]
+    slices       : a list of three slice objects defining start,stop,step for lat,long,month respectively.: e.g [slice(None,None,None), slice(None,None,None), slice(0,12,None)]
     a_lo,a_hi    : lower and upper age to predict for
     n_per        : how many realisations of the nugget are we simulating
     FileStartRel : number of first realisation present in the hdf5 file (in filename)
@@ -599,6 +600,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
     filename = realisations_path
     filename = filename.replace('FILESTARTREL',str(FileStartRel))
     filename = filename.replace('FILEENDREL',str(FileEndRel))
+    checkAndBuildPaths(filename,VERBOSE=False,BUILD=False)
     hf = tb.openFile(filename)    
     hr = hf.root
 
