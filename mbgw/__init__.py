@@ -3,7 +3,13 @@
 # License: Creative Commons BY-NC-SA
 ####################################
 
-from testmbgw import test
+#from testmbgw import test
+try:
+    from testmbgw import test
+except ImportError:
+    pass
+
+
 
 # import agepr
 # import st_cov_fun
