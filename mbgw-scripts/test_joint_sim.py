@@ -6,7 +6,7 @@ import tables as tb
 from mbgw.master_grid import *
 
 # Maximum memory usage in kriging stage
-memmax = 2.5e8
+memmax = 2.e8
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """

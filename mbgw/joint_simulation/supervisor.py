@@ -24,6 +24,9 @@ from rpy import r
 r.source("CONDSIMpreloop.R")
 r.source("CONDSIMmonthloop.R")
 os.chdir(curpath)
+import scipy
+from scipy import ndimage, mgrid
+
 
 __all__ = ['create_realization', 'create_many_realizations','reduce_realizations']
 
@@ -34,7 +37,7 @@ def get_covariate_submesh(name, grid_lims):
     return getattr(mbgw.auxiliary_data, name).data[nrows-grid_lims['bottomRow']:nrows-grid_lims['topRow']+1,
                                                     grid_lims['leftCol']-1:grid_lims['rightCol']][::-1,:].T
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -51,7 +54,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     grid_shape = (grids[0][2], grids[1][2], grids[2][2])
     
     if mask_name is not None:
-        mask = get_covariate_submesh(mask_name, grid_lims)
+        mask = get_covariate_submesh(mask_name, grid_lims)[:,::-1]
     else:
         mask = np.ones(grid_shape[:2])
         
@@ -115,13 +118,14 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     data_mesh_indices = data_mesh_indices[in_mesh]
     
     # Total number of pixels in month.
-    npix = grid_shape[0]*grid_shape[1]
+    npix = grid_shape[0]*grid_shape[1]/thinning**2
     # Maximum number of pixels in tile.
     npixmax = memmax/4./data_locs.shape[0]
     # Minimum number of tiles needed.
     ntiles = npix/npixmax
     # Blocks.
     n_blocks_x = n_blocks_y = np.ceil(np.sqrt(ntiles))
+    print 'I can afford %i by %i'%(n_blocks_x, n_blocks_y)
     
     # Scatter this part to many processes
     for i in xrange(len(indices)):
@@ -146,22 +150,49 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
         data_vals = trace.PyMCsamples[i]['f'][in_mesh]
-        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask)
+        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning)
         outfile.flush()
     outfile.close()
 
-def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask):
+def normalize_for_mapcoords(arr, max):
+    arr /= arr.max()
+    arr *= max
+    
+def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning):
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
     """
     grid_shape = tuple([grid[2] for grid in grids])
     
+    thin_grids = tuple([grid[:2]+(grid[2]/thinning,) for grid in grids])    
+    thin_grid_shape = tuple([thin_grid[2] for thin_grid in thin_grids])
+    thin_axes = tuple([np.linspace(*thin_grid) for thin_grid in thin_grids])
+    
+    mapgrid = np.array(mgrid[0:grid_shape[0],0:grid_shape[1]], dtype=float)
+    for i in xrange(2): normalize_for_mapcoords(mapgrid[i], thin_grid_shape[i]-1)
+    
+    thin_mapgrid = np.array(mgrid[0:thin_grid_shape[0], 0:thin_grid_shape[1]], dtype=float)
+    for i in xrange(2): normalize_for_mapcoords(thin_mapgrid[i], grid_shape[i]-1)
+    
+    def thin_to_full(thin_row):
+        return ndimage.map_coordinates(thin_row, mapgrid)
+    def full_to_thin(row):
+        return ndimage.map_coordinates(row, thin_mapgrid)
+    thin_mask = np.array(np.round(full_to_thin(mask)), dtype='bool')
+        
     # Container for x
+    thin_x = np.empty(thin_grid_shape[:2] + (3,))
+    mlon,mlat = np.meshgrid(*thin_axes[:2])
+    thin_x[:,:,0] = mlon.T
+    thin_x[:,:,1] = mlat.T
+    thin_x[:,:,2] = 0
+
     x = np.empty(grid_shape[:2] + (3,))
     mlon,mlat = np.meshgrid(*axes[:2])
     x[:,:,0] = mlon.T
     x[:,:,1] = mlat.T
-    x[:,:,2] = 0    
+    x[:,:,2] = 0
+    
     del mlon, mlat
 
     Cp = C.params
@@ -180,34 +211,34 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
                     'NCOLS':grid_shape[0]}
     monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
     
-    # # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
-    # os.chdir(r_path)
-    # preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
-    # tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
-    # preLoopClassTree, junk = parse_tree(tree_reader)
-    # preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
-    # 
-    # OutMATlist = preLoopObj['OutMATlist']
-    # tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
-    # OutMATClassTree, junk = parse_tree(tree_reader)
-    # OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-    # os.chdir(curpath)
-    # 
-    # # Create and store unconditional realizations
-    # print '\tGenerating unconditional realizations.'
-    # t1 = time.time()
-    # for i in xrange(grid_shape[2]):
-    #     os.chdir(r_path)
-    #     monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
-    #     os.chdir(curpath)
-    #     OutMATlist= monthObject['OutMATlist']
-    #     MonthGrid = monthObject['MonthGrid']
-    #     out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
-    # t2 = time.time()
-    # print '\t\tDone in %f'%(t2-t1)
-    # 
-    # # delete unneeded R products
-    # del OutMATlist, preLoopObj, MonthGrid, monthObject
+    # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
+    os.chdir(r_path)
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
+    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+    preLoopClassTree, junk = parse_tree(tree_reader)
+    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    
+    OutMATlist = preLoopObj['OutMATlist']
+    tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
+    OutMATClassTree, junk = parse_tree(tree_reader)
+    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    os.chdir(curpath)
+    
+    # Create and store unconditional realizations
+    print '\tGenerating unconditional realizations.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]):
+        os.chdir(r_path)
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
+        os.chdir(curpath)
+        OutMATlist= monthObject['OutMATlist']
+        MonthGrid = monthObject['MonthGrid']
+        out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
+    
+    # delete unneeded R products
+    del OutMATlist, preLoopObj, MonthGrid, monthObject
     
     # Figure out pdata
     pdata = np.empty(tdata.shape)
@@ -218,21 +249,26 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     print '\tKriging to bring in data.'    
     print '\tPreprocessing.'
     t1 = time.time()    
-    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)   
+    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)   
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
     
-    row = np.empty(grid_shape[:2], dtype=np.float32)
+    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
     t1 = time.time()  
     for i in xrange(grid_shape[2]-1,-1,-1):    
         # print '\t Month %i of %i'%(i,grid_shape[2])
-        row.fill(0.)
+        thin_row.fill(0.)
         
+        thin_x[:,:,2] = axes[2][i]
         x[:,:,2] = axes[2][i]
         
-        krige_month(C, i, dl_posdef, grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, x, dev_posdef, row, mask)
-                
+        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)        
+        
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()
+        row = ndimage.map_coordinates(thin_row, mapgrid)
+        
         row += covariate_mesh[:,::-1]
         row += M(x)
         row += out_arr[real_index,:,:,i]
@@ -241,25 +277,17 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         # import matplotlib
         # matplotlib.interactive(True)
         # pl.close('all')
-        # pl.figure(figsize=(8,14))
-        # pl.subplot(1,2,1)
+        # pl.figure()
         # pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot)
         # pl.colorbar()
         # pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)        
         # pl.axis('off')
-        # pl.subplot(1,2,2)
-        # row = pm.invlogit((row + np.random.normal(size=row.shape)*np.sqrt(2)).ravel()).reshape(row.shape)
-        # row[np.where(1-mask[:,::-1])] = 0
-        # pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot,vmin=-.5,vmax=1.5)
-        # pl.colorbar()        
-        # pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)                
-        # pl.axis('off')     
         # pl.savefig('row%i.pdf'%i)   
         # from IPython.Debugger import Pdb
         # Pdb(color_scheme='Linux').set_trace()   
 
         # NaN  the oceans to save storage
-        row[np.where(1-mask[:,::-1])] = missing_val
+        row[np.where(1-mask)] = missing_val
         
         out_arr[real_index,:,:,i] = row          
     t2 = time.time()
