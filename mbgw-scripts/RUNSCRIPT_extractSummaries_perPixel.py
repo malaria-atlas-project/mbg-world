@@ -6,8 +6,18 @@ from map_utils import checkAndBuildPaths
 from extract_PYlib import *
 from boto_PYlib import *
 
-
 # deal with system arguments
+
+############################TEMP
+#n_per = 3
+#FileStartRel = 0
+#FileEndRel = 1
+#totalN = 3
+#startRel = None
+#endRel = None
+#BURDEN = True
+################################
+
 n_per = int(sys.argv[1])
 FileStartRel = int(sys.argv[2])
 FileEndRel = int(sys.argv[3])
@@ -26,15 +36,15 @@ if BURDEN == 'None': BURDEN = None
 else: BURDEN = int(BURDEN)
 
 # build realisation block import path
-hdf5block = realisations_path
-hdf5block = hdf5block.replace('FILESTARTREL',str(FileStartRel))
-hdf5block = hdf5block.replace('FILEENDREL',str(FileEndRel))
+hdf5block_path = realisations_path
+hdf5block_path = hdf5block_path.replace('FILESTARTREL',str(FileStartRel))
+hdf5block_path = hdf5block_path.replace('FILEENDREL',str(FileEndRel))
 
 # download this realisation file from S3 storage
-S3bucketname = hdf5block.split('/')[-2]
-S3filename = hdf5block.split('/')[-1]
-downloadFileFromBucket(S3bucketname,S3filename,hdf5block,overwriteContent=False,makeDirectory=True,VERBOSE=True)
-checkAndBuildPaths(hdf5block,VERBOSE=False,BUILD=False)
+S3bucketname = hdf5block_path.split('/')[-2]
+S3filename = hdf5block_path.split('/')[-1]
+downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+checkAndBuildPaths(hdf5block_path,VERBOSE=False,BUILD=False)
 
 # download from S3 the other necessary file (optionally need 5km grump for burden map)
 if (BURDEN==True):
@@ -47,4 +57,10 @@ if (BURDEN==True):
 checkAndBuildPaths(exportPathDistributed_perpixel,VERBOSE=True,BUILD=True)
 
 # now call extractSummaries_perpixel substituting in the formatted sys args 
-extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,totalN,startRel=None,endRel=None,BURDEN=False)
+extractSummaries_perpixel ([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,n_per,FileStartRel,FileEndRel,totalN,startRel,endRel,BURDEN)
+
+# now upload the output back to the S3 storage
+uploadDirectoryAsBucket('distributedoutput_perpixel',exportPathDistributed_perpixel,uploadConstituentFiles=True,overwriteContent=True)
+
+
+

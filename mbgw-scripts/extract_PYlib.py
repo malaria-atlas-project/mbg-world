@@ -600,7 +600,6 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
     filename = realisations_path
     filename = filename.replace('FILESTARTREL',str(FileStartRel))
     filename = filename.replace('FILEENDREL',str(FileEndRel))
-    checkAndBuildPaths(filename,VERBOSE=False,BUILD=False)
     hf = tb.openFile(filename)    
     hr = hf.root
 
