@@ -213,34 +213,34 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
                     'NCOLS':grid_shape[0]}
     monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
     
-    # # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
-    # os.chdir(r_path)
-    # preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
-    # tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
-    # preLoopClassTree, junk = parse_tree(tree_reader)
-    # preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
-    # 
-    # OutMATlist = preLoopObj['OutMATlist']
-    # tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
-    # OutMATClassTree, junk = parse_tree(tree_reader)
-    # OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-    # os.chdir(curpath)
-    # 
-    # # Create and store unconditional realizations
-    # print '\tGenerating unconditional realizations.'
-    # t1 = time.time()
-    # for i in xrange(grid_shape[2]):
-    #     os.chdir(r_path)
-    #     monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
-    #     os.chdir(curpath)
-    #     OutMATlist= monthObject['OutMATlist']
-    #     MonthGrid = monthObject['MonthGrid']
-    #     out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
-    # t2 = time.time()
-    # print '\t\tDone in %f'%(t2-t1)
-    # 
-    # # delete unneeded R products
-    # del OutMATlist, preLoopObj, MonthGrid, monthObject
+    # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
+    os.chdir(r_path)
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
+    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+    preLoopClassTree, junk = parse_tree(tree_reader)
+    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    
+    OutMATlist = preLoopObj['OutMATlist']
+    tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
+    OutMATClassTree, junk = parse_tree(tree_reader)
+    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    os.chdir(curpath)
+    
+    # Create and store unconditional realizations
+    print '\tGenerating unconditional realizations.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]):
+        os.chdir(r_path)
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
+        os.chdir(curpath)
+        OutMATlist= monthObject['OutMATlist']
+        MonthGrid = monthObject['MonthGrid']
+        out_arr[real_index,:,:,i] = MonthGrid[::-1,:].T[:grid_shape[0], :grid_shape[1]]
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
+    
+    # delete unneeded R products
+    del OutMATlist, preLoopObj, MonthGrid, monthObject
     
     # Figure out pdata
     pdata = np.empty(tdata.shape)
@@ -260,7 +260,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     print '\tKriging.'
     t1 = time.time()  
     for i in xrange(grid_shape[2]-1,-1,-1):    
-        print '\t Month %i of %i'%(i,grid_shape[2])
+        # print '\t Month %i of %i'%(i,grid_shape[2])
         thin_row.fill(0.)
         
         thin_x[:,:,2] = axes[2][i]
