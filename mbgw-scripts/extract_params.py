@@ -1,10 +1,10 @@
 from numpy import array
 
 # standard path to utility function directory (used to source generic R functions)
-utilFolder = '/root/map_utils/'
+utilFolder = '/map_utils/'
 
 # set path to file containg keys for amazon S3
-keyPath = '/root/s3code.txt'
+keyPath = '/root/s3code.txt' 
 
 # main input hdf5  file of simulated realisations of f
 realisations_path = '/root/realizations/realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
