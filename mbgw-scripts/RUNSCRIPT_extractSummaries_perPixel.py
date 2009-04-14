@@ -33,7 +33,7 @@ else: endRel = int(endRel)
 
 BURDEN = str(sys.argv[7])
 if BURDEN == 'None': BURDEN = None
-else: BURDEN = int(BURDEN)
+else: BURDEN = bool(BURDEN)
 
 # build realisation block import path
 hdf5block_path = realisations_path
