@@ -2,7 +2,7 @@
 print 'hello'
 
 # import libraries
-#from map_utils import checkAndBuildPaths
+from map_utils import checkAndBuildPaths
 #from extract_PYlib import *
 #from boto_PYlib import *
 
