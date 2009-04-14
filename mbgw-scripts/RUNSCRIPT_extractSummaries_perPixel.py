@@ -1,5 +1,3 @@
-# make sure we are in the correct directory
-cd /root/mbg-world/mbgw-scripts/
 
 # import libraries
 from map_utils import checkAndBuildPaths
