@@ -5,9 +5,9 @@ from mbgw.joint_simulation import *
 import tables as tb
 from mbgw.master_grid import *
 
-# Establish blocks based on spatial distance only.
-memmax = 2.5e8
-N_nearest = 4000
+
+# Maximum memory usage in kriging stage
+memmax = 1.e8
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """
@@ -21,15 +21,14 @@ def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_
     relp = covariance's relative precision, make it pretty big for speed.
     """
     hf = tb.openFile(fname)
-        
-    return create_many_realizations(burn,n, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name)
+    return create_many_realizations(burn,n, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name)
 
 if __name__ == '__main__':
     try:
         hf.close()
     except:
         pass
-    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim_%i_%i.hdf5'%(memmax, N_nearest), 'landSea-e')
+    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim_%f.hdf5'%memmax, 'landSea-e')
 
     # import pylab as pl
     # pl.clf()
