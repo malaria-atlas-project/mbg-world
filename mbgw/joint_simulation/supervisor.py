@@ -51,7 +51,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     grid_shape = (grids[0][2], grids[1][2], grids[2][2])
     
     if mask_name is not None:
-        mask = get_covariate_submesh(mask_name, grid_lims)
+        mask = get_covariate_submesh(mask_name, grid_lims)[:,::-1]
     else:
         mask = np.ones(grid_shape[:2])
         
@@ -116,15 +116,13 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     
     # Total number of pixels in month.
     npix = grid_shape[0]*grid_shape[1]
-    # Maximum number of pixels in tile.
-    npixmax = memmax/4./data_locs.shape[0]
+    # Maximum number of pixels in tile. 4 is the size of a single-precision real.
+    npixmax = memmax/4./float(N_nearest)
     # Minimum number of tiles needed.
     ntiles = npix/npixmax
     # Blocks.
-    n_blocks_x = n_blocks_y = np.ceil(np.sqrt(ntiles))
-    
-    # from IPython.Debugger import Pdb
-    # Pdb(color_scheme='Linux').set_trace()
+    n_blocks_x = n_blocks_y = int(np.ceil(np.sqrt(ntiles)))
+    print 'I can afford %i by %i'%(n_blocks_x, n_blocks_y)
     
     # Scatter this part to many processes
     for i in xrange(len(indices)):
@@ -149,11 +147,11 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
         data_vals = trace.PyMCsamples[i]['f'][in_mesh]
-        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest)
+        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest, memmax)
         outfile.flush()
     outfile.close()
 
-def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest):
+def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, N_nearest, memmax):
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
     """
@@ -221,7 +219,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     print '\tKriging to bring in data.'    
     print '\tPreprocessing.'
     t1 = time.time()  
-    dev, xbi, ybi, rel_data_ind = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest)   
+    dev, xbi, ybi, rel_data_ind = preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest, memmax)   
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
     
@@ -245,7 +243,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         import matplotlib
         matplotlib.interactive(True)
         pl.close('all')
-        pl.figure(figsize=(8,14))
+        pl.figure()
         pl.subplot(1,2,1)
         pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot)
         pl.colorbar()
@@ -253,7 +251,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         pl.axis('off')
         pl.subplot(1,2,2)
         row = pm.invlogit((row + np.random.normal(size=row.shape)*np.sqrt(2)).ravel()).reshape(row.shape)
-        row[np.where(1-mask[:,::-1])] = 0
+        row[np.where(1-mask)] = 0
         pl.imshow(row.T, interpolation='nearest', extent=[grids[0][0],grids[0][1],grids[1][0],grids[1][1]],cmap=matplotlib.cm.hot,vmin=-.5,vmax=1.5)
         pl.colorbar()        
         pl.plot(data_locs[:,0],data_locs[:,1],'b.',markersize=2)                
@@ -263,7 +261,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
         Pdb(color_scheme='Linux').set_trace()   
 
         # NaN  the oceans to save storage
-        row[np.where(1-mask[:,::-1])] = missing_val
+        row[np.where(1-mask)] = missing_val
         
         out_arr[real_index,:,:,i] = row          
     t2 = time.time()

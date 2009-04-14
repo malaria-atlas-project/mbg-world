@@ -43,7 +43,7 @@ def ndmeshgrid(grids, hnode=None):
         return ns
 
 
-def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest):
+def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata, N_nearest, memmax):
 
     xbi = np.asarray(np.linspace(0,grids[0][2],n_blocks_x+1),dtype=int)
     ybi = np.asarray(np.linspace(0,grids[1][2],n_blocks_y+1),dtype=int)
@@ -56,37 +56,33 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     inc = C.params['inc']
     ecc = C.params['ecc']
     eff_spat_scale = scale/np.sqrt(2)
-    # C_s = pm.gp.Covariance(pm.gp.cov_funs.exponential.aniso_geo_rad, amp=1, scale=eff_spat_scale, inc=inc, ecc=ecc)
     rel_data_ind = np.empty((n_blocks_x, n_blocks_y), dtype=object)
     
     for j in xrange(n_blocks_x):        
         for k in xrange(n_blocks_y):
-            # print j,k
-            # from IPython.Debugger import Pdb
-            # Pdb(color_scheme='Linux').set_trace()   
-            this_x = x[xbi[j]:xbi[j+1], ybi[k]:ybi[k+1],:2].reshape(-1,2)
+            
+            # Total number of pixels in block.
+            npix = (xbi[j+1]-xbi[j])*(ybi[j+1]-ybi[j])
+            # Maximum number of pixels in tile. 8 is the size of a double.
+            npixmax = memmax/float(data_locs.shape[0])/8.
+            # How much to thin the block to stay alive.
+            thinning = max(1,int(np.ceil(np.sqrt(npix/npixmax))))
+
+            this_x = x[xbi[j]:xbi[j+1]:thinning, ybi[k]:ybi[k+1]:thinning,:2].reshape(-1,2)
 
             C_s = pm.gp.Covariance(pm.gp.cov_funs.exponential.aniso_geo_rad, amp=1, scale=eff_spat_scale, inc=inc, ecc=ecc)
             approx_dpc = np.asarray(C_s(this_x, data_locs[:,:2]))            
-            # while True:
-            #     try:
-            #         pm.__PyMCThreadPool__._results_queue.get(block=False)
-            #     except:
-            #         break
-            # approx_dpc = pm.gp.cov_funs.exponential.euclidean(this_x, data_locs[:,:2], amp=1, scale=eff_spat_scale)
-            # approx_dpc = np.empty((this_x.shape[0], data_locs.shape[0]))
-            # pm.gp.cov_funs.distances.aniso_geo_rad(approx_dpc, this_x, data_locs[:,:2], inc=inc, ecc=ecc)
-            # pm.gp.cov_funs.isotropic_cov_funs.exponential(approx_dpc/eff_spat_scale)
+
             this_rdi = set()
     
             # Find the points that covary most with points in block.
-            # if len(this_rdi) < N_nearest:
             for row in approx_dpc:
                 this_rdi.update(np.argsort(row)[-N_nearest:])
-                # this_rdi = list(set(np.ravel(np.argsort(approx_dpc.T,axis=0)[-N_nearest:])))
             
             # print '\t%i datapoints, min cov %f'%(len(this_rdi), approx_dpc.min())
-            rel_data_ind[j,k] = np.array(list(this_rdi))
+            this_rdi = list(this_rdi)
+            np.random.shuffle(this_rdi)
+            rel_data_ind[j,k] = np.array(this_rdi[:N_nearest])
     
     
     return dev, xbi, ybi, rel_data_ind

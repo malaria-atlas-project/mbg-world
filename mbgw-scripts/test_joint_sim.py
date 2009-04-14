@@ -7,7 +7,7 @@ from mbgw.master_grid import *
 
 # Establish blocks based on spatial distance only.
 memmax = 2.5e8
-N_nearest = 2000
+N_nearest = 4000
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """
