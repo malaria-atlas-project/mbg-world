@@ -23,6 +23,7 @@ from map_utils import checkAndBuildPaths
 ##############################################################################################################################
 def S3connectKeys(keyNo):
 
+    os.listdir('/root/')
     a=file(keyPath).read()
     key = a.split(',')[keyNo]
     key=key.strip("\'")
