@@ -3,7 +3,7 @@ print 'hello'
 
 # import libraries
 from map_utils import checkAndBuildPaths
-#from extract_PYlib import *
+from extract_PYlib import *
 #from boto_PYlib import *
 
 # deal with system arguments
