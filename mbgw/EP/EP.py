@@ -12,6 +12,23 @@ from scipy import optimize, integrate
 
 __all__ = ['EP', 'estimate_envelopes']
 
+def simps_coefs(N):
+    "Computes the Simpson's rule coefficients for a vector of length N."
+    coefs = np.empty(N)
+    coefs[0]=coefs[-1]=np.log(1./3)
+    coefs[1::2]=np.log(4./3)
+    coefs[2:-2:2]=np.log(2./3)
+    return coefs
+
+def log_simps(lv, dx, coefs):
+    "Evaluates the Simpson's rule integral of exp(lv) without actually exponentiating."
+    lv_aug = lv+coefs
+    if np.iscomplexobj(lv):
+        ls = pm.flib.logsum_cpx
+    else:
+        ls = pm.flib.logsum
+    return ls(lv_aug) + np.log(dx)
+
 def compose(*fns):
     def out(res):
         for fn in fns[::-1]:
@@ -62,9 +79,9 @@ class EP(pm.Sampler):
         else:
             self.V = V_guess
         # log(expected likelihood).
-        self.p = np.ones(self.Nx, dtype=float)
+        self.lp = np.zeros(self.Nx, dtype=float)
         # Log-probability functions
-        self.lp = lp
+        self.lpf = lp
         # 'Nugget' for epsilon
         self.nug = np.resize(nug, self.Nx)
         # Prior mean and covariance of theta
@@ -83,32 +100,33 @@ class EP(pm.Sampler):
         v = pri_v + nug_v
         
         pri_fn = lambda x: normal_like(x, m, 1./v)
-        like_fn = lambda x: self.lp[i](np.atleast_1d(x)).squeeze()
+        like_fn = lambda x: self.lpf[i](np.atleast_1d(x)).squeeze()
         post_fn = lambda x: pri_fn(x) + like_fn(x)
         
         lo, hi = estimate_envelopes(post_fn, m, np.sqrt(v), 13.)
         x = np.linspace(lo, hi, N)
-        post_vec = np.exp(post_fn(x))
+        post_vec = post_fn(x)
 
-        p = integrate.simps(post_vec, dx=d(x))
-        
-        if p==0:
-            # You can make this happen less often by computing p with log-sums, and computing moments with rejection sampling.
+        lp = log_simps(post_vec, d(x), self.coefs) 
+
+        if lp==-np.inf:
             raise RuntimeError, 'Unconditional likelihood is zero.'
         
         # The expectations of these functions give the first two moments of x without the nugget.
         # Just passing in lambda x:x and lambda x:x**2 would give the first two moments of x
         # _with_ the nugget.
-        nonnug_m1 = lambda x: (m*nug_v + x*pri_v)/v
+        nonnug_m1 = lambda x: ((m*nug_v + x*pri_v)/v).astype('complex')
         nonnug_m2 = lambda x: (nug_v * pri_v)/v + nonnug_m1(x)**2
         funs = [nonnug_m1, nonnug_m2]
         
         # Return E_pri [like_fn(x)] and the posterior expectations of funs(x).        
         moments = []
         for f in funs:
-            moments.append(integrate.simps(post_vec * f(x), dx=d(x)) / p)
+            lm = log_simps(np.log(f(x)) + post_vec, d(x), self.coefs)
+            
+            moments.append(np.real(np.exp(lm - lp)))
         
-        return (p,) + tuple(moments)
+        return (lp,) + tuple(moments)
                         
     def observe(self, i, unobserve=False):
         """
@@ -133,9 +151,10 @@ class EP(pm.Sampler):
         if np.any(np.isinf(new_M)) or np.any(np.isinf(new_M)):
             # Pdb(color_scheme='Linux').set_trace()  
             raise RuntimeError, 'Infinite covariance or mean.'
-        if np.any(np.diag(new_C)<0):
-            # Pdb(color_scheme='Linux').set_trace()    
-            raise RuntimeError, 'Negative diagonal elements of covariance.'
+        # This catches in the unobserve phase... how can that be?
+        # if np.any(np.diag(new_C)<0):
+        #     Pdb(color_scheme='Linux').set_trace()    
+        #     raise RuntimeError, 'Negative diagonal elements of covariance.'
         self.M = new_M
         self.C = new_C
         self.M.flags['WRITEABLE'] = False
@@ -156,9 +175,9 @@ class EP(pm.Sampler):
             return
             
         self.observe(i, unobserve=True)
-        self.p[i], m1, m2 = self.compute_expectation(i, N)
+        self.lp[i], m1, m2 = self.compute_expectation(i, N)
         
-        if not np.isinf(self.p[i]):
+        if not np.isinf(self.lp[i]):
 
             V_post = m2 - m1*m1
             mu_post = m1
@@ -182,7 +201,7 @@ class EP(pm.Sampler):
         else:
             print 'Zero probability'
             self.observe(i)
-            self.p[i] = -np.Inf
+            self.lp[i] = -np.Inf
         
         # print '\t\t',i, self.V[i], self.mu[i]
         
@@ -193,6 +212,17 @@ class EP(pm.Sampler):
         for i in xrange(self.Nx):
             self.update_item(i, N)
     
+    def _set_C(self, new_C):
+        self._C = new_C
+        new_C.flags['WRITEABLE']=False
+        # This will catch the first time C's diagonal is negative fo sho.
+        if np.any(np.diag(new_C)<0):
+            from IPython.Debugger import Pdb
+            Pdb(color_scheme='Linux').set_trace()
+    def _get_C(self):
+        return self._C
+    C = property(_get_C, _set_C)
+    
     def fit(self, N, tol=.01):
         """
         Stores approximate likelihood parameters mu, V
@@ -202,6 +232,8 @@ class EP(pm.Sampler):
         # Make initial observations (usually trivial)
         self.C = self.C_pri.copy()
         self.M = self.M_pri.copy()
+        
+        self.coefs = simps_coefs(N)
         
         for i in xrange(self.Nx):
             self.observe(i)
@@ -270,11 +302,11 @@ class EP(pm.Sampler):
 
             log_ratio = np.real(joint_term-ind_term)
         
-        if np.sum(self.p) + log_ratio > 10000:
+        if np.sum(self.lp) + log_ratio > 10000:
             print 'Warning, HUGE p'
 
         if np.any(np.isnan(log_ratio)):
             from IPython.Debugger import Pdb
             Pdb(color_scheme='Linux').set_trace()   
         
-        return np.sum(self.p) + log_ratio
+        return np.sum(self.lp) + log_ratio
