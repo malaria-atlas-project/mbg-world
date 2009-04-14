@@ -1,9 +1,13 @@
-
-print 'hello'
+# check in correct dirctory
+import os
+#os.chdir ('/root/mbg-world/mbgw-scripts/')
+print(os.listdir('.'))
 
 # import libraries
 from map_utils import checkAndBuildPaths
-from extract_PYlib import *
+
+print(os.listdir('.'))
+from mbg-world.mbgw-scripts.extract_PYlib import *
 from boto_PYlib import *
 
 # deal with system arguments
@@ -18,10 +22,10 @@ from boto_PYlib import *
 #BURDEN = True
 ################################
 
-n_per = int(sys.argv[1])
-FileStartRel = int(sys.argv[2])
+n_per = int(sys.argv[1])   
+FileStartRel = int(sys.argv[2])  
 FileEndRel = int(sys.argv[3])
-totalN = int(sys.argv[4])
+totalN = int(sys.argv[4]) 
 
 startRel = str(sys.argv[5])
 if startRel == 'None': startRel = None
@@ -32,7 +36,7 @@ if endRel == 'None': endRel = None
 else: endRel = int(endRel)
 
 BURDEN = str(sys.argv[7])
-if BURDEN == 'None': BURDEN = None
+if BURDEN == 'None': BURDEN = None  
 else: BURDEN = bool(BURDEN)
 
 # build realisation block import path
