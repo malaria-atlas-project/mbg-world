@@ -7,7 +7,7 @@ print(os.listdir('.'))
 from map_utils import checkAndBuildPaths
 
 print(os.listdir('.'))
-from mbg-world.mbgw-scripts.extract_PYlib import *
+from extract_PYlib import *
 from boto_PYlib import *
 
 # deal with system arguments
