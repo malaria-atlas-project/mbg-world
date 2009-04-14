@@ -1,12 +1,7 @@
 # check in correct dirctory
-import os
-#os.chdir ('/root/mbg-world/mbgw-scripts/')
-print(os.listdir('.'))
 
 # import libraries
 from map_utils import checkAndBuildPaths
-
-print(os.listdir('.'))
 from extract_PYlib import *
 from boto_PYlib import *
 
