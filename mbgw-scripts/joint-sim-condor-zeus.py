@@ -45,7 +45,6 @@ print 'mask_name: %s'%mask_name
 print 'relp: %f'%relp
 print 'grid_lims: %s'%str(grid_lims)
 print 'memmax: %i'%memmax
-print 'N_nearest: %i'%N_nearest
 print 'Thinning: %i'%thinning
 
 # f=file(outfile_name,'w')
