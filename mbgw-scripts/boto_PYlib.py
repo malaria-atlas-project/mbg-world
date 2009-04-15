@@ -22,7 +22,7 @@ from map_utils import checkAndBuildPaths
 
 class S3(object):
     
-    def __init__(self, keyNo, keyPath=None):
+    def __init__(self, keyPath=None):
         if keyPath is None:
             keyPath = extract_params.keyPath
         a=file(keyPath).read()
