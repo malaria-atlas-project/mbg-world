@@ -9,9 +9,6 @@ import sys
 print 'Imports done'
 
 # Establish blocks based on spatial distance only.
-memmax = 2.5e8
-N_nearest = 300
-
 i = int(sys.argv[1])
 iter_per_job = int(sys.argv[2])
 n_jobs = int(sys.argv[3])
@@ -19,8 +16,7 @@ region = sys.argv[4]
 fname = sys.argv[5]
 burn = int(sys.argv[6])
 memmax = float(sys.argv[7])
-N_nearest = int(sys.argv[8])
-thinnig = int(sys.argv[9])
+thinnig = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 nmonths = 288 
 start_year = 1985
@@ -56,7 +52,7 @@ print 'Thinning: %i'%thinning
 # f.write(outfile_name)
 # f.close()
 
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
 
 from boto_PYlib import *
 S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
