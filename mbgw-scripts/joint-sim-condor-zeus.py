@@ -33,7 +33,7 @@ my_start = indices[i]
 my_end = indices[i+1]
 
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_name = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_name = df+'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 # print ('create_many_realizations(%i, %i, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, %s, relp, mask_fname, n_in_trace=%i)'%(my_start, iter_per_job, outfile_name, my_end))
 
 print 'i: %i'%i
@@ -50,7 +50,12 @@ print 'grid_lims: %s'%str(grid_lims)
 print 'memmax: %i'%n_blocks_x
 print 'N_nearest: %i'%N_nearest
 
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end)
+f=file(outfile_name,'w')
+f.write(outfile_name)
+f.close()
+
+# create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end)
 
 from boto_PYlib import *
-S3connectKeys(0, './s3code.txt')
+S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
+S.uploadFileToBucket(infile_base,outfile_name,False,True)
