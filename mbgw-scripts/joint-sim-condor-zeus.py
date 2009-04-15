@@ -18,7 +18,7 @@ n_jobs = int(sys.argv[3])
 region = sys.argv[4]
 fname = sys.argv[5]
 burn = int(sys.argv[6])
-memmax = int(sys.argv[7])
+memmax = float(sys.argv[7])
 N_nearest = int(sys.argv[8])
 thinnig = int(sys.argv[9])
 grid_lims = getattr(mg, region + '_lims')
@@ -48,7 +48,7 @@ print 'start_year: %i'%start_year
 print 'mask_name: %s'%mask_name
 print 'relp: %f'%relp
 print 'grid_lims: %s'%str(grid_lims)
-print 'memmax: %i'%n_blocks_x
+print 'memmax: %i'%memmax
 print 'N_nearest: %i'%N_nearest
 print 'Thinning: %i'%thinning
 
