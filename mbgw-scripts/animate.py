@@ -10,7 +10,12 @@ from IPython.kernel import client
 from animate_realization import targ, chunk_to_str
 
 """
-python animate_realization.py fname missing_val t_chunk
+python realization.py fname missing_val t_chunk
+Note: you need to create an ipython cluster before using this. Such as:
+
+ipcluster -n 4
+
+for a 4-engine cluster.
 """
 
 fname = sys.argv[1]
