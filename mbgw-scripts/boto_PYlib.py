@@ -332,9 +332,7 @@ class S3(object):
 
         # check file exists in bucket
         if (self.CheckFileExistsInBucket(bucketName,fileNameInBucket,VERBOSE=True) != True) : 
-        
-        # check destination directory exists and optionally build if not
-        if(checkAndBuildPaths (os.path.split(filePathAtDestination)[0],VERBOSE=False,BUILD=makeDirectory)==-9999): 
+            raise RuntimeError, 'File "'+str(fileNameInBucket)+'" does not exist in bucket: Exiting !!!'
 
         # if we are not overwriting, then check if file ealrady exists locally and abort if it does
         if overwriteContent==False:
