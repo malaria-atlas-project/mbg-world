@@ -146,8 +146,12 @@ class S3(object):
             print 'WARNING!!! requested bucket "'+str(bucketName)+'" already exists on S3 !!!'
             
     
-        # create bucket with given name
-        bucket = self.conn.create_bucket(bucketName)
+        try:
+            # create bucket with given name
+            bucket = self.conn.create_bucket(bucketName)
+        except boto.exception.S3CreateError:
+            cls, inst, tb = sys.exc_info()
+            print 'WARNING!!! Failed to create bucket. Error message: \n%s'%inst.body
     
         # check bucket now exists
         if (self.conn.lookup(bucketName) is None):
