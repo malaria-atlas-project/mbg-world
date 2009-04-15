@@ -4,7 +4,7 @@
 from map_utils import checkAndBuildPaths
 from extract_PYlib import *
 from boto_PYlib import *
-S=S3(0) # initialise key object
+S=S3() # initialise key object
 
 # deal with system arguments
 
