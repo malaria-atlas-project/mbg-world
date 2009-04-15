@@ -7,7 +7,8 @@ utilFolder = '/map_utils/'
 keyPath = '../../s3code.txt' 
 
 # main input hdf5  file of simulated realisations of f
-realisations_path = '../realizations/realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+#realisations_path = '../realizations/realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = 'realizations_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 #filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
 
 # location for export of raw extractions (as they come off each distributed instance)
