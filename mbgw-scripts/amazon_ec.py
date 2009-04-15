@@ -187,132 +187,132 @@ def returnNjobsRunning(splist):
     # return this sum
     return({'sumRunning':sumRunning,'jobstatus':jobstatus})
 ###########################################################################################################################
-#reservationID = 'r-bc1c95d5'
-#cmds=['python RUNSCRIPT_extractSummaries_perPixel.py 3 0 1 3 None None True']
-#upload_files=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt','/home/pwg/mbg-world/mbgw-scripts/RUNSCRIPT_extractSummaries_perPixel.py']
-#init_cmds=['bash /root/cloud_setup.sh']
-#interval=10
-#shutdown=True
-#
-#def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
-#    """
-#
-#    reservationID : (str) label identifying the EC2 reservation we are dealing with
-#    cmds: list of strings that can be executed from the shell.
-#    
-#    Optional arguments:
-#        upload_files: list of paths.
-#          Will be uploaded to each instance before any init_cmds or cmds
-#          are sent to it.
-#        init_cmds: list of strings that can be executed from the shell.
-#          Will be executed once, in order, on each instance before any cmds
-#          are sent to it.
-#        interval: integer. Delay in seconds between polling instances.
-#        shutdown: boolean. Whether to shut down instances that are not needed.
-#          If True, all instances will be terminating by the time function returns.
-#          
-#    Returns a list of (cmd, output) tuples. Output is everything the process wrote
-#    to stdout and stderr... but there won't be anything in stderr, because only
-#    successful exits get written out. 
-#    """
-#    returns = []
-#
-#    conn = boto.connect_ec2()
-#    r_all = conn.get_all_instances()
-#    r = r_all[getReservationIndex(r_all,reservationID)]
-#    print 'Extant engines are %s'%r.instances
-#
-#    spawning_engines = [e for e in r.instances]
-#    running_engines = []
-#    done = False
-#    retcode = None
-#
-#    while True:
-#        print '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-#        print "Gotta check my fly-paper... see what's stickin."
-#    
-#        # Watch engines to see when they come alive.
-#        for e in spawning_engines:
-#            if e.update()==u'running':
-#                print '\n%s is up'%e
-#                #e.job = None
-#                e.joblist = []
-#                spawning_engines.remove(e)
-#                running_engines.append(e)
-#                if upload_files is not None:
-#                    print '\n\tUploading files to %s'%e
-#                    for upload_file in upload_files:
-#                        print '\t'+upload_file
-#                        p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=PIPE,stderr=STDOUT)
-#                        retval = p.wait()
-#                        if retval:
-#                            raise ValueError, 'Upload failed! Output:\n' + p.stdout.read()
-#                if init_cmds is not None:
-#                    print '\n\tExecuting initial commands on %s'%e
-#                    for init_cmd in init_cmds:
-#                        print '\t$ %s'%init_cmd
-#                        p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
-#                        while p.poll() is None:
-#                            print '\t\tWaiting for %i...'%p.pid
-#                            time.sleep(10)
-#                        retval = p.poll()                    
-#                        if retval:
-#                            raise ValueError, 'Initial command failed! Output:\n' + p.stdout.read()
-#                        print '\tSuccessful.'    
-#
-#        N_running = 0
-#        for e in running_engines:
-#            # how many jobs are running on this instance?
-#            returnNjobsRunning(e.joblist)['sumRunning']
-#             
-#            # See if previous work is done
-#            if e.job is not None:
-#                retcode = e.job.poll()
-#
-#                if retcode is not None:
-#            
-#                    print '\n\t%s has completed\n\t$ %s\n\twith code %i'%(e,e.job.cmd,retcode)
-#                    if retcode>0:
-#                        print '\n\tAdding\n\t$ %s\n\tback onto queue because %s fucked it up, code %i. Message:\n'%(e.job.cmd, e, retcode)
-#                        for line in e.job.stdout:
-#                            print line
-#                        cmds.append(e.job.cmd)
-#                    else:
-#                        returns.append((e.job.cmd, e.job.stdout.read()))
-#                        
-#                else:
-#                    N_running += 1
-#        
-#            # In event of fault, move e back to spawning list.
-#            if e.update()!=u'running':
-#                running_engines.remove(e)
-#                spawning_engines.append(e)
-#        
-#            # Send work    
-#            elif (e.job is None or retcode is not None) and not done:
-#                if len(cmds) == 0:
-#                    print 'No jobs remaining in queue'
-#                    done = True
-#                else:
-#                    cmd=cmds.pop(0)
-#                    print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
-#                    send_work(e, cmd)
-#                    N_running += 1
-#
-#            # Kill the engine
-#            if done and shutdown:
-#                print 'Stopping %s'%e
-#                e.stop()
-#
-#        if done and N_running == 0:
-#            print 'All jobs complete!'
-#            break
-#        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'        
-#        time.sleep(interval)
-#    
-#    if shutdown:
-#        r.stop_all()
-#    return returns    
+reservationID = 'r-bc1c95d5'
+cmds=['python RUNSCRIPT_extractSummaries_perPixel.py 3 0 1 3 None None True']
+upload_files=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt','/home/pwg/mbg-world/mbgw-scripts/RUNSCRIPT_extractSummaries_perPixel.py']
+init_cmds=['bash /root/cloud_setup.sh']
+interval=10
+shutdown=True
+
+def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
+    """
+
+    reservationID : (str) label identifying the EC2 reservation we are dealing with
+    cmds: list of strings that can be executed from the shell.
+    
+    Optional arguments:
+        upload_files: list of paths.
+          Will be uploaded to each instance before any init_cmds or cmds
+          are sent to it.
+        init_cmds: list of strings that can be executed from the shell.
+          Will be executed once, in order, on each instance before any cmds
+          are sent to it.
+        interval: integer. Delay in seconds between polling instances.
+        shutdown: boolean. Whether to shut down instances that are not needed.
+          If True, all instances will be terminating by the time function returns.
+          
+    Returns a list of (cmd, output) tuples. Output is everything the process wrote
+    to stdout and stderr... but there won't be anything in stderr, because only
+    successful exits get written out. 
+    """
+    returns = []
+
+    conn = boto.connect_ec2()
+    r_all = conn.get_all_instances()
+    r = r_all[getReservationIndex(r_all,reservationID)]
+    print 'Extant engines are %s'%r.instances
+
+    spawning_engines = [e for e in r.instances]
+    running_engines = []
+    done = False
+    retcode = None
+
+    while True:
+        print '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        print "Gotta check my fly-paper... see what's stickin."
+    
+        # Watch engines to see when they come alive.
+        for e in spawning_engines:
+            if e.update()==u'running':
+                print '\n%s is up'%e
+                #e.job = None
+                e.joblist = []
+                spawning_engines.remove(e)
+                running_engines.append(e)
+                if upload_files is not None:
+                    print '\n\tUploading files to %s'%e
+                    for upload_file in upload_files:
+                        print '\t'+upload_file
+                        p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=PIPE,stderr=STDOUT)
+                        retval = p.wait()
+                        if retval:
+                            raise ValueError, 'Upload failed! Output:\n' + p.stdout.read()
+                if init_cmds is not None:
+                    print '\n\tExecuting initial commands on %s'%e
+                    for init_cmd in init_cmds:
+                        print '\t$ %s'%init_cmd
+                        p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+                        while p.poll() is None:
+                            print '\t\tWaiting for %i...'%p.pid
+                            time.sleep(10)
+                        retval = p.poll()                    
+                        if retval:
+                            raise ValueError, 'Initial command failed! Output:\n' + p.stdout.read()
+                        print '\tSuccessful.'    
+
+        N_running = 0
+        for e in running_engines:
+            # how many jobs are running on this instance?
+            returnNjobsRunning(e.joblist)['sumRunning']
+             
+            # See if previous work is done
+            if e.job is not None:
+                retcode = e.job.poll()
+
+                if retcode is not None:
+            
+                    print '\n\t%s has completed\n\t$ %s\n\twith code %i'%(e,e.job.cmd,retcode)
+                    if retcode>0:
+                        print '\n\tAdding\n\t$ %s\n\tback onto queue because %s fucked it up, code %i. Message:\n'%(e.job.cmd, e, retcode)
+                        for line in e.job.stdout:
+                            print line
+                        cmds.append(e.job.cmd)
+                    else:
+                        returns.append((e.job.cmd, e.job.stdout.read()))
+                        
+                else:
+                    N_running += 1
+        
+            # In event of fault, move e back to spawning list.
+            if e.update()!=u'running':
+                running_engines.remove(e)
+                spawning_engines.append(e)
+        
+            # Send work    
+            elif (e.job is None or retcode is not None) and not done:
+                if len(cmds) == 0:
+                    print 'No jobs remaining in queue'
+                    done = True
+                else:
+                    cmd=cmds.pop(0)
+                    print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
+                    send_work(e, cmd)
+                    N_running += 1
+
+            # Kill the engine
+            if done and shutdown:
+                print 'Stopping %s'%e
+                e.stop()
+
+        if done and N_running == 0:
+            print 'All jobs complete!'
+            break
+        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'        
+        time.sleep(interval)
+    
+    if shutdown:
+        r.stop_all()
+    return returns    
 ###################################################################################################################################################
 if __name__ == '__main__':
     # How many processes to spawn?
