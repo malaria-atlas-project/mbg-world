@@ -41,9 +41,9 @@ hdf5block_path = hdf5block_path.replace('FILEENDREL',str(FileEndRel))
 print '*******: '+str(hdf5block_path)
 
 # download this realisation file from S3 storage
-S3bucketname = hdf5block_path.split('/')[-2]
-S3filename = hdf5block_path.split('/')[-1]
-downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+#S3bucketname = hdf5block_path.split('/')[-2]
+#S3filename = hdf5block_path.split('/')[-1]
+#downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
 checkAndBuildPaths(hdf5block_path,VERBOSE=False,BUILD=False)
 
 # download from S3 the other necessary file (optionally need 5km grump for burden map)
