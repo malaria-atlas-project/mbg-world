@@ -21,7 +21,10 @@ import numpy as np
 from map_utils import checkAndBuildPaths
 
 ##############################################################################################################################
-def S3connectKeys(keyNo):
+def S3connectKeys(keyNo, ManualKeyPath=None):
+
+    if ManualKeyPath is not None:
+        keyPath = ManualKeyPath
 
     a=file(keyPath).read()
     key = a.split(',')[keyNo]
