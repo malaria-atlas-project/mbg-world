@@ -16,6 +16,7 @@ import string
 import os
 import time
 import md5
+import warnings
 from socket import gethostname
 import numpy as np
 from map_utils import checkAndBuildPaths
@@ -336,12 +337,12 @@ class S3(object):
 
         # check file exists in bucket
         if (self.CheckFileExistsInBucket(bucketName,fileNameInBucket,VERBOSE=True) != True) : 
-            raise RuntimeError, 'File "'+str(fileNameInBucket)+'" does not exist in bucket: Exiting !!!'
+            raise RuntimeError, 'File "'+str(fileNameInBucket)+'" does not exist in bucket: will not download requested file !!!'
 
-        # if we are not overwriting, then check if file ealrady exists locally and abort if it does
+        # if we are not overwriting, then check if file alrady exists locally : warn and abort download if it does
         if overwriteContent==False:
             if (os.path.exists(filePathAtDestination)==True):
-                raise RuntimeError, 'File "'+str(filePathAtDestination)+'" already exists and overwriteContent==False: Exiting !!!' 
+                warnings.warn ('File "'+str(filePathAtDestination)+'" already exists and overwriteContent==False: will not download requested file !!!' 
             
         # if we are overwriting, check that existing file is not actually a directory
         if overwriteContent==True:
