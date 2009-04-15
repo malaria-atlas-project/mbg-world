@@ -51,3 +51,6 @@ print 'memmax: %i'%n_blocks_x
 print 'N_nearest: %i'%N_nearest
 
 create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end)
+
+from boto_PYlib import *
+S3connectKeys(0, './s3code.txt')
