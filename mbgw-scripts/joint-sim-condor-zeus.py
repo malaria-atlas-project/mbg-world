@@ -20,6 +20,7 @@ fname = sys.argv[5]
 burn = int(sys.argv[6])
 memmax = int(sys.argv[7])
 N_nearest = int(sys.argv[8])
+thinnig = int(sys.argv[9])
 grid_lims = getattr(mg, region + '_lims')
 nmonths = 288 
 start_year = 1985
@@ -49,12 +50,13 @@ print 'relp: %f'%relp
 print 'grid_lims: %s'%str(grid_lims)
 print 'memmax: %i'%n_blocks_x
 print 'N_nearest: %i'%N_nearest
+print 'Thinning: %i'%thinning
 
 # f=file(outfile_name,'w')
 # f.write(outfile_name)
 # f.close()
 
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end)
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, N_nearest, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
 
 from boto_PYlib import *
 S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
