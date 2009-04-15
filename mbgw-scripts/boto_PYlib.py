@@ -342,7 +342,7 @@ class S3(object):
         # if we are not overwriting, then check if file alrady exists locally : warn and abort download if it does
         if overwriteContent==False:
             if (os.path.exists(filePathAtDestination)==True):
-                warnings.warn ('File "'+str(filePathAtDestination)+'" already exists and overwriteContent==False: will not download requested file !!!' 
+                warnings.warn ('File "'+str(filePathAtDestination)+'" already exists and overwriteContent==False: will not download requested file !!!' )
             
         # if we are overwriting, check that existing file is not actually a directory
         if overwriteContent==True:
