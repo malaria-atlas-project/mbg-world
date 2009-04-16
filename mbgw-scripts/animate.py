@@ -7,7 +7,7 @@ from mbgw import master_grid
 from mbgw.master_grid import missing_val
 import gc
 from IPython.kernel import client
-from animate_realization import targ, chunk_to_str
+from animation_support import targ, chunk_to_str
 
 """
 python realization.py fname missing_val t_chunk
@@ -19,8 +19,9 @@ for a 4-engine cluster.
 """
 
 fname = sys.argv[1]
-missing_val = float32(sys.argv[2])
-t_chunk = int(sys.argv[3])
+continent = sys.argv[2]
+missing_val = float32(sys.argv[3])
+t_chunk = int(sys.argv[4])
 
 
 t_start = 0
@@ -43,8 +44,9 @@ os.mkdir('anim-scratch')
 
 mec = client.MultiEngineClient()
 mec.reset()
-mec.execute('from animate_realization import *')
+mec.execute('from animation_support import *')
 mec.push({'fname':fname,
+            'continent':continent,
             'missing_val':missing_val,
             't_start':t_start,
             't_end':t_end,
@@ -52,6 +54,5 @@ mec.push({'fname':fname,
             'chunk_str':chunk_str})
             
 mec.scatter('T',range(t_start, t_end, t_chunk))
-print mec.execute('print fname, missing_val, t_start, t_end, t_chunk, chunk_str')
-print mec.execute('print T')
-print mec.execute('[targ(t,fname,missing_val,t_start,t_end,t_chunk,chunk_str) for t in T]')
+
+print mec.execute('[targ(t,continent,fname,missing_val,t_start,t_end,t_chunk,chunk_str) for t in T]')

@@ -4,8 +4,9 @@ from tables import *
 from numpy import *
 import os,sys
 from mbgw import master_grid
-from mbgw.master_grid import missing_val
+from mbgw.master_grid import missing_val, xllc, yllc, cellsize,nrows,ncols
 import matplotlib
+from mpl_toolkits import basemap
 import processing
 import gc
 matplotlib.interactive(False)
@@ -41,10 +42,17 @@ def chunk_to_str(c):
 moname = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']    
 
 
-def targ(inner,fname,missing_val,t_start,t_end,t_chunk,chunk_str):
+def targ(inner,continent,fname,missing_val,t_start,t_end,t_chunk,chunk_str):
+    grid_lims = getattr(master_grid, continent+'_lims')
+    xllc_here = (xllc + cellsize * (grid_lims['leftCol']-1))
+    xurc_here = (xllc + cellsize * (grid_lims['rightCol']-1))
+    yllc_here = (yllc + cellsize * (nrows-grid_lims['bottomRow']))
+    yurc_here = (yllc + cellsize * (nrows-grid_lims['topRow']))
+
+    
     outer=0
-    print fname, missing_val, t_start, t_end, t_chunk, chunk_str
-    print outer,inner/float(t_end)
+
+
     hf = openFile(fname)
     r = hf.root.realizations
     V = hf.root.PyMCsamples.cols.V[:]
@@ -52,8 +60,8 @@ def targ(inner,fname,missing_val,t_start,t_end,t_chunk,chunk_str):
     sl = np.empty((r.shape[1], r.shape[2], t_chunk))
     sh = sl.shape
     
-    t = hf.root.t_axis[outer] + 2009
-    mo = int(rem(t,1)*12)
+    t = hf.root.t_axis[inner] + 2009
+    mo = int(round(rem(t*12,12)))
     yr = int(t)
     time_str = moname[mo] + ' %i'%yr
     
@@ -68,17 +76,21 @@ def targ(inner,fname,missing_val,t_start,t_end,t_chunk,chunk_str):
     out = np.mean(out, axis=2)
     out = ma.masked_array(out, isnan(out))
     
-    imshow(out.T)
+    b = basemap.Basemap(llcrnrlon=xllc_here, llcrnrlat=yllc_here,
+                        urcrnrlon=xurc_here, urcrnrlat=yurc_here)
+    
+    b.imshow(out.T, cmap=matplotlib.cm.hot)
+    # b.drawcoastlines(color='.8',linewidth='2')
+    b.drawcountries(color='.8',linewidth='1')
     colorbar()
-    axis('off')
-    title('%s starting %s'%(chunk_str, time_str))
+    # axis('off')
+    # title('%s starting %s'%(chunk_str, time_str))
+    title(str(yr))
     savefig('anim-scratch/%i.png'%(inner))
     close('all')
     
     del sl, out
     gc.collect()
     hf.close()
-    
-    return sh
     
     
