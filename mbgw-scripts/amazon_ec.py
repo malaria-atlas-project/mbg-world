@@ -187,13 +187,6 @@ def returnNjobsRunning(splist):
     # return this sum
     return({'sumRunning':sumRunning,'jobstatus':jobstatus})
 ###########################################################################################################################
-reservationID = 'r-bc1c95d5'
-cmds=['python RUNSCRIPT_extractSummaries_perPixel.py 3 0 1 3 None None True']
-upload_files=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt','/home/pwg/mbg-world/mbgw-scripts/RUNSCRIPT_extractSummaries_perPixel.py']
-init_cmds=['bash /root/cloud_setup.sh']
-interval=10
-shutdown=True
-
 def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
     """
 
@@ -221,6 +214,10 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
     r_all = conn.get_all_instances()
     r = r_all[getReservationIndex(r_all,reservationID)]
     print 'Extant engines are %s'%r.instances
+    
+    # check the number of instances found is same or more than that asked for
+    if (len(r) < NINSTANCES):
+        raise RuntimeError, 'Asked for '+str(NINSTANCES)+' instances but found only '+str(len(r))+' on reservation '+str(reservationID)+': EXITING map_jobs_PWG!!!'
 
     spawning_engines = [e for e in r.instances]
     running_engines = []
@@ -314,17 +311,21 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
         r.stop_all()
     return returns    
 ###################################################################################################################################################
-if __name__ == '__main__':
-    # How many processes to spawn?
-    # N_engines = 2
-    N_jobs = 2
-    iter_per_job = 2
-    cmds = ['screen ipython amazon_joint_sim.py %i %i %i'%(i,iter_per_job,N_jobs) for i in xrange(N_jobs)]
-    returns = map_jobs(cmds, 
-                shutdown=True, 
-                upload_files=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt'], 
-                init_cmds=['bash /root/cloud_setup.sh'], 
-                interval=20)    
-    
-    # cmds = ['python boto_upload.py %i'%i for i in xrange(N_jobs)]
-    # returns = map_jobs(cmds, shutdown=False, upload_files=['boto_upload.py','cloud_setup.sh'], init_cmds=['bash /root/cloud_setup.sh', 'apt-get install python-boto'], interval=2)
+#if __name__ == '__main__':
+#    # How many processes to spawn?
+#    # N_engines = 2
+#    N_jobs = 2
+#    iter_per_job = 2
+#    cmds = ['screen ipython amazon_joint_sim.py %i %i %i'%(i,iter_per_job,N_jobs) for i in xrange(N_jobs)]
+#    returns = map_jobs(cmds, 
+#                shutdown=True, 
+#                upload_files=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt'], 
+#                init_cmds=['bash /root/cloud_setup.sh'], 
+#                interval=20)    
+#    
+#    # cmds = ['python boto_upload.py %i'%i for i in xrange(N_jobs)]
+#    # returns = map_jobs(cmds, shutdown=False, upload_files=['boto_upload.py','cloud_setup.sh'], init_cmds=['bash /root/cloud_setup.sh', 'apt-get install python-boto'], interval=2)
+
+
+
+

@@ -39,7 +39,6 @@ else: BURDEN = bool(BURDEN)
 hdf5block_path = realisations_path
 hdf5block_path = hdf5block_path.replace('FILESTARTREL',str(FileStartRel))
 hdf5block_path = hdf5block_path.replace('FILEENDREL',str(FileEndRel))
-print '*******: '+str(hdf5block_path)
 
 # download this realisation file from S3 storage
 S3bucketname = hdf5block_path.split('/')[-2]
