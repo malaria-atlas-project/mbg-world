@@ -4,7 +4,8 @@ import mbgw
 from mbgw.joint_simulation import *
 import tables as tb
 import mbgw.master_grid as mg
-import sys
+import os,sys
+from boto_PYlib import *
 
 print 'Imports done'
 
@@ -49,12 +50,14 @@ print 'grid_lims: %s'%str(grid_lims)
 print 'memmax: %i'%memmax
 print 'Thinning: %i'%thinning
 
-# # f=file(outfile_name,'w')
-# # f.write(outfile_name)
-# # f.close()
-# 
-# create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
+print 'Creating realizations'
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
+print 'Done'
 
-from boto_PYlib import *
+print 'Uploading to boto'
 S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
 S.uploadFileToBucket(infile_base.lower(),outfile_name,False,True)
+print 'Done'
+print 'Removing hdf5 archive locally'
+os.remove(outfile_name)
+print 'Done'
