@@ -32,9 +32,9 @@ my_end = indices[i+1]
 
 ofdir = '/share/scratch/malaria-atlas-project/MAP-outputs/'
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_name = ofdir+'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
-# print ('create_many_realizations(%i, %i, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, n_blocks_x, n_blocks_y, %s, relp, mask_fname, n_in_trace=%i)'%(my_start, iter_per_job, outfile_name, my_end))
-
+outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_name = ofdir+outfile_base
+ 
 print 'i: %i'%i
 print 'iter_per_job: %i'%iter_per_job
 print 'n_jobs: %i'%n_jobs
@@ -49,12 +49,12 @@ print 'grid_lims: %s'%str(grid_lims)
 print 'memmax: %i'%memmax
 print 'Thinning: %i'%thinning
 
-# f=file(outfile_name,'w')
-# f.write(outfile_name)
-# f.close()
-
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
+# # f=file(outfile_name,'w')
+# # f.write(outfile_name)
+# # f.close()
+# 
+# create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
 
 from boto_PYlib import *
 S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
-S.uploadFileToBucket(infile_base,outfile_name,False,True)
+S.uploadFileToBucket(infile_base.lower(),outfile_base.lower(),False,True)
