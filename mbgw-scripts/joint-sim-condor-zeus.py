@@ -57,4 +57,4 @@ print 'Thinning: %i'%thinning
 
 from boto_PYlib import *
 S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
-S.uploadFileToBucket(infile_base.lower(),outfile_base.lower(),False,True)
+S.uploadFileToBucket(infile_base.lower(),outfile_name,False,True)
