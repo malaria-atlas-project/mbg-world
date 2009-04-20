@@ -29,7 +29,7 @@ if __name__ == '__main__':
     except:
         pass
     fname = 'test_sim_%f.hdf5'%memmax
-    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, fname, 'landSea-e')
+    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1999, 2000, fname, 'landSea-e')
     
     
     
