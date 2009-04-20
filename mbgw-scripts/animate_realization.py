@@ -36,8 +36,8 @@ def chunk_to_str(c):
 moname = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']    
 
 
-# fname = sys.argv[1]
-fname = 'test_sim.hdf5'
+fname = sys.argv[1]
+# fname = 'test_sim.hdf5'
 t_chunk = 12
 t_start = 0
 t_end = -1
