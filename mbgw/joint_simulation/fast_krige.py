@@ -56,7 +56,6 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     inc = C.params['inc']
     ecc = C.params['ecc']
     eff_spat_scale = scale/np.sqrt(2)
-    # C_s = pm.gp.Covariance(pm.gp.cov_funs.exponential.aniso_geo_rad, amp=1, scale=eff_spat_scale, inc=inc, ecc=ecc)
     rel_data_ind = np.empty((n_blocks_x, n_blocks_y), dtype=object)
     
     C_eval = C(data_locs,data_locs)

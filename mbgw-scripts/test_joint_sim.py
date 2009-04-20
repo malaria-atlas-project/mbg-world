@@ -5,6 +5,7 @@ from mbgw.joint_simulation import *
 import tables as tb
 from mbgw.master_grid import *
 
+
 # Maximum memory usage in kriging stage
 memmax = 1.e8
 
@@ -27,8 +28,11 @@ if __name__ == '__main__':
         hf.close()
     except:
         pass
-    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, 'test_sim_%f.hdf5'%memmax, 'landSea-e')
-
+    fname = 'test_sim_%f.hdf5'%memmax
+    simulate(1, '../datafiles/good-traces/QRYPFPR010708_Africa_Run_9.10.2008.hdf5', AF_lims, 288, 1985, 2000, fname, 'landSea-e')
+    
+    
+    
     # import pylab as pl
     # pl.clf()
     # hr = tb.openFile('test_sim.hdf5').root
