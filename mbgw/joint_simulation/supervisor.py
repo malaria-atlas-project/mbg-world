@@ -42,7 +42,7 @@ def get_covariate_submesh(name, grid_lims):
         order = 'y-x+'
     
     raw_shape = getattr(mbgw.auxiliary_data, name).data.shape
-    raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['bottomRow']:grid_lims['topRow'], grid_lims['leftCol']:grid_lims['rightCol']]
+    raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['topRow']:grid_lims['bottomRow']+1, grid_lims['leftCol']:grid_lims['rightCol']+1]
     out = grid_convert(raw, order, 'x+y+')
     targ_shape = (grid_lims['rightCol']-grid_lims['leftCol']+1, grid_lims['bottomRow']-grid_lims['topRow']+1)
 
@@ -159,13 +159,14 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
                 print 'Warning, no column named %s'%key+'_coef'
                 continue
             mean_ondata += getattr(meta, key)[:][in_mesh] * this_coef
-            this_pred_covariate = get_covariate_submesh(key, grid_lims) * this_coef
+            this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
             covariate_mesh += this_pred_covariate
 
         # Pull covariance information out of trace
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
 
+        import pylab as pl
         pl.figure()
         pl.imshow(mask, origin='lower')
         pl.figure()
