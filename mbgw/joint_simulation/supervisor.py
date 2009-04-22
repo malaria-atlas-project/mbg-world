@@ -41,6 +41,8 @@ def get_covariate_submesh(name, grid_lims):
     except:
         order = 'y-x+'
     
+    
+    
     raw_shape = getattr(mbgw.auxiliary_data, name).data.shape
     raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['topRow']:grid_lims['bottomRow']+1, grid_lims['leftCol']:grid_lims['rightCol']+1]
     out = grid_convert(raw, order, 'x+y+').copy()
@@ -160,20 +162,13 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
                 continue
             mean_ondata += getattr(meta, key)[:][in_mesh] * this_coef
             this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
-            covariate_mesh += this_pred_covariate
+            covariate_mesh += this_pred_covariate        
 
         # Pull covariance information out of trace
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
+        
 
-        import pylab as pl
-        pl.figure()
-        pl.imshow(mask, origin='lower')
-        pl.figure()
-        pl.imshow(covariate_mesh, origin='upper')
-        # from IPython.Debugger import Pdb
-        # Pdb(color_scheme='Linux').set_trace()
-        pl.clf()
 
         data_vals = trace.PyMCsamples[i]['f'][in_mesh]
         create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning)
