@@ -43,7 +43,7 @@ def get_covariate_submesh(name, grid_lims):
     
     raw_shape = getattr(mbgw.auxiliary_data, name).data.shape
     raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['topRow']:grid_lims['bottomRow']+1, grid_lims['leftCol']:grid_lims['rightCol']+1]
-    out = grid_convert(raw, order, 'x+y+')
+    out = grid_convert(raw, order, 'x+y+').copy()
     targ_shape = (grid_lims['rightCol']-grid_lims['leftCol']+1, grid_lims['bottomRow']-grid_lims['topRow']+1)
 
     if out.shape != targ_shape:
@@ -171,8 +171,8 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         pl.imshow(mask, origin='lower')
         pl.figure()
         pl.imshow(covariate_mesh, origin='upper')
-        from IPython.Debugger import Pdb
-        Pdb(color_scheme='Linux').set_trace()
+        # from IPython.Debugger import Pdb
+        # Pdb(color_scheme='Linux').set_trace()
         pl.clf()
 
         data_vals = trace.PyMCsamples[i]['f'][in_mesh]
