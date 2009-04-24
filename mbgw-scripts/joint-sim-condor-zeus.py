@@ -21,7 +21,7 @@ thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 nmonths = 288 
 start_year = 1985
-mask_name = 'landSea-e'
+mask_name = 'st_mask5km-e_y-x+'
 relp=1e-3
 
 hf = tb.openFile(fname)
