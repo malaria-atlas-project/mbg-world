@@ -169,24 +169,26 @@ def getReservationIndex (r,reservationID):
 
     print 'ERROR!!! Could not find reservation "'+str(reservationID)+'" : EXITING!!!'
 ###########################################################################################################################
-def returnNjobsRunning(splist):
+def queryJobsOnInstance(splist):
 
-    # two simple functions to allow 'x.Poll' and 'x is None' to be applied accross elements of a list
-    def applyPoll(sp):
-        return(sp.poll())
+    sumRunning = 0
+    sumFinished = 0
+    joblistFinished = []
+    statuslistFinished = []
 
-    def apply_is_None(sp):
-        return(sp is None) 
+    for job in splist:
+        jobstat = sp.poll(job)
+        if jobstat is None:
+            sumRunning = sumRunning +1
+        if jobstat is not None:
+            sumFinished = sumFinished +1
+            job.status = jobstat 
+            joblistFinished.append(job)
 
-    # apply the subprocess method .Poll to each element of the subprocess list to get list of statuses 
-    jobstatus = np.array(map(applyPoll,splist))
-
-    # query how many elements of this list are 'None' which Poll returns if job is still running
-    sumRunning = sum(map(apply_is_None,jobstatus))
-
-    # return this sum
-    return({'sumRunning':sumRunning,'jobstatus':jobstatus})
+    # return dictionary
+    return({'sumRunning':sumRunning,'sumFinished':sumFinished,'joblistFinished':joblistFinished})
 ###########################################################################################################################
+#reservationID=RESERVATIONID;cmds=CMDS;init_cmds=INITCMDS;upload_files=UPLOADFILES;interval=20;shutdown=True
 def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
     """
 
@@ -213,11 +215,12 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
     conn = boto.connect_ec2()
     r_all = conn.get_all_instances()
     r = r_all[getReservationIndex(r_all,reservationID)]
+    
     print 'Extant engines are %s'%r.instances
     
     # check the number of instances found is same or more than that asked for
-    if (len(r) < NINSTANCES):
-        raise RuntimeError, 'Asked for '+str(NINSTANCES)+' instances but found only '+str(len(r))+' on reservation '+str(reservationID)+': EXITING map_jobs_PWG!!!'
+    if (len(r.instances) < NINSTANCES):
+        raise RuntimeError, 'Asked for '+str(NINSTANCES)+' instances but found only '+str(len(r.instances))+' on reservation '+str(reservationID)+': EXITING map_jobs_PWG!!!'
 
     spawning_engines = [e for e in r.instances]
     running_engines = []
@@ -233,7 +236,8 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
             if e.update()==u'running':
                 print '\n%s is up'%e
                 #e.job = None
-                e.joblist = []
+                e.PendingJoblist = []
+                e.FinishedJoblist = []
                 spawning_engines.remove(e)
                 running_engines.append(e)
                 if upload_files is not None:
@@ -259,21 +263,38 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
 
         N_running = 0
         for e in running_engines:
-            # how many jobs are running on this instance?
-            returnNjobsRunning(e.joblist)['sumRunning']
-             
-            # See if previous work is done
-            if e.job is not None:
-                retcode = e.job.poll()
-
-                if retcode is not None:
+        
+            # how many jobs are running on this instance and what are their statuses?
+            JobsOnInstanceDict=queryJobsOnInstance(e.PendingJoblist)
             
-                    print '\n\t%s has completed\n\t$ %s\n\twith code %i'%(e,e.job.cmd,retcode)
-                    if retcode>0:
-                        print '\n\tAdding\n\t$ %s\n\tback onto queue because %s fucked it up, code %i. Message:\n'%(e.job.cmd, e, retcode)
-                        for line in e.job.stdout:
+{'sumRunning':sumRunning,'sumFinished':sumFinished,'joblistFinished':joblistFinished,'statuslistFinished':statuslistFinished}         
+            
+            # if we have one or more that have newly finished on this instance:
+            if(JobsOnInstanceDict['sumFinished']>0):
+                
+                #loop through them, check their return status, and act accordingly
+                for job in JobsOnInstanceDict['joblistFinished']:
+                
+                    print '\n\t%s has completed\n\t$ %s\n\twith code %i'%(job,job.cmd,job.status)
+
+                    # if a non-zero return code then this job had a problem and needs adding back to job list             
+                    if job.status>0:
+                        print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i. Message:\n'%(job.cmd, job, job.status)
+                        for line in job.stdout:
                             print line
-                        cmds.append(e.job.cmd)
+                        cmds.append(job.cmd)
+                        ###test
+                        returns.append((job.cmd, job.stdout.read()))
+                        ######
+
+WORKING DOWN FROM HERE. NEED TO TAKE NEWLY FINSHED JOBS AND REMOVE THEM FROM e.joblist SO THEY ARE NOT RE-CHECKED EACH TIME - NEED TO GO IN FINISHIED LIST - OR IS THIS REDUNTANT??
+TO REMOVE FROM E/JOBLIST MAY REQUIRE CHANGE IN APPROACH - MAY NEED TO LOOP DIRECTLY THROUGH ALL JOBS FOUND ON INSTANCE IN ORDER TOB E ABLE TO REMOVE ON THE FLY WHEN THEY ARE DONE.
+CAN COUNT 'SPARE CAPACITY' I.E. DIFFERENCE BETWEEN N JOBS FINISHED AND N JOBS ALLOWED PER INSTANCE, AND AT THE END OF THE LOOP SET OFF NEW ONES TO MAKE UP THIS DIFERENCE.
+
+NB ALL UP TO DATE ON MOTHERSHIP - SO JUST CHECK ALL STILL LIVE
+
+
+                    # if a zero return code then this job has finished succesfully and now needs to be placed in finished list
                     else:
                         returns.append((e.job.cmd, e.job.stdout.read()))
                         

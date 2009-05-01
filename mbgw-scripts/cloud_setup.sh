@@ -1,6 +1,6 @@
 #!/bin/bash
 
-apt-get install screen
+#apt-get install screen
 
 cd /usr/lib/python2.5/site-packages/
 rm -r -f pymc*
