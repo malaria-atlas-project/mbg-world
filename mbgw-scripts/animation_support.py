@@ -4,7 +4,8 @@ from tables import *
 from numpy import *
 import os,sys
 from mbgw import master_grid
-from mbgw.master_grid import missing_val, xllc, yllc, cellsize,nrows,ncols
+from mbgw.master_grid import missing_val, xllc, yllc, cellsize, nrows, ncols
+from map_utils import grid_convert
 import matplotlib
 from mpl_toolkits import basemap
 import processing
@@ -79,7 +80,7 @@ def targ(inner,continent,fname,missing_val,t_start,t_end,t_chunk,chunk_str):
     b = basemap.Basemap(llcrnrlon=xllc_here, llcrnrlat=yllc_here,
                         urcrnrlon=xurc_here, urcrnrlat=yurc_here)
     
-    b.imshow(out.T, cmap=matplotlib.cm.hot)
+    b.imshow(grid_convert(out,'y-x+','x+y+'), cmap=matplotlib.cm.hot)
     # b.drawcoastlines(color='.8',linewidth='2')
     b.drawcountries(color='.8',linewidth='1')
     colorbar()

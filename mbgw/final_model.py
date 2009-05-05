@@ -17,7 +17,7 @@ import auxiliary_data
 import gc
 # from get_covariates import extract_environment_to_hdf5
 from tables import ObjectAtom
-from map_utils import FieldStepper
+from map_utils import FieldStepper, st_mean_comp
 
 __all__ = ['st_mean_comp', 'create_model']
 
@@ -28,12 +28,6 @@ def nearest_interp(lon_from, lat_from, data, lon_to, lat_to):
         ilat = np.argmin(np.abs(lat_from - lat_to[i]))
         out[i] =  data[ilat, ilon]
     return out
-
-def st_mean_comp(x, m_const, t_coef):
-    lon = x[:,0]
-    lat = x[:,1]
-    t = x[:,2]
-    return m_const + t_coef * t
 
 region_trans = {'Africa':'AF','Americas':'AM','Asia':'AS'}
 

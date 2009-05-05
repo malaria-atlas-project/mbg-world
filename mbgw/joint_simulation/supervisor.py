@@ -41,8 +41,6 @@ def get_covariate_submesh(name, grid_lims):
     except:
         order = 'y-x+'
     
-    
-    
     raw_shape = getattr(mbgw.auxiliary_data, name).data.shape
     raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['topRow']:grid_lims['bottomRow']+1, grid_lims['leftCol']:grid_lims['rightCol']+1]
     out = grid_convert(raw, order, 'x+y+').copy()
@@ -171,7 +169,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
 
 
         data_vals = trace.PyMCsamples[i]['f'][in_mesh]
-        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning)
+        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices)
         outfile.flush()
     outfile.close()
 
@@ -179,7 +177,7 @@ def normalize_for_mapcoords(arr, max):
     arr /= arr.max()
     arr *= max
 
-def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning):
+def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
 
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
@@ -235,13 +233,13 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     
     # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
     os.chdir(r_path)
-    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj)
-    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max())
+    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
     preLoopClassTree, junk = parse_tree(tree_reader)
     preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
     
     OutMATlist = preLoopObj['OutMATlist']
-    tree_reader = reader(file('listSummary_OutMATlist_original.txt'),delimiter=' ')
+    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
     OutMATClassTree, junk = parse_tree(tree_reader)
     OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
     os.chdir(curpath)
@@ -251,7 +249,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     t1 = time.time()
     for i in xrange(grid_shape[2]):
         os.chdir(r_path)
-        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist)
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max())
         os.chdir(curpath)
         OutMATlist= monthObject['OutMATlist']
         MonthGrid = monthObject['MonthGrid']
