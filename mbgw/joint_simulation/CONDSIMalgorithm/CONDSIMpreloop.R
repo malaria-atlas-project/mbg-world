@@ -3,7 +3,7 @@
 ## License: Creative Commons BY-NC-SA
 ##################################################
 
-CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj){
+CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel){
 
     covParamObj <<- as.list(covParamObj)
     gridParamObj <<- as.list(gridParamObj)
@@ -106,8 +106,8 @@ CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj){
     # }
     
  ## provide summary of list structure for later checking
-    listSummary<-returnListSummary(preLoopObj,"listSummary_preLoopObj_original.txt")   
-    listSummary<-returnListSummary(OutMATlist,"listSummary_OutMATlist_original.txt")      
+    listSummary<-returnListSummary(preLoopObj,paste("listSummary_preLoopObj_original_",startRel,"_",endRel,".txt",sep=""))   
+    listSummary<-returnListSummary(OutMATlist,paste("listSummary_OutMATlist_original_",startRel,"_",endRel,".txt",sep=""))      
 
  ## return this list
     return(preLoopObj)
