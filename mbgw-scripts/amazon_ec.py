@@ -3,7 +3,7 @@ from subprocess import PIPE, STDOUT, Popen
 import time
 import numpy as np
 
-__all__ = ['send_work', 'spawn_engines', 'stop_all_engines', 'map_jobs']
+#__all__ = ['send_work', 'spawn_engines', 'stop_all_engines', 'map_jobs'] 
 
 init_ssh_str = 'ssh -o "StrictHostKeyChecking=no" -i /amazon-keys/MAPPWG.pem'
 init_scp_str = 'scp -o "StrictHostKeyChecking=no" -i /amazon-keys/MAPPWG.pem'
@@ -16,15 +16,16 @@ def send_work(e, cmd):
     After the call, e.job will be a Popen instance. e.job.cmd will be cmd.
     """
     command_str = init_ssh_str + ' root@%s %s'%(e.dns_name, cmd)
-    #job = Popen(command_str, shell=True, stdout=PIPE, stderr=STDOUT)
+    job = Popen(command_str, shell=True, stdout=PIPE, stderr=STDOUT)
 
-    stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout.txt','w')
-    stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr.txt','w')
+    #stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout.txt','w')
+    #stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr.txt','w')
         
 
-    job = Popen(command_str, shell=True, stdout=stdout, stderr=stderr) 
+    #job = Popen(command_str, shell=True, stdout=stdout, stderr=stderr) 
+    #job = Popen(command_str, shell=True)
     job.cmd = cmd
-    e.joblist.append(job) 
+    e.PendingJoblist.append(job) 
 ##################################################################################################################################################
 def stop_all_engines():
     """
@@ -42,7 +43,7 @@ def spawn_engines(N_engines):
     r = conn.run_instances('ami-88e80fe1', min_count=N_engines, max_count=N_engines, security_groups=['MAP'], instance_type='m1.lcmde')
     print 'Starting %s'%r.instances
 ##################################################################################################################################################
-def map_jobs(cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
+def map_jobs_APP_HOLD(cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
     """
     cmds: list of strings that can be executed from the shell.
     
@@ -173,26 +174,25 @@ def queryJobsOnInstance(splist):
 
     sumRunning = 0
     sumFinished = 0
-    joblistFinished = []
-    statuslistFinished = []
-
-    for job in splist:
-        jobstat = sp.poll(job)
+    FinishedJobIndex = []
+    Njobs = len(splist)
+    for i in xrange(0,Njobs):
+        job = splist[i]
+        jobstat = job.poll()
         if jobstat is None:
             sumRunning = sumRunning +1
         if jobstat is not None:
             sumFinished = sumFinished +1
-            job.status = jobstat 
-            joblistFinished.append(job)
+            FinishedJobIndex.append(i)
 
     # return dictionary
-    return({'sumRunning':sumRunning,'sumFinished':sumFinished,'joblistFinished':joblistFinished})
+    return({'sumRunning':sumRunning,'sumFinished':sumFinished,'FinishedJobIndex':FinishedJobIndex})
 ###########################################################################################################################
-#reservationID=RESERVATIONID;cmds=CMDS;init_cmds=INITCMDS;upload_files=UPLOADFILES;interval=20;shutdown=True
-def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
+##RESERVATIONID;NINSTANCES;MAXJOBSPERINSTANCE;cmds=CMDS;init_cmds=INITCMDS;upload_files=UPLOADFILES;interval=20;shutdown=False
+def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
     """
 
-    reservationID : (str) label identifying the EC2 reservation we are dealing with
+    RESERVATIONID : (str) label identifying the EC2 reservation we are dealing with
     cmds: list of strings that can be executed from the shell.
     
     Optional arguments:
@@ -214,30 +214,25 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
 
     conn = boto.connect_ec2()
     r_all = conn.get_all_instances()
-    r = r_all[getReservationIndex(r_all,reservationID)]
+    r = r_all[getReservationIndex(r_all,RESERVATIONID)]
     
     print 'Extant engines are %s'%r.instances
     
     # check the number of instances found is same or more than that asked for
     if (len(r.instances) < NINSTANCES):
-        raise RuntimeError, 'Asked for '+str(NINSTANCES)+' instances but found only '+str(len(r.instances))+' on reservation '+str(reservationID)+': EXITING map_jobs_PWG!!!'
+        raise RuntimeError, 'Asked for '+str(NINSTANCES)+' instances but found only '+str(len(r.instances))+' on reservation '+str(RESERVATIONID)+': EXITING map_jobs_PWG!!!'
 
     spawning_engines = [e for e in r.instances]
     running_engines = []
-    done = False
-    retcode = None
 
     while True:
         print '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        print "Gotta check my fly-paper... see what's stickin."
     
         # Watch engines to see when they come alive.
         for e in spawning_engines:
             if e.update()==u'running':
                 print '\n%s is up'%e
-                #e.job = None
                 e.PendingJoblist = []
-                e.FinishedJoblist = []
                 spawning_engines.remove(e)
                 running_engines.append(e)
                 if upload_files is not None:
@@ -256,81 +251,90 @@ def map_jobs_PWG(reservationID, cmds, init_cmds=None, upload_files=None, interva
                         while p.poll() is None:
                             print '\t\tWaiting for %i...'%p.pid
                             time.sleep(10)
-                        retval = p.poll()                    
+                        retval = p.poll()
                         if retval:
                             raise ValueError, 'Initial command failed! Output:\n' + p.stdout.read()
-                        print '\tSuccessful.'    
+                        print '\tSuccessful.'
 
-        N_running = 0
+
+        # loop through running instances and deal with jobs that have finished (succesfully or otherwise)
+        NjobsRunning=0
+
         for e in running_engines:
         
-            # how many jobs are running on this instance and what are their statuses?
+            # In event of fault, move e back to spawning list and move this loop on to next instance
+            if e.update()!=u'running':
+                running_engines.remove(e)
+                spawning_engines.append(e)
+                continue
+
+            # how many jobs are running on this instance, what are their statuses, and where can we find them on on e.PendingJoblist?
             JobsOnInstanceDict=queryJobsOnInstance(e.PendingJoblist)
-            
-{'sumRunning':sumRunning,'sumFinished':sumFinished,'joblistFinished':joblistFinished,'statuslistFinished':statuslistFinished}         
-            
+
             # if we have one or more that have newly finished on this instance:
             if(JobsOnInstanceDict['sumFinished']>0):
                 
                 #loop through them, check their return status, and act accordingly
-                for job in JobsOnInstanceDict['joblistFinished']:
-                
+                for i in JobsOnInstanceDict['FinishedJobIndex']:
+ 
+                    job=e.PendingJoblist[i]
+                    job.status = job.poll()
+                                   
                     print '\n\t%s has completed\n\t$ %s\n\twith code %i'%(job,job.cmd,job.status)
 
                     # if a non-zero return code then this job had a problem and needs adding back to job list             
                     if job.status>0:
                         print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i. Message:\n'%(job.cmd, job, job.status)
-                        for line in job.stdout:
-                            print line
+                        if job.stdout is not None:
+                            for line in job.stdout:
+                                print line
+                            ###test
+                            returns.append((job.cmd, job.stdout.read()))
+                            ######
                         cmds.append(job.cmd)
-                        ###test
-                        returns.append((job.cmd, job.stdout.read()))
-                        ######
 
-WORKING DOWN FROM HERE. NEED TO TAKE NEWLY FINSHED JOBS AND REMOVE THEM FROM e.joblist SO THEY ARE NOT RE-CHECKED EACH TIME - NEED TO GO IN FINISHIED LIST - OR IS THIS REDUNTANT??
-TO REMOVE FROM E/JOBLIST MAY REQUIRE CHANGE IN APPROACH - MAY NEED TO LOOP DIRECTLY THROUGH ALL JOBS FOUND ON INSTANCE IN ORDER TOB E ABLE TO REMOVE ON THE FLY WHEN THEY ARE DONE.
-CAN COUNT 'SPARE CAPACITY' I.E. DIFFERENCE BETWEEN N JOBS FINISHED AND N JOBS ALLOWED PER INSTANCE, AND AT THE END OF THE LOOP SET OFF NEW ONES TO MAKE UP THIS DIFERENCE.
-
-NB ALL UP TO DATE ON MOTHERSHIP - SO JUST CHECK ALL STILL LIVE
-
-
-                    # if a zero return code then this job has finished succesfully and now needs to be placed in finished list
+                    # if a zero return code then this job has finished succesfully and can add its standard outut to list for return
                     else:
-                        returns.append((e.job.cmd, e.job.stdout.read()))
+                        returns.append((job.cmd, job.stdout.read()))
                         
-                else:
-                    N_running += 1
-        
-            # In event of fault, move e back to spawning list.
-            if e.update()!=u'running':
-                running_engines.remove(e)
-                spawning_engines.append(e)
-        
-            # Send work    
-            elif (e.job is None or retcode is not None) and not done:
-                if len(cmds) == 0:
-                    print 'No jobs remaining in queue'
-                    done = True
-                else:
-                    cmd=cmds.pop(0)
-                    print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
-                    send_work(e, cmd)
-                    N_running += 1
+                    # whether finished succesfully or otherwise, this job can now be removed from PendingJoblist
+                    temp = e.PendingJoblist.pop(i)
 
-            # Kill the engine
-            if done and shutdown:
+            # if no more jobs in queue AND if there are now no more jobs either running or recently finished on this instance AND shutdown==True, then kill it
+            if((JobsOnInstanceDict['sumRunning']==0) & (len(cmds)==0) & shutdown==True):
                 print 'Stopping %s'%e
                 e.stop()
+                running_engines.remove(e)
+                continue
 
-        if done and N_running == 0:
+            # else if we have less jobs running on this instance than are permitted (and if there are jobs waiting to be started), then send more jobs:
+            NjobsRunningThisInstance =  JobsOnInstanceDict['sumRunning']
+            NjobsRunning = NjobsRunning + NjobsRunningThisInstance
+            if( (NjobsRunningThisInstance<MAXJOBSPERINSTANCE) & (len(cmds)>0) ) :
+                cmd=cmds.pop(0)
+                print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
+                send_work(e, cmd)
+                NjobsRunning = NjobsRunning +1
+                
+        # if no jobs still in queue and none still running then assume jobs are finished..
+        if ((NjobsRunning == 0) & (len(cmds)==0)):
+        
+            # If shutdown==True check that all instances have been shut down
+            if ( (shutdown==True) & (len(running_engines)!=0) ):
+                print "WARNING!!! no jobs running or in queue but following instances still alive, so shuting down all in this reservation\n"
+                print running_engines
+                r.stop_all()
+
+            # exit loop
             print 'All jobs complete!'
             break
+
+
+        # now wait a specified interval before going again through a loop of the instances
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'        
         time.sleep(interval)
-    
-    if shutdown:
-        r.stop_all()
-    return returns    
+
+    return returns
 ###################################################################################################################################################
 #if __name__ == '__main__':
 #    # How many processes to spawn?
