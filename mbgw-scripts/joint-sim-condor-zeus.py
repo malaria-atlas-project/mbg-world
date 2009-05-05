@@ -56,7 +56,7 @@ print 'Done'
 
 print 'Uploading to boto'
 S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
-S.uploadFileToBucket(infile_base.lower(),outfile_name,True,True)
+S.uploadFileToBucket(infile_base.lower()+'_trial_two',outfile_name,True,True)
 print 'Done'
 print 'Removing hdf5 archive locally'
 os.remove(outfile_name)
