@@ -9,7 +9,7 @@ import copy as cp
 init_ssh_str = 'ssh -o "StrictHostKeyChecking=no" -i /amazon-keys/MAPPWG.pem'
 init_scp_str = 'scp -o "StrictHostKeyChecking=no" -i /amazon-keys/MAPPWG.pem'
 ##################################################################################################################################################
-def send_work(e, cmd, outToFile = False, outSuffix=None):
+def send_work(e, cmd, outToFile = None, outSuffix=None):
     """
     e: a boto Instance object (an Amazon EC2 instance)
     cmd: a string
@@ -18,17 +18,17 @@ def send_work(e, cmd, outToFile = False, outSuffix=None):
     """
     command_str = init_ssh_str + ' root@%s %s'%(e.dns_name, cmd)
 
-    if outToFile==False:
+    if outToFile is None:
         job = Popen(command_str, shell=True, stdout=PIPE, stderr=STDOUT)
 
-    if outToFile==True:
+    if outToFile is not None:
         if outSuffix is None:
-           stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout.txt','w')
-           stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr.txt','w')
+           stdout = file(str(outToFile)+'stdout.txt','w')
+           stderr = file(str(outToFile)+'stderr.txt','w')
            
         if outSuffix is not None:
-           stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout_'+str(outSuffix)+'.txt','w')
-           stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr_'+str(outSuffix)+'.txt','w')           
+           stdout = file(str(outToFile)+'stdout_'+str(e).rpartition(':')[-1]+'_'+str(outSuffix)+'.txt','w')
+           stderr = file(str(outToFile)+'stderr_'+str(e).rpartition(':')[-1]+'_'+str(outSuffix)+'.txt','w')           
         
         job = Popen(command_str, shell=True, stdout=stdout, stderr=stderr) 
 
@@ -197,7 +197,7 @@ def queryJobsOnInstance(splist):
     return({'sumRunning':sumRunning,'sumFinished':sumFinished,'FinishedJobIndex':FinishedJobIndex})
 ###########################################################################################################################
 ##RESERVATIONID;NINSTANCES;MAXJOBSPERINSTANCE;cmds=CMDS;init_cmds=INITCMDS;upload_files=UPLOADFILES;interval=20;shutdown=False
-def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True, outToFile=False):    
+def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True,STDOUTPATH=None):    
     """
 
     RESERVATIONID : (str) label identifying the EC2 reservation we are dealing with
@@ -251,8 +251,8 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
                     for upload_file in upload_files:
                         print '\t'+upload_file
                         #p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=PIPE,stderr=STDOUT)
-                        stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout_upload_'+str(upload_file).rpartition('/')[-1]+'.txt','w')
-                        stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr_upload_'+str(upload_file).rpartition('/')[-1]+'.txt','w') 
+                        stdout = file(str(STDOUTPATH)+'stdout_upload_'+str(e).rpartition(':')[-1]+'_'+str(upload_file).rpartition('/')[-1]+'.txt','w')
+                        stderr = file(str(STDOUTPATH)+'stderr_upload_'+str(e).rpartition(':')[-1]+'_'+str(upload_file).rpartition('/')[-1]+'.txt','w') 
                         p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=stdout,stderr=stderr)
 
                         retval = p.wait()
@@ -263,8 +263,8 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
                     for init_cmd in init_cmds:
                         print '\t$ %s'%init_cmd
                         #p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
-                        stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout_initial_'+str(init_cmd).rpartition('/')[-1]+'.txt','w')
-                        stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr_initial_'+str(init_cmd).rpartition('/')[-1]+'.txt','w') 
+                        stdout = file(str(STDOUTPATH)+'stdout_initial_'+str(e).rpartition(':')[-1]+'_'+str(init_cmd).rpartition('/')[-1]+'.txt','w')
+                        stderr = file(str(STDOUTPATH)+'stderr_initial_'+str(e).rpartition(':')[-1]+'_'+str(init_cmd).rpartition('/')[-1]+'.txt','w') 
                         p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=stdout, stderr=stderr)
                         while p.poll() is None:
                             print '\t\tWaiting for %i...'%p.pid
@@ -349,12 +349,12 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
             NjobsRunningThisInstance =  JobsOnInstanceDict['sumRunning']
             NjobsRunning = NjobsRunning + NjobsRunningThisInstance
             if( (NjobsRunningThisInstance<MAXJOBSPERINSTANCE) & (len(cmds)>0) ) :
-                NspareJobs = max ((MAXJOBSPERINSTANCE-NjobsRunningThisInstance),len(cmds))
+                NspareJobs = min ((MAXJOBSPERINSTANCE-NjobsRunningThisInstance),len(cmds))
                 for j in xrange(0,NspareJobs):
                     cmd=cmds.pop(0)
                     print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
-                    if outToFile==True: send_work(e, cmd, outToFile=True, outSuffix = str(time.time()))
-                    if outToFile==False: send_work(e, cmd)
+                    if STDOUTPATH is not None: send_work(e, cmd, outToFile=STDOUTPATH, outSuffix = str(time.time()))
+                    else: send_work(e, cmd)
                     NjobsRunning = NjobsRunning +1
                 
         # if no jobs still in queue and none still running then assume jobs are finished..
