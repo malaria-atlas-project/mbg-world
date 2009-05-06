@@ -6,7 +6,7 @@ from extract_PYlib import *
 from boto_PYlib import *
 from extract_params import *
 
-S=S3() # initialise key object
+#S=S3() # initialise key object
 
 # deal with system arguments
 

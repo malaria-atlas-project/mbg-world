@@ -2,28 +2,36 @@ import boto
 from subprocess import PIPE, STDOUT, Popen
 import time
 import numpy as np
+import copy as cp
 
 #__all__ = ['send_work', 'spawn_engines', 'stop_all_engines', 'map_jobs'] 
 
 init_ssh_str = 'ssh -o "StrictHostKeyChecking=no" -i /amazon-keys/MAPPWG.pem'
 init_scp_str = 'scp -o "StrictHostKeyChecking=no" -i /amazon-keys/MAPPWG.pem'
 ##################################################################################################################################################
-def send_work(e, cmd):
+def send_work(e, cmd, outToFile = False, outSuffix=None):
     """
     e: a boto Instance object (an Amazon EC2 instance)
     cmd: a string
     
-    After the call, e.job will be a Popen instance. e.job.cmd will be cmd.
+    After the call, e.PendingJoblist will be a list of Popen instances. e.PendingJoblist.cmd will be a list of commands (cmd).
     """
     command_str = init_ssh_str + ' root@%s %s'%(e.dns_name, cmd)
-    job = Popen(command_str, shell=True, stdout=PIPE, stderr=STDOUT)
 
-    #stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout.txt','w')
-    #stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr.txt','w')
+    if outToFile==False:
+        job = Popen(command_str, shell=True, stdout=PIPE, stderr=STDOUT)
+
+    if outToFile==True:
+        if outSuffix is None:
+           stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout.txt','w')
+           stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr.txt','w')
+           
+        if outSuffix is not None:
+           stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout_'+str(outSuffix)+'.txt','w')
+           stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr_'+str(outSuffix)+'.txt','w')           
         
+        job = Popen(command_str, shell=True, stdout=stdout, stderr=stderr) 
 
-    #job = Popen(command_str, shell=True, stdout=stdout, stderr=stderr) 
-    #job = Popen(command_str, shell=True)
     job.cmd = cmd
     e.PendingJoblist.append(job) 
 ##################################################################################################################################################
@@ -189,7 +197,7 @@ def queryJobsOnInstance(splist):
     return({'sumRunning':sumRunning,'sumFinished':sumFinished,'FinishedJobIndex':FinishedJobIndex})
 ###########################################################################################################################
 ##RESERVATIONID;NINSTANCES;MAXJOBSPERINSTANCE;cmds=CMDS;init_cmds=INITCMDS;upload_files=UPLOADFILES;interval=20;shutdown=False
-def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True):    
+def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True, outToFile=False):    
     """
 
     RESERVATIONID : (str) label identifying the EC2 reservation we are dealing with
@@ -224,9 +232,12 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
 
     spawning_engines = [e for e in r.instances]
     running_engines = []
+    failedJobCmds = np.array([])
+    failedJobCount = np.array([])
 
     while True:
         print '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        print str(len(spawning_engines))+' instances spawning;   '+str(len(running_engines))+' instances running'
     
         # Watch engines to see when they come alive.
         for e in spawning_engines:
@@ -239,7 +250,11 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
                     print '\n\tUploading files to %s'%e
                     for upload_file in upload_files:
                         print '\t'+upload_file
-                        p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=PIPE,stderr=STDOUT)
+                        #p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=PIPE,stderr=STDOUT)
+                        stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout_upload_'+str(upload_file).rpartition('/')[-1]+'.txt','w')
+                        stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr_upload_'+str(upload_file).rpartition('/')[-1]+'.txt','w') 
+                        p = Popen(init_scp_str +  ' %s root@%s:%s'%(upload_file, e.dns_name, upload_file.split("/")[-1]), shell=True, stdout=stdout,stderr=stderr)
+
                         retval = p.wait()
                         if retval:
                             raise ValueError, 'Upload failed! Output:\n' + p.stdout.read()
@@ -247,7 +262,10 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
                     print '\n\tExecuting initial commands on %s'%e
                     for init_cmd in init_cmds:
                         print '\t$ %s'%init_cmd
-                        p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+                        #p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+                        stdout = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stdout_initial_'+str(init_cmd).rpartition('/')[-1]+'.txt','w')
+                        stderr = file('/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/stderr_initial_'+str(init_cmd).rpartition('/')[-1]+'.txt','w') 
+                        p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=stdout, stderr=stderr)
                         while p.poll() is None:
                             print '\t\tWaiting for %i...'%p.pid
                             time.sleep(10)
@@ -255,7 +273,6 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
                         if retval:
                             raise ValueError, 'Initial command failed! Output:\n' + p.stdout.read()
                         print '\tSuccessful.'
-
 
         # loop through running instances and deal with jobs that have finished (succesfully or otherwise)
         NjobsRunning=0
@@ -274,9 +291,11 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
             # if we have one or more that have newly finished on this instance:
             if(JobsOnInstanceDict['sumFinished']>0):
                 
-                #loop through them, check their return status, and act accordingly
-                for i in JobsOnInstanceDict['FinishedJobIndex']:
- 
+                #loop through them (in descending order so list can shorten as we go), check their return status, and act accordingly
+                tempindex = cp.deepcopy(JobsOnInstanceDict['FinishedJobIndex'])
+                tempindex.sort(reverse=True)
+                for i in tempindex:
+            
                     job=e.PendingJoblist[i]
                     job.status = job.poll()
                                    
@@ -284,14 +303,33 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
 
                     # if a non-zero return code then this job had a problem and needs adding back to job list             
                     if job.status>0:
-                        print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i. Message:\n'%(job.cmd, job, job.status)
-                        if job.stdout is not None:
-                            for line in job.stdout:
-                                print line
-                            ###test
-                            returns.append((job.cmd, job.stdout.read()))
-                            ######
-                        cmds.append(job.cmd)
+                        
+                        # before adding back to list, check if this job has already been tried more than MAXJOBTRIES times
+                        failedJobIndex = failedJobCmds==job.cmd
+                        if(type(failedJobIndex)==type(False)): failedJobIndex=np.array([failedJobIndex])
+                        
+                        print failedJobIndex
+                        print type(failedJobIndex)
+
+                        # is this cmd already on list of shame?
+                        if failedJobIndex.any()==True:
+
+                            # if already failed MAXJOBTRIES times, then do not return to queue
+                            if failedJobCount[failedJobIndex]>=MAXJOBTRIES:
+                                print '\n\tCommand\t$ %s\n\t from %s received error code %i BUT NOT ADDED BACK TO QUEUE BECAUSE HAS NOW FAILED %i TIMES. Message:\n'%(job.cmd, job, job.status, MAXJOBTRIES)
+
+                            # if not yet failed MAXJOBTRIES times, then return to queue for another go and increment fail count
+                            if failedJobCount[failedJobIndex]<MAXJOBTRIES:
+                                print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i.\n'%(job.cmd, job, job.status)
+                                cmds.append(job.cmd)
+                                failedJobCount[failedJobIndex]+=1
+
+                        # if this cmd not yet on  list of shame then add it, along with failure counter, after adding job back to list
+                        else:
+                            print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i.\n'%(job.cmd, job, job.status)
+                            cmds.append(job.cmd)
+                            failedJobCmds = np.concatenate((failedJobCmds,np.array([job.cmd])))
+                            failedJobCount = np.concatenate((failedJobCount,np.array([1])))
 
                     # if a zero return code then this job has finished succesfully and can add its standard outut to list for return
                     else:
@@ -311,10 +349,13 @@ def map_jobs(reservationID, cmds, init_cmds=None, upload_files=None, interval=10
             NjobsRunningThisInstance =  JobsOnInstanceDict['sumRunning']
             NjobsRunning = NjobsRunning + NjobsRunningThisInstance
             if( (NjobsRunningThisInstance<MAXJOBSPERINSTANCE) & (len(cmds)>0) ) :
-                cmd=cmds.pop(0)
-                print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
-                send_work(e, cmd)
-                NjobsRunning = NjobsRunning +1
+                NspareJobs = max ((MAXJOBSPERINSTANCE-NjobsRunningThisInstance),len(cmds))
+                for j in xrange(0,NspareJobs):
+                    cmd=cmds.pop(0)
+                    print '\n\tSending\n\t$ %s\n\tto %s'%(cmd,e)
+                    if outToFile==True: send_work(e, cmd, outToFile=True, outSuffix = str(time.time()))
+                    if outToFile==False: send_work(e, cmd)
+                    NjobsRunning = NjobsRunning +1
                 
         # if no jobs still in queue and none still running then assume jobs are finished..
         if ((NjobsRunning == 0) & (len(cmds)==0)):
