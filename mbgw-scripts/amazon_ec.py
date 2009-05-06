@@ -333,7 +333,7 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
 
                     # if a zero return code then this job has finished succesfully and can add its standard outut to list for return
                     else:
-                        returns.append((job.cmd, job.stdout.read()))
+                        if job.stdout is not None: returns.append((job.cmd, job.stdout.read()))
                         
                     # whether finished succesfully or otherwise, this job can now be removed from PendingJoblist
                     temp = e.PendingJoblist.pop(i)
