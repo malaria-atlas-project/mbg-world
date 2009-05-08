@@ -1,7 +1,7 @@
 from numpy import array
 
 # standard path to utility function directory (used to source generic R functions)
-utilFolder = '/root/map_utils/'
+utilFolder = '/root/map_utils/map_utils/'
 
 # set path to file containg keys for amazon S3
 keyPath = '/root/s3code.txt' 
