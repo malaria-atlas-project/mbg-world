@@ -20,8 +20,6 @@ S=S3() # initialise key object
 #BURDEN = True
 ################################
 
-call: combineDistribExtractions_perpixel()
-
 print "from ECRUNSCRIPT_combineDistribExtractions_perPixel:\n"
 
 # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
