@@ -355,7 +355,7 @@ class S3(object):
             fpathTrunc = filePathAtDestination.rpartition('/')
             checkAndBuildPaths (fpathTrunc,VERBOSE=True,BUILD=True)
 
-        bucket = self.conn.get_bucket(bucketName)
+        bucket = self.conn.get_bucket(bucketName) 
 
         # establish key object
         filekey=bucket.get_key(fileNameInBucket)
