@@ -316,7 +316,7 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
 
                             # if already failed MAXJOBTRIES times, then do not return to queue
                             if failedJobCount[failedJobIndex]>=MAXJOBTRIES:
-                                print '\n\tCommand\t$ %s\n\t from %s received error code %i BUT NOT ADDED BACK TO QUEUE BECAUSE HAS NOW FAILED %i TIMES. Message:\n'%(job.cmd, job, job.status, MAXJOBTRIES)
+                                print '\n\tCommand\t$ %s\n\t from %s received error code %i BUT NOT ADDED BACK TO QUEUE BECAUSE HAS NOW FAILED %i TIMES.\n'%(job.cmd, job, job.status, MAXJOBTRIES)
 
                             # if not yet failed MAXJOBTRIES times, then return to queue for another go and increment fail count
                             if failedJobCount[failedJobIndex]<MAXJOBTRIES:
