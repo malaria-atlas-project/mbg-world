@@ -352,7 +352,7 @@ class S3(object):
         # if we are making the local directory in which to copy this file, use checkAndBuildPaths to ensure it exists
         if makeDirectory==True:
             # first remove filename from file path to leave just path to directory
-            fpathTrunc = filePathAtDestination.rpartition('/')
+            fpathTrunc = filePathAtDestination.rpartition('/')[0]
             checkAndBuildPaths (fpathTrunc,VERBOSE=True,BUILD=True)
 
         bucket = self.conn.get_bucket(bucketName) 
