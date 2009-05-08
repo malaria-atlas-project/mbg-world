@@ -2,7 +2,7 @@
 
 # import libraries
 from map_utils import checkAndBuildPaths
-from extract_combineExtractions.py import *
+from extract_combineExtractions import *
 from boto_PYlib import *
 from extract_params import *
 
