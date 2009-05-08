@@ -252,7 +252,7 @@ def combineDistribExtractions_perpixel():
                 return(-9999)
             continue
         else:
-            # import first suitable file, compare its shape to maks grid, and if OK se as reference shape
+            # import first suitable file, compare its shape to mask grid, and if OK use as reference shape
             referenceshape = np.loadtxt(exportPathDistributed_perpixel+fname).shape
             if referenceshape!=mask.root.data[:,:].shape:
                 print 'ERROR!!! mask shape is '+str(mask.root.data[:,:].shape)+ 'but file '+str(fname)+' has shape '+str(referenceshape)+' : EXITING!!!!'
