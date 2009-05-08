@@ -23,10 +23,10 @@ S=S3() # initialise key object
 print "from ECRUNSCRIPT_combineDistribExtractions_perPixel:\n"
 
 # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
-S.downloadBucketContents('distributedoutput_perpixel',exportPathDistributed_perpixel,overwriteContent=FALSE,VERBOSE=True)
+S.downloadBucketContents('distributedoutput_perpixel',exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
 
 # build path for output to house combined per-pixel output maps
-checkAndBuildPaths(exportPathCombined_perpixel,VERBOSE=TRUE,BUILD=TRUE)
+checkAndBuildPaths(exportPathCombined_perpixel,VERBOSE=True,BUILD=True)
 
 # download from S3 the other necessary files (optionally need 5km grump for burden map)
 S3bucketname = lim5kmbnry_path.split('/')[-2]
