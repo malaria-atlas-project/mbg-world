@@ -31,12 +31,12 @@ def PrevPoptoBurden(PRsurface, POPsurface, tyears):
     return burdensurface
 
 #############################TEMPPLACEHOLDER
-
+ 
 #############################################################################################################################################
 def examineSalb (salblim1km,uniqueSalb_path={},pixelN_path={},ignore={}):
 
     ''''
-    Takes an input raster with integers definng unique spatial areas (e.g. the salblim1km grid)
+    Takes an input raster with integers defining unique spatial areas (e.g. the salblim1km grid)
     and calculates two vectors: uniqueSalb is a list of unique integer IDs present in this raster,
     and count is the corresponding number of pixels in each. These are returned as a dictionary
     and are optionally exported to txt files.
@@ -173,14 +173,15 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     pixelN=fromfile(pixelN_path,sep=",")        
     Nsalb=len(uniqueSalb)    
 
-    # intialise empty arrays (e.g. 87 countries * N realisations) for mean PR, Burden, and PAR in each class of each scheme..    
+    # intialise empty arrays (e.g. 87 countries * N realisations) for mean PR in each country 
     countryMeanPRrel = repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per)     
-    countryBURDENrel = repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per) 
+    #countryBURDENrel = repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per) 
 
-    ## intialise empty arrays (e.g. 87 countries * N realisations) for PAR in each class of each scheme..housed in PAR dictionary PARdict
+    # intialise empty arrays (e.g. 87 countries * N realisations) for PAR and BURDEN in each class of each scheme in each country..housed in PAR dictionary PARdict and BURDEN dictionary BURDENdict
     Nschemes=len(breaksDict)    
     schemeNames=breaksDict.keys()    
     PARdict=cp.deepcopy(breaksDict)
+    BURDENdict=cp.deepcopy(breaksDict)
     #xxx1 = xxx1 + (r.Sys_time() - xxx1a)
     
     #xxx2a = r.Sys_time()
@@ -190,22 +191,28 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         breaknames = PARdict[scheme]['BREAKNAMES']
         Nclasses=len(breaknames) 
 
-        # define additional sub-dictionary to add to PARdict to house arrays for PAR per class per scheme per country
+        # define additional sub-dictionaries to add to PARdict and BURDENdict to house arrays for PAR and BURDEN per class per scheme per country
         PAR = {}
+        BURDEN = {}
 
         # .. for each class within each scheme..
         for cc in xrange(0,Nclasses):
             thisbreakname = breaknames[cc]
             
-            # define an empty array for this scheme-class to house PAR per country realisations for each class
-            blankarray = {thisbreakname: repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per) }
+            # define two empty arrays for this scheme-class to house PAR and BURDEN per country realisations for each class
+            blankarray_PAR = {thisbreakname: repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per) }
+            blankarray_BURDEN = {thisbreakname: repeat(None,n_realizations*n_per*Nsalb).reshape(Nsalb,n_realizations*n_per) }
 
-            # add this blank array to interim PAR dictionary
-            PAR.update(blankarray)
+            # add these blank arrays to interim PAR and BURDEN dictionaries
+            PAR.update(blankarray_PAR)
+            BURDEN.update(blankarray_BURDEN)
 
-        # add this sub-dictionary to PARdict for this scheme
+        # add these sub-dictionary to PARdict for this scheme
         PAR = {'PAR':PAR}
+        BURDEN = {'BURDEN':BURDEN}
+        
         PARdict[scheme].update(PAR)
+        BURDENdict[scheme].update(BURDEN)
     #xxx2 = xxx2 + (r.Sys_time() - xxx2a)
 
     # loop through each realisation
@@ -245,35 +252,41 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             print "WARNING!! found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
             return(-9999)
 
-        # initialise arrays to house running mean PR and running total burden whilst we loop through chunks and nugget draws..
+        ## initialise arrays to house running mean PR whilst we loop through chunks and nugget draws..
         countryMeanPRrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
-        countryBURDENrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
+        #countryBURDENrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
 
-        # initialise corresponding arrays for running PAR (housed in PR dict, so simply ensure reset to zero for this realisation)..
+        # initialise arrays for running PAR and running total burden whilst we loop through chunks and nugget draws  (housed in PARdic and BURDENdict, so simply ensure reset to zero for this realisation)..
         PARdict_ChunkRunning=cp.deepcopy(breaksDict)
+        BURDENdict_ChunkRunning=cp.deepcopy(breaksDict)
 
         # ..loop through each classification scheme.. 
         for ss in xrange(0,Nschemes):
             scheme = schemeNames[ss]    
-            breaknames = PARdict_ChunkRunning[scheme]['BREAKNAMES']
+            breaknames = breaksDict[scheme]['BREAKNAMES']
             Nclasses=len(breaknames) 
 
             # define additional sub-dictionaries to add to PARdict_ChunkRunning to house temporary arrays
             PAR = {}
+            BURDEN = {}
 
             # .. for each  class within each scheme..
             for cc in xrange(0,Nclasses):
                 thisbreakname = breaknames[cc]
             
                 # define an empty array for this scheme-class to house running PAR sum
-                blankarray = {thisbreakname: repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per) }
+                blankarray_PAR = {thisbreakname: repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per) }
+                blankarray_BURDEN = {thisbreakname: repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per) }
 
-                # add these blank array to interim PAR dictionary
-                PAR.update(blankarray)
+                # add these blank arrays to interim PAR,MeanPR, and BURDEN dictionaries
+                PAR.update(blankarray_PAR)
+                BURDEN.update(blankarray_BURDEN)
 
-            # add these sub-dictionaries to PARdict for this scheme
+            # add these sub-dictionaries to ChunkRunning dictionaries for this scheme
             PAR = {'PAR':PAR}
+            BURDEN = {'BURDEN':BURDEN}
             PARdict_ChunkRunning[scheme].update(PAR)
+            BURDENdict_ChunkRunning[scheme].update(BURDEN)
         #xxx4 = xxx4 + (r.Sys_time() - xxx4a)
         
         # loop through each row (or multiple rows in a slice) of 5km realisation grid..
@@ -388,7 +401,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # obtain a burden surface for this chunk as a function of population and PR
                 burdenChunk = PrevPoptoBurden(PRsurface = chunkExp, POPsurface = gr001km_ROW, tyears = N_years)
                 
-                # create an ID matrix for this chunk for each class in each scheme                
+                # create an ID matrix for this chunk for each endemicity class in each scheme                
                 #xxx11a = r.Sys_time()
                 classIDdict = cp.deepcopy(breaksDict)
                 for ss in xrange(0,Nschemes): 
@@ -423,7 +436,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     #    print "WARNING!! sum of pixels in each class in chunk "+str(jj)+" is "+str(sumClassID)+" != expected total ("+str(product(chunkExp.shape))+")"
                 #xxx11 = xxx11 + (r.Sys_time() - xxx11a)
 
-                # loop through each unique country in this chunk: calculate running mean PR, running total burden and PAR
+                # loop through each unique country in this chunk: calculate running mean PR, running total burden and PAR in each endemicity class in each scheme
                 for rr in xrange(0,Nsalb_ROW):
                 
                     thiscountry_salbLUT = salbLUT_ROW[rr] 
@@ -432,14 +445,9 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     countryID = countryIDdict[str(uniqueSalb_ROW[rr])]
 
                     #xxx12a = r.Sys_time()
-                    # calculate sum of PR in this country,convert to running mean using known conutry pixel count, and add to the relevant part of countryMeanPRrel_ChunkRunning
+                    # calculate sum of PR in this country,convert to running mean using known country pixel count, and add to the relevant part of countryMeanPRrel_ChunkRunning
                     PRsum = sum(chunkExp*countryID)
                     countryMeanPRrel_ChunkRunning[thiscountry_salbLUT,kk] = countryMeanPRrel_ChunkRunning[thiscountry_salbLUT,kk]+(PRsum/pixelN[thiscountry_salbLUT])
-
-                    # similarly, calculate sum of burden in this country, and add to relevant part of countryBURDENrel_ChunkRunning 
-                    BURDENsum = sum(burdenChunk*countryID)
-                    countryBURDENrel_ChunkRunning[thiscountry_salbLUT,kk] = countryBURDENrel_ChunkRunning[thiscountry_salbLUT,kk]+BURDENsum
-                    #xxx12 = xxx12 + (r.Sys_time() - xxx12a)
 
                     #xxx13a = r.Sys_time()
                     # loop through schemes and classes to extract PAR for this country
@@ -455,35 +463,37 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                             # define ID matrix for this country AND this class
                             countryClassID = countryID*classID    
-                            #xxx13 = xxx13 + (r.Sys_time() - xxx13a)
                             
-                            #xxx14a = r.Sys_time()
                             # calculate sum of population in this class and country and add this sum to the relevant part of PARdict_ChunkRunning
                             PARtemp=gr001km_ROW * countryClassID
-                            #xxx14 = xxx14 + (r.Sys_time() - xxx14a)
-                            #xxx15a = r.Sys_time()
                             PARsum = sum(PARtemp)
-                            #xxx15 = xxx15 + (r.Sys_time() - xxx15a)
-                            
-                            #xxx16a = r.Sys_time()
                             PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] = PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] + PARsum
-                            #xxx16 = xxx16 + (r.Sys_time() - xxx16a)
 
-                            # run check for nonsensical negative PAR value
+                            # similarly, calculate sum of burden in this country, and add to relevant part of countryBURDENrel_ChunkRunning 
+                            BURDENtemp = burdenChunk*countryClassID
+                            BURDENsum = sum(BURDENtemp)
+                            BURDENdict_ChunkRunning[scheme]['BURDEN'][thisbreakname][thiscountry_salbLUT,kk] = BURDENdict_ChunkRunning[scheme]['BURDEN'][thisbreakname][thiscountry_salbLUT,kk] + BURDENsum
+                            #xxx12 = xxx12 + (r.Sys_time() - xxx12a)                            
+
+                            # run check for nonsensical negative PAR or BURDEN value
                             if PARsum<0.:
                                 print('WARNING!! Negative PAR found - check input population grid. EXITING')
                                 return(-9999)
+                                
+                            if BURDENsum<0.:
+                                print('WARNING!! Negative BURDEN found - check input population grid. EXITING')
+                                return(-9999)
                     #xxx13 = xxx13 + (r.Sys_time() - xxx13a)
 
-        # copy mean PR and burden values for these 500 nugget draws to the main arrays housing all realisations
+        # copy mean PR values for these 500 nugget draws to the main arrays housing all realisations
         #xxx17a = r.Sys_time()
         countryMeanPRrel[:,slice(ii*n_per,(ii*n_per)+n_per,1)] = countryMeanPRrel_ChunkRunning
-        countryBURDENrel[:,slice(ii*n_per,(ii*n_per)+n_per,1)] = countryBURDENrel_ChunkRunning
+        #countryBURDENrel[:,slice(ii*n_per,(ii*n_per)+n_per,1)] = countryBURDENrel_ChunkRunning
 
         # loop through class schemes
         for ss in xrange(0,Nschemes):
             scheme =  schemeNames[ss]   
-            breaknames = PARdict[scheme]['BREAKNAMES']
+            breaknames = breaksDict[scheme]['BREAKNAMES']
             Nclasses=len(breaknames) 
 
             # .. for each class within each scheme..
@@ -492,6 +502,9 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 
                 # copy PAR values for these 500 nugget draws to main arrays housing all realisations
                 PARdict[scheme]['PAR'][thisbreakname][:,slice(ii*n_per,(ii*n_per)+n_per,1)] = PARdict_ChunkRunning[scheme]['PAR'][thisbreakname] 
+
+                # copy BURDEN values for these 500 nugget draws to main arrays housing all realisations
+                BURDENdict[scheme]['BURDEN'][thisbreakname][:,slice(ii*n_per,(ii*n_per)+n_per,1)] = BURDENdict_ChunkRunning[scheme]['BURDEN'][thisbreakname] 
         #xxx17 = xxx17 + (r.Sys_time() - xxx17a)
         
     #####TEMP
@@ -525,7 +538,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     # 2. Array of burden totals per country per realisation (countryBURDENrel)
     # 3. dictionary of PAR values per country per realisation, along with classification scheme metadata (PARdict)
 
-    returnDict={"startRel":startRelOUT,"endRel":endRelOUT,"countryMeanPRrel":countryMeanPRrel,"countryBURDENrel":countryBURDENrel,"PARdict":PARdict}
+    returnDict={"startRel":startRelOUT,"endRel":endRelOUT,"countryMeanPRrel":countryMeanPRrel,"BURDENdict":BURDENdict,"PARdict":PARdict}
     
     # export extracted arrays 
     outputDistributedExtractions_country(returnDict)
@@ -555,25 +568,29 @@ def outputDistributedExtractions_country(dict):
     # construct file suffix indicating realisations in question
     relSuff = '_r'+str(startRel)+'to'+str(endRel)
 
-    # export arrays of mean PR and burden per country per realisation
+    # export arrays of mean PR per country per realisation
     np.savetxt(exportPathDistributed_country+'meanPR_country'+relSuff+'.txt', dict['countryMeanPRrel'])
-    np.savetxt(exportPathDistributed_country+'BURDEN_country'+relSuff+'.txt', dict['countryBURDENrel'])
+    #np.savetxt(exportPathDistributed_country+'BURDEN_country'+relSuff+'.txt', dict['countryBURDENrel'])
+
+    Nschemes=len(breaksDict)    
+    schemeNames=breaksDict.keys()    
 
     # loop through classification schemes and clases wihtin them and export array of PAR for each
-    schemes = dict['PARdict'].keys()    
-    Nschemes = len(schemes)
-
-    for ss in xrange(0,Nschemes):
-        classes = dict['PARdict'][schemes[ss]]['PAR'].keys()
-        Nclasses = len(classes)
+    for ss in xrange(0,Nschemes): 
+        scheme=schemeNames[ss]   
+        breaknames = breaksDict[scheme]['BREAKNAMES']
+        Nclasses=len(breaknames)
 
         for cc in xrange(0,Nclasses):
 
             # construct class and scheme suffix
-            classSuff = '_'+schemes[ss]+'_'+classes[cc]
+            classSuff = '_'+schemeNames[ss]+'_'+breaknames[cc]
 
             # export PAR array for this scheme-class
-            np.savetxt(exportPathDistributed_country+'PAR_country'+classSuff+relSuff+'.txt', dict['PARdict'][schemes[ss]]['PAR'][classes[cc]]) 
+            np.savetxt(exportPathDistributed_country+'PAR_country'+classSuff+relSuff+'.txt', dict['PARdict'][schemeNames[ss]]['PAR'][breaknames[cc]]) 
+
+            # export BURDEN array for this scheme-class
+            np.savetxt(exportPathDistributed_country+'BURDEN_country'+classSuff+relSuff+'.txt', dict['BURDENdict'][schemeNames[ss]]['BURDEN'][breaknames[cc]]) 
 #############################################################################################################################################
 def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,totalN,startRel=None,endRel=None,BURDEN=False):
 
