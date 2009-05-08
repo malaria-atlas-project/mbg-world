@@ -349,6 +349,12 @@ class S3(object):
             if(os.path.isdir(filePathAtDestination)==True):
                 raise RuntimeError, 'A directory ("'+str(fileNameInBucket)+'") exists at path "'+str(filePathAtDestination)+'" with same name as file trying to download: EXITING!!'
 
+        # if we are making the local directory in which to copy this file, use checkAndBuildPaths to ensure it exists
+        if makeDirectory==True):
+            # first remove filename from file path to leave just path to directory
+            fpathTrunc = fpath.rpartition('/')
+            checkAndBuildPaths (fpathTrunc,VERBOSE=True,BUILD=True)
+
         bucket = self.conn.get_bucket(bucketName)
 
         # establish key object

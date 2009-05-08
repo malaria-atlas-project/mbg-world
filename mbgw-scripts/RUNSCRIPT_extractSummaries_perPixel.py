@@ -56,7 +56,7 @@ S3bucketname = hdf5block_path.split('/')[-2]
 print 'S3bucketname:'
 print S3bucketname
 S3filename = hdf5block_path.split('/')[-1]
-print 'S3filename:'
+print 'S3filename:' 
 print S3filename
 S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
 checkAndBuildPaths(hdf5block_path,VERBOSE=False,BUILD=False)
