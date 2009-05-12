@@ -90,4 +90,4 @@ for fname in os.listdir(exportPathDistributed_perpixel):
     if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.gz')>0):
         filepath = exportPathDistributed_perpixel+fname
         print 'uploading '+filepath+' to S3 bucket '+'distributedoutput_perpixel'
-        S.uploadFileToBucket('distributedoutput_perpixel',filePath,overwriteContent=True,makeBucket=True,VERBOSE=True)
+        S.uploadFileToBucket('distributedoutput_perpixel',filepath,overwriteContent=True,makeBucket=True,VERBOSE=True)
