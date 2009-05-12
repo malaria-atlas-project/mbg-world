@@ -10,9 +10,9 @@ S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 RESERVATIONID = 'r-57c7543e'
 
 # set job distribution parameters
-NINSTANCES = 5
-MAXJOBSPERINSTANCE = 20
-MAXJOBTRIES = 3 #maximum number of tries before we give up on any individual job
+NINSTANCES = 1
+MAXJOBSPERINSTANCE = 5
+MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
 
 # set path to realisations on S3 and extract bucket and generic file name
@@ -26,10 +26,11 @@ relDict = S.queryRealizationsInBucket(relBucket,relPath,VERBOSE=True)
 
 # set realization number parameters
 NRELS = relDict['Nrealisations']
-NJOBS = relDict['Nfiles']
+#NJOBS = relDict['Nfiles']
+NJOBS = 5
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 10
+NPER  = 2
 NTOTALREL = NRELS*NPER
 
 # construct commands list
