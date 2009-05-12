@@ -4,31 +4,36 @@ from boto_PYlib import *
 import numpy as np
 
 # initialise amazon S3 key object 
-#S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
+S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # define ID of reservation that contains the instances we will use on EC2
 RESERVATIONID = 'r-bc6ffed5'
 
 # set job distribution parameters
-NINSTANCES = 2
-MAXJOBSPERINSTANCE = 2
+NINSTANCES = 5
+MAXJOBSPERINSTANCE = 20
 MAXJOBTRIES = 3 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
 
+# set path to realisations on S3 and extract bucket and generic file name
+realisations_path = '/root/qrypfpr010708_africa_run_9.10.2008_trial_two/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+relBucket = realisations_path.rsplit('/')[-2]
+relPath = realisations_path.rsplit('/')[-1]
+
+# call queryRealizationsInBucket to obtain number and start/end realisation numbers of these realisation files
+relDict = S.queryRealizationsInBucket(relBucket,relPath,VERBOSE=True)
+
+
 # set realization number parameters
-NRELS = 3
-NPER  = 2
-NRELSPERJOB = 1.
-FIRSTREL = 0
-
+NRELS = relDict['Nrealisations']
+NJOBS = relDict['Nfiles']
+FileStartRels = relDict['StartRelList']
+FileEndRels = relDict['EndRelList']
+NPER  = 10
 NTOTALREL = NRELS*NPER
-NJOBS = np.ceil(NRELS/NRELSPERJOB)
-
-FileStartRels = FIRSTREL + np.arange(NJOBS)*NRELSPERJOB
-FileEndRels = FileStartRels+NRELSPERJOB
 
 # construct commands list
-CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perPixel.py %i %i %i %i None None True"'%(NPER,FileStartRels[i],FileEndRels[i],NTOTALREL) for i in xrange(NJOBS)]
+CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perPixel.py %i %i %i %i None None True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
 # define files to upload to instance before any execution
 UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']

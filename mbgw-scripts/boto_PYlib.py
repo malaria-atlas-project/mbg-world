@@ -441,5 +441,65 @@ class S3(object):
 
             if(md5string != md5_s3):
                 raise RuntimeError, 'Final check revealed file "'+str(filePathAtDestination)+'" did not copy succesfully from S3 file "'+str(key.name)+'" in bucket "'+str(bucketName)+'"'
+
+    def queryRealizationsInBucket(self, relBucket,relPath,VERBOSE=True):
+
+        '''
+        Queries a specified bucket for realisation files and returns dictionary with N realisations, and lists of start and end realisation numbers
+    
+        params to pass:
+        relBucket     : (string) name of S3 bucket containing realisations
+        relPath       : (string) a generic filename for the realisatios in this bucket (same format as that in extract params, with FILESTARTREL
+                        and FILEENDREL suffixes denoting the firs and last realisatoin couintained in each realisation filepath to target directory. If this includes new directories, these will be built if possible
+        '''
+
+        # define reference filepath for later use - removing the .hdf5 suffix                   
+        TEMPrelPath = relPath.rpartition('.')[-3]
+
+        # check bucket exists on S3
+        if (self.conn.lookup(relBucket) is None):
+            print 'WARNING!!! requested bucket "'+str(relBucket)+'" does not exist on S3 !!!'
+            return(-9999)
+
+        # connect to bucket of interest and define list of filenames therein
+        bucket = self.conn.get_bucket(relBucket)
+        keylist=[]
+        rs=bucket.list()
+        for key in rs:
+            keylist.append(str(key.name))
+        NfilesInBucket = len(keylist)
+
+        Nrealisations = 0
+        Nfiles = 0
+        StartRelList = []
+        EndRelList = []
+
+        # loop thorugh filenames in bucket, check they are a realisatoin file, and if so extract start and end realistaion info
+        for i in xrange(0,NfilesInBucket):
+
+            # get the ith filename in the bucket
+            fileN=keylist[i]
+            
+            # first check it is an hdf5 file
+            if fileN.rpartition('.')[-1]=='hdf5':
                 
+                # truncate this filename to remove extension
+                TEMPPath = fileN.rpartition('.')[-3]
+            
+                # compare this filename to the generic realisation filename (after removing the realisation-specific suffixes), if they match then assume this is a realisation file
+                if (TEMPPath.split('_')[0:-2:1]==TEMPrelPath.split('_')[0:-2:1]):
+                    
+                    # extract start and end realisation numbers from file suffixes
+                    StartRelList.append(TEMPPath.split('_')[-2])
+                    EndRelList.append(TEMPPath.split('_')[-1])
+                    
+                    # increment counter of valid realisation files in this bucket
+                    Nfiles+=1
+                    
+                    # and increment counter of nuber of individual realisations in this bucket (a file may have more than one realisation)
+                    Nrealisations=Nrealisations +  int(TEMPPath.split('_')[-1]) - int(TEMPPath.split('_')[-2])                     
+
+        # return dictionary with start and end realisation lists and number of realisations
+        returnDict = {"Nfiles":Nfiles,"Nrealisations":Nrealisations,"StartRelList":StartRelList,"EndRelList":EndRelList}
+        return returnDict
 
