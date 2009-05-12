@@ -6,10 +6,12 @@ from numpy import *
 # mapView=True
 
 
-def asc_to_hdf5(fname, path, mapView=False,setNaN=False):
+def asc_to_hdf5(fname, path, mapView=False,setNaN=None):
     """
     Extracts long, lat, data from an ascii-format file.
     """
+    #print setNaN
+
     f = file(fname,'r')
     
     # Extract metadata from asc file.
@@ -59,35 +61,31 @@ def asc_to_hdf5(fname, path, mapView=False,setNaN=False):
     for i in xrange(nrows):
         temp = fromstring(f.readline(), dtype=float, sep=' ')
         #print('i= '+str(i)+' shape(temp) = '+str(shape(temp))       )
-        if setNaN != False:
+        if setNaN is not None:
+            #print NODATA_value
             temp[temp == NODATA_value] = setNaN
         if mapView==False:
             data[-i-1,:] = temp
         if mapView==True:
             data[i,:] = temp 
     
-    return h5file 
+    return h5file  
 
-#asc_to_hdf5('gr001km_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/')
-#asc_to_hdf5('limbnry1km-e_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/')
-#asc_to_hdf5('salb1km-e_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/')
-#asc_to_hdf5('salblim1km-e_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/',mapView=True)
-#asc_to_hdf5('gr001km_ken.asc', path='/home/pwg/MBGWorld/datafiles/auxiliary_data/',mapView=True,setNaN=NaN)
 
-#asc_to_hdf5('salblim1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
-#asc_to_hdf5('lims1km-e.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
-#asc_to_hdf5('gr001km.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True,setNaN=0)
-#asc_to_hdf5('lim5kmbnry-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
-#asc_to_hdf5('gr005km_AF.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/',mapView=True)
+asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr071km_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr071km_y-x+.hdf5',mapView=True,setNaN=0)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/salb1km-e2_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/salb1km-e2_y-x+.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/un_mask1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/un_mask1km-e_y-x+.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/salblim1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/salblim1km-e_y-x+.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/lims1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/lims1km-e_y-x+.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ur1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ur1km-e_y-x+.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask1km-e_y-x+.hdf5',mapView=True)
 
-#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/salb1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/salb1km-e_y-x+.hdf5',mapView=True)
-#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/salb_st_1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/salb_st_1km-e_y-x+.hdf5',mapView=True) 
-asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/st_mask5km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/st_mask5km-e_y-x+.hdf5',mapView=True)
-#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/lims1km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/lims1km-e_y-x+.hdf5',mapView=True)
-asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/urb5km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/urb5km-e_y-x+.hdf5',mapView=True)
-asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/periurb5km-e_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/periurb5km-e_y-x+.hdf5',mapView=True)
-#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_y-x+.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_y-x+.hdf5',mapView=True) 
-
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask5km-e_y-x+_AM.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask5km-e_y-x+_AM.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask5km-e_y-x+_AF.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask5km-e_y-x+_AF.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask5km-e_y-x+_AS.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/st_mask5km-e_y-x+_AS.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr075km_y-x+_AM.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr075km_y-x+_AM.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr075km_y-x+_AF.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr075km_y-x+_AF.hdf5',mapView=True)
+#asc_to_hdf5('/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr075km_y-x+_AS.asc', path='/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr075km_y-x+_AS.hdf5',mapView=True)
 
 
 

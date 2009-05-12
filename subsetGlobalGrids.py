@@ -5,7 +5,7 @@ from numpy import *
 
 # set some parameters
 #resRatio=5  # ratio between resolution of grids defines in master_grid, and the ones being subsetted here
-datafolder = "/home/pwg/mbg-world/datafiles/auxiliary_data/"
+datafolder = "/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/"
 
 
 
@@ -89,13 +89,28 @@ def subsetGlobalGrids (region,lims,gridname,resRatio = 1):
 
 #subsetGlobalGrids(region="ken",lims = master_grid.KE_lims,gridname = "lim5kmbnry-e_y-x+",resRatio=1)
 
-subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "gr001km_y-x+",resRatio=5)
-#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "lims1km-e_y-x+",resRatio=5)
-#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "salb_st_1km-e_y-x+",resRatio=5)
-#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "salb1km-e_y-x+",resRatio=5)
-#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "st_mask5km-e_y-x+",resRatio=1)
-#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "periurb5km-e_y-x+",resRatio=1)
-#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "urb5km-e_y-x+",resRatio=1)
+subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "gr071km_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "un_mask1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "salblim1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "lims1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "ur1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "st_mask1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AM",lims = master_grid.AM_lims,gridname = "salb1km-e2_y-x+",resRatio=5)
 
+subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "gr071km_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "un_mask1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "salblim1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "lims1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "ur1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "st_mask1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AF",lims = master_grid.AF_lims,gridname = "salb1km-e2_y-x+",resRatio=5)
+
+subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "gr071km_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "un_mask1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "salblim1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "lims1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "ur1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "st_mask1km-e_y-x+",resRatio=5)
+#subsetGlobalGrids(region="AS",lims = master_grid.AS_lims,gridname = "salb1km-e2_y-x+",resRatio=5)
 
 
