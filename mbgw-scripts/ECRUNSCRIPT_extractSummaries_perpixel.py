@@ -5,6 +5,7 @@ from map_utils import checkAndBuildPaths
 from extract_PYlib import *
 from boto_PYlib import *
 from extract_params import *
+import os
 
 S=S3() # initialise key object
 
@@ -79,8 +80,14 @@ print '\nrunning extractSummaries_perpixel..'
 extractSummaries_perpixel ([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,n_per,FileStartRel,FileEndRel,totalN,startRel,endRel,BURDEN)
 
 # now upload the output back to the S3 storage
-#print '\nrunning extractSummaries_perpixel..'
+print '\nrunning extractSummaries_perpixel..'
 #S.uploadDirectoryAsBucket('distributedoutput_perpixel',exportPathDistributed_perpixel,uploadConstituentFiles=True,overwriteContent=True)
 
+## loop through all files in local export storage
+for fname in os.listdir(exportPathDistributed_country):
 
-
+    # if file contains string indicating an outcome from this realisation set, then upload to S3
+    if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.gz')>0):
+        filepath = exportPathDistributed_country+fname
+        print 'uploading '+filepath+' to S3 bucket '+'distributedoutput_perpixel'
+        S.uploadFileToBucket('distributedoutput_perpixel',filePath,overwriteContent=True,makeBucket=True,VERBOSE=True)
