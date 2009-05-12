@@ -308,9 +308,6 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
                         failedJobIndex = failedJobCmds==job.cmd
                         if(type(failedJobIndex)==type(False)): failedJobIndex=np.array([failedJobIndex])
                         
-                        print failedJobIndex
-                        print type(failedJobIndex)
-
                         # is this cmd already on list of shame?
                         if failedJobIndex.any()==True:
 
