@@ -189,8 +189,7 @@ class S3(object):
         # check sepcified bucket  exists and optionally make it
         if (self.conn.lookup(bucketName) is None):
             if makeBucket==False:
-                if VERBOSE==True: print 'WARNING!!! requested bucket "'+str(bucketName)+'" does not exist on  S3 and makeBucket==False!!!'
-                
+                raise RuntimeError, 'Requested bucket "'+str(bucketName)+'" does not exist on  S3 and makeBucket==False: EXITING!!!'
 
             if makeBucket==True:
                 temp=self.makeEmptyBucket(bucketName)
@@ -202,7 +201,7 @@ class S3(object):
         # if worried about overwriting check if file exists already and abort if it does
         if overwriteContent==False:
             if (self.CheckFileExistsInBucket(bucketName,fileName) == True) :
-                print 'WARNING!!! file "'+str(fileName)+'" already exists in bucket "'+str(bucketName)+'" and overwriteContent==False: EXITING!!'
+                print 'WARNING!!! file "'+str(fileName)+'" already exists in bucket "'+str(bucketName)+'" and overwriteContent==False!!!'
                 
 
         # now go ahead and upload file to the bucket
@@ -222,7 +221,7 @@ class S3(object):
         # finally, check that this file made it to S3
         md5string = md5.new(file(filePath).read()).hexdigest()
         if (self.CheckFileExistsInBucket(bucketName,fileName,md5check = md5string) != True) :
-            raise RuntimeError, 'Final check revealed file "'+str(filePath)+'" did not copy succesfully to S3 bucket '+str(bucketName)
+            raise RuntimeError, 'Final check revealed file "'+str(filePath)+'" did not copy succesfully to S3 bucket '+str(bucketName)+': EXITING!!!'
 
         return(0)
 

@@ -231,13 +231,14 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
     failedJobCmds = np.array([])
     failedJobCount = np.array([])
 
+    NjobsRunning=0
     TotalCompleteOK = 0
     TotalFailures = 0
 
     while True:
         print '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print str(len(spawning_engines))+' instances spawning;   '+str(len(running_engines))+' instances running'
-        print 'Job Status:    '+str(NjobsRunning)+' running;    '+str(TotalCompleteOK)+' completed successfully;    '+str(TotalFailures)' failures
+        print 'Job Status:    '+str(NjobsRunning)+' running;    '+str(TotalCompleteOK)+' completed successfully;    '+str(TotalFailures)+' failures.'
     
         # Watch engines to see when they come alive.
         for e in spawning_engines:

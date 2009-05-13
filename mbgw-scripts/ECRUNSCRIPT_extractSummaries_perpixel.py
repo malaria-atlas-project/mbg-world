@@ -10,17 +10,6 @@ import os
 S=S3() # initialise key object
 
 # deal with system arguments
-
-############################TEMP
-#n_per = 3
-#FileStartRel = 0
-#FileEndRel = 1
-#totalN = 3
-#startRel = None
-#endRel = None
-#BURDEN = True
-################################
-
 n_per = int(sys.argv[1])   
 FileStartRel = int(sys.argv[2])  
 FileEndRel = int(sys.argv[3])
@@ -58,18 +47,8 @@ S3bucketname = hdf5block_path.split('/')[-2]
 print '\tS3bucketname: '+str(S3bucketname)
 S3filename = hdf5block_path.split('/')[-1]
 print '\tS3filename: '+str(S3filename)
-S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
 checkAndBuildPaths(hdf5block_path,VERBOSE=False,BUILD=False)
-
-# download from S3 the other necessary file (optionally need 5km grump for burden map)
-if (BURDEN==True):
-    print '\nDownloading other files from S3..'
-    S3bucketname = gr005km_path.split('/')[-2]
-    print '\tS3bucketname: '+str(S3bucketname)
-    S3filename = gr005km_path.split('/')[-1]
-    print '\tS3filename: '+str(S3filename)
-    S.downloadFileFromBucket(S3bucketname,S3filename,gr005km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
-    checkAndBuildPaths(gr005km_path,VERBOSE=False,BUILD=False)
 
 # check path for exports exists
 print '\nchecking path for export exists..'
@@ -86,8 +65,19 @@ print '\nrunning extractSummaries_perpixel..'
 ## loop through all files in local export storage
 for fname in os.listdir(exportPathDistributed_perpixel):
 
-    # if file contains string indicating an outcome from this realisation set, then upload to S3
+    # if file contains string indicating an outcome from this realisation set, then upload to S3 (try a few times before failing this section)
     if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.gz')>0):
         filepath = exportPathDistributed_perpixel+fname
-        print 'uploading '+filepath+' to S3 bucket '+'distributedoutput_perpixel'
-        S.uploadFileToBucket('distributedoutput_perpixel',filepath,overwriteContent=True,makeBucket=True,VERBOSE=True)
+        print 'uploading '+filepath+' to S3 bucket distributedoutput_perpixel'
+        failCount = 0
+        while failCount<=3:
+            try:
+                S.uploadFileToBucket('distributedoutput_perpixel',filepath,overwriteContent=True,makeBucket=True,VERBOSE=True)
+                break
+            except RuntimeError:
+                failCount+=1 
+                if failCount<=3:
+                    print 'upload of '+filepath+' to S3 bucket distributedoutput_perpixel failed '+str(failCount) +' times: retrying..'
+                else:
+                    print 'upload of '+filepath+' to S3 bucket distributedoutput_perpixel failed '+str(failCount) +' times: GIVING UP - FILE WILL NOT BE COPIED!!'
+                

@@ -7,10 +7,10 @@ import numpy as np
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # define ID of reservation that contains the instances we will use on EC2
-RESERVATIONID = 'r-b71f8cde'
+RESERVATIONID = 'r-eb039082'
 
 # set job distribution parameters
-NINSTANCES = 2
+NINSTANCES = 4
 MAXJOBSPERINSTANCE = 2
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
@@ -29,7 +29,7 @@ NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
 
 ####################################TEMP
-NJOBS = 4
+NJOBS = 8
 ####################################TEMP
 
 FileStartRels = relDict['StartRelList']
@@ -38,17 +38,17 @@ NPER  = 2
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP
-NTOTALREL = 8
+NTOTALREL = 16
 ####################################TEMP
 
-# construct commands list
+# construct main commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py %i %i %i %i None None True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
-# define files to upload to instance before any execution
+# define files to upload to instance (from local machine) before any execution
 UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 
 # define any initialisation commands to exctue on instance before main job
-INITCMDS=['bash /root/cloud_setup.sh']
+INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel_PREDOWNLOAD.py True"']
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 returns = map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
