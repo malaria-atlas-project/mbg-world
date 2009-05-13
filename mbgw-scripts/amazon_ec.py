@@ -264,8 +264,8 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
                     for init_cmd in init_cmds:
                         print '\t$ %s'%init_cmd
                         #p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=PIPE, stderr=STDOUT)
-                        stdout = file(str(STDOUTPATH)+'stdout_initial_'+str(e).rpartition(':')[-1]+'_'+str(init_cmd).rpartition('/')[-1]+'.txt','w')
-                        stderr = file(str(STDOUTPATH)+'stderr_initial_'+str(e).rpartition(':')[-1]+'_'+str(init_cmd).rpartition('/')[-1]+'.txt','w') 
+                        stdout = file(str(STDOUTPATH)+'stdout_initial_'+str(e).rpartition(':')[-1]+'_'+str(init_cmd).rpartition('/')[-1].strip('"')+'.txt','w')
+                        stderr = file(str(STDOUTPATH)+'stderr_initial_'+str(e).rpartition(':')[-1]+'_'+str(init_cmd).rpartition('/')[-1].strip('"')+'.txt','w') 
                         p = Popen(init_ssh_str + ' root@%s '%e.dns_name+ init_cmd, shell=True, stdout=stdout, stderr=stderr)
                         while p.poll() is None:
                             print '\t\tWaiting for %i...'%p.pid

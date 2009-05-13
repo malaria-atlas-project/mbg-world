@@ -95,7 +95,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     '''
     Takes an hdf block of one or more realisation of f, and calculates mean PR, total burden, and population at risk (PAR) in each
     unique spatial unit (e.g. country) specified in the 1km res salblim1km_path file. Also requires 1km population surface specified by 
-    gr001km_path. Compmlies these extractions as a dictionary, which is passed to outputDistributedExtractions_country for export.
+    grump1km_path. Compmlies these extractions as a dictionary, which is passed to outputDistributedExtractions_country for export.
     
     Params to pass are:
     
@@ -146,13 +146,13 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
     # open link to salb grid (masked to stable areas only) and population grid    
     salblim1km = tb.openFile(salblim1km_path, mode = "r")    
-    gr001km = tb.openFile(gr001km_path, mode = "r")    
+    grump1km = tb.openFile(grump1km_path, mode = "r")    
 
     # perform check that the number of rows and columns is the same in both 1km grids
-    if len(salblim1km.root.lat) != len(gr001km.root.lat):
-        print 'WARNING!! 1km row numbers do not correspond: salblim1km has '+str(len(salblim1km.root.lat))+' and gr001km has '+str(len(gr001km.root.lat))
-    if len(salblim1km.root.long) != len(gr001km.root.long):
-        print 'WARNING!! col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and gr001km has '+str(len(gr001km.root.long))
+    if len(salblim1km.root.lat) != len(grump1km.root.lat):
+        print 'WARNING!! 1km row numbers do not correspond: salblim1km has '+str(len(salblim1km.root.lat))+' and grump1km has '+str(len(grump1km.root.lat))
+    if len(salblim1km.root.long) != len(grump1km.root.long):
+        print 'WARNING!! col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and grump1km has '+str(len(grump1km.root.long))
 
     # perform check that the number of rows and columns is in the correct ratio to those of input 5km grid
     if len(salblim1km.root.lat) != HiResLowResRatio*len(hr.lat_axis):
@@ -311,10 +311,10 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             startRow1km=jj*HiResLowResRatio
             endRow1km=startRow1km+(HiResLowResRatio)
             salblim1km_ROW = salblim1km.root.data[slice(startRow1km,endRow1km,1),:]
-            gr001km_ROW = gr001km.root.data[slice(startRow1km,endRow1km,1),:]
+            grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
-            zeroChunk = zeros(product(gr001km_ROW.shape)).reshape(gr001km_ROW.shape)
+            zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
             #xxx5 = xxx5 + (r.Sys_time() - xxx5a) 
 
             #plotMapPY(salblim1km.root.data[:,:],NODATA=-9999)
@@ -399,7 +399,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     return(-9999)
 
                 # obtain a burden surface for this chunk as a function of population and PR
-                burdenChunk = PrevPoptoBurden(PRsurface = chunkExp, POPsurface = gr001km_ROW, tyears = N_years)
+                burdenChunk = PrevPoptoBurden(PRsurface = chunkExp, POPsurface = grump1km_ROW, tyears = N_years)
                 
                 # create an ID matrix for this chunk for each endemicity class in each scheme                
                 #xxx11a = r.Sys_time()
@@ -465,7 +465,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                             countryClassID = countryID*classID    
                             
                             # calculate sum of population in this class and country and add this sum to the relevant part of PARdict_ChunkRunning
-                            PARtemp=gr001km_ROW * countryClassID
+                            PARtemp=grump1km_ROW * countryClassID
                             PARsum = sum(PARtemp)
                             PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] = PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] + PARsum
 
@@ -645,7 +645,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
     # if we are extracting burden summaries, import 5km population grid
     if BURDEN==True:
-        gr005km = tb.openFile(gr005km_path)
+        grump5km = tb.openFile(grump5km_path)
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
@@ -750,7 +750,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             # get burden realisation for this PR and increment running burden matrix
             if BURDEN==True:
-                burdenChunk = PrevPoptoBurden(PRsurface = chunkTMEAN, POPsurface = gr005km.root.data[:,:], tyears = N_years)
+                burdenChunk = PrevPoptoBurden(PRsurface = chunkTMEAN, POPsurface = grump5km.root.data[:,:], tyears = N_years)
                 meanBUR = meanBUR + (burdenChunk/totalN)
                 meanBUR2 = meanBUR2 + (np.square(burdenChunk)/totalN)
             
