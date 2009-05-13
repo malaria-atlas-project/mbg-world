@@ -41,14 +41,14 @@ print "startRel: "+str(startRel)
 print "endRel: "+str(endRel)
 print "BURDEN: "+str(BURDEN) 
 
-## download this realisation file from S3 storage
-#print '\nDownloading realisation from S3..'
-#S3bucketname = hdf5block_path.split('/')[-2]
-#print '\tS3bucketname: '+str(S3bucketname)
-#S3filename = hdf5block_path.split('/')[-1]
-#print '\tS3filename: '+str(S3filename)
-#S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
-#checkAndBuildPaths(hdf5block_path,VERBOSE=False,BUILD=False)
+# download this realisation file from S3 storage
+print '\nDownloading realisation from S3..'
+S3bucketname = hdf5block_path.split('/')[-2]
+print '\tS3bucketname: '+str(S3bucketname)
+S3filename = hdf5block_path.split('/')[-1]
+print '\tS3filename: '+str(S3filename)
+S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
+checkAndBuildPaths(hdf5block_path,VERBOSE=False,BUILD=False)
 
 # check path for exports exists
 print '\nchecking path for export exists..'
