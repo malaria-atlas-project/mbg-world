@@ -10,7 +10,7 @@ S=S3() # initialise key object
 # deal with system arguments
 BURDEN = str(sys.argv[1])
 if BURDEN == 'None': BURDEN = None  
-else: BURDEN = bool(BURDEN)
+else: BURDEN = bool(BURDEN) 
 
 # download from S3 the other necessary file (optionally need 5km grump for burden map)
 if (BURDEN==True):

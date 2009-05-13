@@ -1,4 +1,4 @@
-# check in correct dirctory
+print "STARTING: ECRUNSCRIPT_combineDistribExtractions_perPixel..\n"
 
 # import libraries
 from map_utils import checkAndBuildPaths
@@ -9,36 +9,53 @@ from extract_params import *
 S=S3() # initialise key object
 
 # deal with system arguments
+BURDEN = str(sys.argv[1])
+if BURDEN == 'None': BURDEN = None  
+else: BURDEN = bool(BURDEN)
 
-############################TEMP
-#n_per = 3
-#FileStartRel = 0
-#FileEndRel = 1
-#totalN = 3
-#startRel = None
-#endRel = None
-#BURDEN = True
-################################
-
-print "from ECRUNSCRIPT_combineDistribExtractions_perPixel:\n"
 
 # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
+print 'n\t\Downloading contents of S3 bucket "distributedoutput_perpixel" to local directory '+exportPathDistributed_perpixel
 S.downloadBucketContents('distributedoutput_perpixel',exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
 
 # build path for output to house combined per-pixel output maps
+print 'n\t\Checking path for '+exportPathCombined_perpixel
 checkAndBuildPaths(exportPathCombined_perpixel,VERBOSE=True,BUILD=True)
 
 # download from S3 the other necessary files (optionally need 5km grump for burden map)
+print '\n\tDownloading lim5kmbnry file from S3..'
 S3bucketname = lim5kmbnry_path.split('/')[-2]
+print '\t\tS3bucketname: '+str(S3bucketname)
 S3filename = lim5kmbnry_path.split('/')[-1]
+print '\t\tS3filename: '+str(S3filename)
 S.downloadFileFromBucket(S3bucketname,S3filename,lim5kmbnry_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
-checkAndBuildPaths(lim5kmbnry_path,VERBOSE=False,BUILD=False)
+checkAndBuildPaths(lim5kmbnry_path,VERBOSE=True,BUILD=False)
 
-# check path for exports exists
-checkAndBuildPaths(exportPathDistributed_perpixel,VERBOSE=True,BUILD=True)
+if (BURDEN==True):
+    print '\n\tDownloading grump5km file from S3..'
+    S3bucketname = grump5km_path.split('/')[-2]
+    print '\t\tS3bucketname: '+str(S3bucketname)
+    S3filename = grump5km_path.split('/')[-1]
+    print '\t\tS3filename: '+str(S3filename)
+    S.downloadFileFromBucket(S3bucketname,S3filename,grump5km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+    checkAndBuildPaths(grump5km_path,VERBOSE=True,BUILD=False)
+
 
 # now call extractSummaries_perpixel substituting in the formatted sys args 
+print '\n\tCalling combineDistribExtractions_perpixel'
 combineDistribExtractions_perpixel()
 
 # now upload the output back to the S3 storage
-S.uploadDirectoryAsBucket('CombinedOutput_perpixel',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
+
+print '\n\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel'
+failCount = 0
+while failCount<=3:
+    try:
+        S.uploadDirectoryAsBucket('CombinedOutput_perpixel',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
+        break
+    except RuntimeError:
+        failCount+=1 
+        if failCount<=3:
+            print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel failed '+str(failCount) +' times: retrying..'
+        else:
+            print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'

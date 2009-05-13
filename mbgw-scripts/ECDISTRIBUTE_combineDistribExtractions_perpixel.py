@@ -7,16 +7,16 @@ import numpy as np
 #S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # define ID of reservation that contains the instances we will use on EC2
-RESERVATIONID = 'r-57c7543e'
+RESERVATIONID = 'r-c53eadac'
 
 # set job distribution parameters
-NINSTANCES = 5
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 20
 MAXJOBTRIES = 3 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/CombinedOutput_perpixel/'
 
 # construct commands list
-CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_combineDistribExtractions_perpixel.py"']
+CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_combineDistribExtractions_perpixel.py True"']
 
 # define files to upload to instance before any execution
 UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
