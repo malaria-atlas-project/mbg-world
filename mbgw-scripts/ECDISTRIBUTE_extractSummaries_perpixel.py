@@ -7,10 +7,10 @@ import numpy as np
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # define ID of reservation that contains the instances we will use on EC2
-RESERVATIONID = 'r-57c7543e'
+RESERVATIONID = 'r-b71f8cde'
 
 # set job distribution parameters
-NINSTANCES = 5
+NINSTANCES = 2
 MAXJOBSPERINSTANCE = 2
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
@@ -26,16 +26,20 @@ relDict = S.queryRealizationsInBucket(relBucket,relPath,VERBOSE=True)
 
 # set realization number parameters
 NRELS = relDict['Nrealisations']
-#NJOBS = relDict['Nfiles']
+NJOBS = relDict['Nfiles']
 
 ####################################TEMP
-NJOBS = 10
+NJOBS = 4
 ####################################TEMP
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
 NPER  = 2
 NTOTALREL = NRELS*NPER
+
+####################################TEMP
+NTOTALREL = 8
+####################################TEMP
 
 # construct commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py %i %i %i %i None None True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]

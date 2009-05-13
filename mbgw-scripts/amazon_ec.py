@@ -194,29 +194,25 @@ def queryJobsOnInstance(splist):
             FinishedJobIndex.append(i)
 
     # return dictionary
-    return({'sumRunning':sumRunning,'sumFinished':sumFinished,'FinishedJobIndex':FinishedJobIndex})
+    return({'sumRunning':sumRunning,'sumFinished':sumFinished,'FinishedJobIndex':FinishedJobIndex}) 
 ###########################################################################################################################
 ##RESERVATIONID;NINSTANCES;MAXJOBSPERINSTANCE;cmds=CMDS;init_cmds=INITCMDS;upload_files=UPLOADFILES;interval=20;shutdown=False
 def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, init_cmds=None, upload_files=None, interval=10, shutdown=True,STDOUTPATH=None):    
     """
 
-    RESERVATIONID : (str) label identifying the EC2 reservation we are dealing with
-    cmds: list of strings that can be executed from the shell.
+    RESERVATIONID       : (str) label identifying the EC2 reservation we are dealing with
+    NINSTANCES          : (int) number iof instances available on this reservation
+    MAXJOBSPERINSTANCE  : (int) number of jobs that will be run simultaneiously on each instance
+    MAXJOBTRIES         : (int) maximum number of time each individual job will be attempted before killing it
+    cmds                : (list, str) list of strings that can be executed from the shell.
     
     Optional arguments:
-        upload_files: list of paths.
-          Will be uploaded to each instance before any init_cmds or cmds
-          are sent to it.
-        init_cmds: list of strings that can be executed from the shell.
-          Will be executed once, in order, on each instance before any cmds
-          are sent to it.
-        interval: integer. Delay in seconds between polling instances.
-        shutdown: boolean. Whether to shut down instances that are not needed.
-          If True, all instances will be terminating by the time function returns.
+        upload_files    : (list,str) list of paths -  Will be uploaded to each instance before any init_cmds or cmds are sent to it.
+        init_cmds       : (list,str) list of strings that can be executed from the shell. Will be executed once, in order, on each instance before any cmds are sent to it.
+        interval        : (int). Delay in seconds between polling instances.
+        shutdown        : (bool) Whether to shut down instances that are not needed.  If True, all instances will be terminating by the time function returns.
+        STDOUTPATH:     : (str) path to local directory which will house stdout and stderr files
           
-    Returns a list of (cmd, output) tuples. Output is everything the process wrote
-    to stdout and stderr... but there won't be anything in stderr, because only
-    successful exits get written out. 
     """
     returns = []
 
@@ -235,9 +231,13 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
     failedJobCmds = np.array([])
     failedJobCount = np.array([])
 
+    TotalCompleteOK = 0
+    TotalFailures = 0
+
     while True:
         print '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print str(len(spawning_engines))+' instances spawning;   '+str(len(running_engines))+' instances running'
+        print 'Job Status:    '+str(NjobsRunning)+' running;    '+str(TotalCompleteOK)+' completed successfully;    '+str(TotalFailures)' failures
     
         # Watch engines to see when they come alive.
         for e in spawning_engines:
@@ -304,6 +304,8 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
                     # if a non-zero return code then this job had a problem and needs adding back to job list             
                     if job.status>0:
                         
+                        TotalFailures+=1
+                        
                         # before adding back to list, check if this job has already been tried more than MAXJOBTRIES times
                         failedJobIndex = failedJobCmds==job.cmd
                         if(type(failedJobIndex)==type(False)): failedJobIndex=np.array([failedJobIndex])
@@ -321,15 +323,20 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
                                 cmds.append(job.cmd)
                                 failedJobCount[failedJobIndex]+=1
 
-                        # if this cmd not yet on  list of shame then add it, along with failure counter, after adding job back to list
+                        # if this cmd not yet on  list of shame (and if MAXJOBTRIES greater than one) then add it, along with failure counter, after adding job back to list
                         else:
-                            print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i.\n'%(job.cmd, job, job.status)
-                            cmds.append(job.cmd)
-                            failedJobCmds = np.concatenate((failedJobCmds,np.array([job.cmd])))
-                            failedJobCount = np.concatenate((failedJobCount,np.array([1])))
+                            if MAXJOBTRIES==1:
+                                print '\n\tCommand\t$ %s\n\t from %s received error code %i BUT NOT ADDED BACK TO QUEUE BECAUSE HAS NOW FAILED %i TIMES.\n'%(job.cmd, job, job.status, MAXJOBTRIES)
+                                
+                            else:
+                                print '\n\tAdding\n\t$ %s\n\tback onto queue because %s received error code %i.\n'%(job.cmd, job, job.status)
+                                cmds.append(job.cmd)
+                                failedJobCmds = np.concatenate((failedJobCmds,np.array([job.cmd])))
+                                failedJobCount = np.concatenate((failedJobCount,np.array([1])))
 
                     # if a zero return code then this job has finished succesfully and can add its standard outut to list for return
                     else:
+                        TotalCompleteOK+=1 
                         if job.stdout is not None: returns.append((job.cmd, job.stdout.read()))
                         
                     # whether finished succesfully or otherwise, this job can now be removed from PendingJoblist
