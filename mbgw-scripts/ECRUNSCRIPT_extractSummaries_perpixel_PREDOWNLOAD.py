@@ -23,8 +23,8 @@ if (BURDEN==True):
     checkAndBuildPaths(grump5km_path,VERBOSE=False,BUILD=False)
 
 # make empty directory on instance to house realisation hdf5 file downloaded from S3
-print '\n\tBuilding directory: '+realisations_path.split('/')[-2]
-checkAndBuildPaths(realisations_path.split('/')[-2],VERBOSE=True,BUILD=True)
+print '\n\tBuilding directory: '+realisations_path.rpartition('/')[0]
+checkAndBuildPaths(realisations_path.rpartition('/')[0],VERBOSE=True,BUILD=True)
 
 # make empty directory on instance to house output files ready to be uploaded back to S3
 print '\n\tBuilding directory: '+exportPathDistributed_perpixel

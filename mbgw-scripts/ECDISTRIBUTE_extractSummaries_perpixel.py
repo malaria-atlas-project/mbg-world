@@ -16,7 +16,7 @@ MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
 
 # set path to realisations on S3 and extract bucket and generic file name
-realisations_path = '/root/qrypfpr010708_africa_run_9.10.2008_trial_two/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_two/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 relBucket = realisations_path.rsplit('/')[-2]
 relPath = realisations_path.rsplit('/')[-1]
 
