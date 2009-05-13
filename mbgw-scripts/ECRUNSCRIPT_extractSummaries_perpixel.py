@@ -1,4 +1,4 @@
-# check in correct dirctory
+print "from RUNSCRIPT_extractSummaries_perpixel:\n"
 
 # import libraries
 from map_utils import checkAndBuildPaths
@@ -32,7 +32,7 @@ hdf5block_path = realisations_path
 hdf5block_path = hdf5block_path.replace('FILESTARTREL',str(FileStartRel))
 hdf5block_path = hdf5block_path.replace('FILEENDREL',str(FileEndRel))
 
-print "from RUNSCRIPT_extractSummaries_perpixel:\n"
+
 print "n_per: "+str(n_per)
 print "FileStartRel: "+str(FileStartRel)
 print "FileEndRel: "+str(FileEndRel)

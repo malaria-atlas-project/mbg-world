@@ -7,11 +7,11 @@ import numpy as np
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # define ID of reservation that contains the instances we will use on EC2
-RESERVATIONID = 'r-5922b130' 
+RESERVATIONID = 'r-5dc45634'  
 
 # set job distribution parameters
 NINSTANCES = 5
-MAXJOBSPERINSTANCE = 20
+MAXJOBSPERINSTANCE = 2
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
 
