@@ -51,7 +51,7 @@ print '\n\tuploading contents of exportPathCombined_perpixel to S3 bucket Combin
 failCount = 0
 while failCount<=3:
     try:
-        S.uploadDirectoryAsBucket('CombinedOutput_perpixel',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
+        S.uploadDirectoryAsBucket('combinedoutput_perpixel',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
         break
     except RuntimeError:
         failCount+=1 

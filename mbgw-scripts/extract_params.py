@@ -15,8 +15,8 @@ exportPathDistributed_country = '/mnt/DistributedOutput_country/'
 exportPathDistributed_perpixel = '/mnt/DistributedOutput_perpixel/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/mnt/CombinedOutput_country/'
-exportPathCombined_perpixel = '/mnt/CombinedOutput_perpixel/'
+exportPathCombined_country = '/mnt/combinedoutput_country/'
+exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel/'
  
 # input 1km salb raster of unique spatial IDs
 salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_AF.hdf5"
