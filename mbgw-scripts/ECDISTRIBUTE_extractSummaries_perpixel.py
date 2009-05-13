@@ -7,7 +7,7 @@ import numpy as np
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # define ID of reservation that contains the instances we will use on EC2
-RESERVATIONID = 'r-eb039082'
+RESERVATIONID = 'r-c537a4ac'
 
 # set job distribution parameters
 NINSTANCES = 4

@@ -17,7 +17,7 @@ if (BURDEN==True):
     print '\n\tDownloading other files from S3..'
     S3bucketname = grump5km_path.split('/')[-2]
     print '\t\tS3bucketname: '+str(S3bucketname)
-    S3filename = grumpkm_path.split('/')[-1]
+    S3filename = grump5km_path.split('/')[-1]
     print '\t\tS3filename: '+str(S3filename)
     S.downloadFileFromBucket(S3bucketname,S3filename,grump5km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
     checkAndBuildPaths(grump5km_path,VERBOSE=False,BUILD=False)
