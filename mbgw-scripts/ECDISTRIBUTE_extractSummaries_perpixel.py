@@ -10,8 +10,8 @@ S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 RESERVATIONID = 'r-5fe77536'
 
 # set job distribution parameters
-NINSTANCES = 5
-MAXJOBSPERINSTANCE = 1
+NINSTANCES = 1
+MAXJOBSPERINSTANCE = 9
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutput_perpixel/'
 
@@ -42,7 +42,17 @@ NTOTALREL = NRELS*NPER
 ####################################TEMP
 
 # construct main commands list
-CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py %i %i %i %i None None True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
+#CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py %i %i %i %i None None True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
+CMDS=[]
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 100 101 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 14 15 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 22 23 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 28 29 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 32 33 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 37 38 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 44 45 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 48 49 18 None None True"')
+CMDS.append('"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_perpixel.py 2 52 53 18 None None True"')
 
 # define files to upload to instance (from local machine) before any execution
 UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
