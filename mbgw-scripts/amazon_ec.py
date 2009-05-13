@@ -226,7 +226,10 @@ def map_jobs(RESERVATIONID, NINSTANCES, MAXJOBSPERINSTANCE, MAXJOBTRIES,cmds, in
     if (len(r.instances) < NINSTANCES):
         raise RuntimeError, 'Asked for '+str(NINSTANCES)+' instances but found only '+str(len(r.instances))+' on reservation '+str(RESERVATIONID)+': EXITING map_jobs_PWG!!!'
 
-    spawning_engines = [e for e in r.instances]
+    #####################################temp
+    #spawning_engines = [e for e in r.instances]
+    spawning_engines = [e for e in r.instances[0]]
+    #######################################
     running_engines = []
     failedJobCmds = np.array([])
     failedJobCount = np.array([])
