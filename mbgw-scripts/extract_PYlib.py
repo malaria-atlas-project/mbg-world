@@ -117,7 +117,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     filename = realisations_path
     filename = filename.replace('FILESTARTREL',str(FileStartRel))
     filename = filename.replace('FILEENDREL',str(FileEndRel))
-    checkAndBuildPaths(filename,VERBOSE=True,BUILD=False)
+    #checkAndBuildPaths(filename,VERBOSE=True,BUILD=False)
     hf = tb.openFile(filename)    
     hr = hf.root
 
