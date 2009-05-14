@@ -11,8 +11,8 @@ realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_two/realizati
 #filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
  
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/mnt/DistributedOutput_country/'
-exportPathDistributed_perpixel = '/mnt/DistributedOutput_perpixel/'
+exportPathDistributed_country = '/mnt/distributedoutput_country/'
+exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
 exportPathCombined_country = '/mnt/combinedoutput_country/'
@@ -23,7 +23,7 @@ salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_AF.hdf5"
 #salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
  
 # input 1km and 5km raster of population per cell
-grump1km_path="/mnt/auxiliary_data/gr071km_y-x+_AF.hdf5"
+grump1km_path="/mnt/auxiliary_data/gr071km_y-x+_AF.hdf5" 
 grump5km_path="/mnt/auxiliary_data/gr075km_y-x+_AF.hdf5"
 #gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_ken.hdf5"
  

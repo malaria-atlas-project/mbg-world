@@ -167,10 +167,12 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         pixelN=fromfile(pixelN_path,sep=",")
     except IOError:
         print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
-        temp=examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path,ignore=np.array([-9999]))
+        temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
+        uniqueSalb=temp['uniqueSalb']
+        pixelN=temp['count'] 
 
-    uniqueSalb=fromfile(uniqueSalb_path,sep=",")     
-    pixelN=fromfile(pixelN_path,sep=",")        
+    #uniqueSalb=fromfile(uniqueSalb_path,sep=",")     
+    #pixelN=fromfile(pixelN_path,sep=",")
     Nsalb=len(uniqueSalb)    
 
     # intialise empty arrays (e.g. 87 countries * N realisations) for mean PR in each country 
@@ -553,7 +555,7 @@ def outputDistributedExtractions_country(dict):
     
     Params to pass are:
     
-    dict      : output from outputDistributedExtractions_country
+    dict      : output from outputDistributedExtractions_country 
     '''
 
     # check for error output from extractSummaries_country due to NaNs
