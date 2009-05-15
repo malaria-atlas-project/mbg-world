@@ -85,9 +85,9 @@ if (PERCOUNTRY=='True'):
     
     # run examineSalb on salblim1km to generate uniqueSalb.txt and pixelN.txt
     print '\n\trunning examineSalb..'
-    temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
-    uniqueSalb=temp['uniqueSalb']
-    pixelN=temp['count']
+    temp=examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path,ignore=np.array([-9999]))
+    checkAndBuildPaths(uniqueSalb_path,VERBOSE=True,BUILD=False)
+    checkAndBuildPaths(pixelN_path,VERBOSE=True,BUILD=False)
 
     # build path for output to house combined per-pixel output maps
     print '\n\tChecking path for '+exportPathCombined_country
