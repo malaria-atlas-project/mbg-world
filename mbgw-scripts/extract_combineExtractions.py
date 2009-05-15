@@ -102,7 +102,7 @@ def copySubTableToMain(subfname,maintable,n_per,Nsalb,filledCols):
     name_parts = deconstructFilename(subfname)    
     startRel = name_parts['startRel']    
     endRel = name_parts['endRel']    
-    cols = inputTable.shape[1]    
+    ncols = inputTable.shape[1]    
     nrel = (endRel-startRel)    
 
     # check attributes are as expected    
