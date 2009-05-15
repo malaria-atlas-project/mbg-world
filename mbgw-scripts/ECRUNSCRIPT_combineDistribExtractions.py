@@ -13,6 +13,9 @@ BURDEN = bool(sys.argv[1])
 PERPIXEL = bool(sys.argv[2])
 PERCOUNTRY = bool(sys.argv[3])
 
+print PERPIXEL
+print type(PERPIXEL)
+
 if (PERPIXEL==True):
 
     # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
