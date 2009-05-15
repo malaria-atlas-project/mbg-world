@@ -13,14 +13,14 @@ BURDEN = bool(sys.argv[1])
 PERPIXEL = bool(sys.argv[2])
 PERCOUNTRY = bool(sys.argv[3])
 
-if PERPIXEL==True:
+if (PERPIXEL=True):
 
     # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
-    print 'n\t\Downloading contents of S3 bucket "distributedoutput_perpixel" to local directory '+exportPathDistributed_perpixel
+    print '\n\tDownloading contents of S3 bucket "distributedoutput_perpixel" to local directory '+exportPathDistributed_perpixel
     S.downloadBucketContents('distributedoutput_perpixel',exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
 
     # build path for output to house combined per-pixel output maps
-    print 'n\t\Checking path for '+exportPathCombined_perpixel
+    print '\n\tChecking path for '+exportPathCombined_perpixel
     checkAndBuildPaths(exportPathCombined_perpixel,VERBOSE=True,BUILD=True)
 
     # download from S3 the other necessary files (optionally need 5km grump for burden map)
@@ -60,14 +60,23 @@ if PERPIXEL==True:
             else:
                 print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'
 
-if PERCOUNTRY==True:
+if (PERCOUNTRY==True):
 
     # download from S3 contents of bucket 'distributedoutput_country', will automatically build the local directory if necessary
-    print 'n\t\Downloading contents of S3 bucket "distributedoutput_country" to local directory '+exportPathDistributed_perpixel
+    print '\n\tDownloading contents of S3 bucket "distributedoutput_country" to local directory '+exportPathDistributed_perpixel
     S.downloadBucketContents('distributedoutput_country',exportPathDistributed_country,overwriteContent=False,VERBOSE=True)
 
+    # download from S3 the salblim1km file (used for calculating uniqueSalb and Nsalb etc with function examineSalb)
+    print '\n\tDownloading salblim1km file from S3..'
+    S3bucketname = salblim1km_path.split('/')[-2]
+    print '\t\tS3bucketname: '+str(S3bucketname)
+    S3filename = salblim1km_path.split('/')[-1]
+    print '\t\tS3filename: '+str(S3filename)
+    S.downloadFileFromBucket(S3bucketname,S3filename,salblim1km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+    checkAndBuildPaths(salblim1km_path,VERBOSE=True,BUILD=False)
+
     # build path for output to house combined per-pixel output maps
-    print 'n\t\Checking path for '+exportPathCombined_country
+    print '\n\tChecking path for '+exportPathCombined_country
     checkAndBuildPaths(exportPathCombined_country,VERBOSE=True,BUILD=True)
 
     # now call extractSummaries_country substituting in the formatted sys args 
