@@ -183,9 +183,10 @@ def makeGlobalArray_categoVariables(variableName,blankarray,n_per,Nsalb):
             # get sub list of filename in directory ordered by start ralisation, and optionally containng the variable name
             allfnames = os.listdir(exportPathDistributed_country)
             fnames = FnamesByVariableAndOrderedByRel(allfnames,variableName)
-
+            print fnames
             filledCols = 0
             for fname in fnames:
+                print fname
                 if (fname.find(variableName+'_')!=-1) & (fname.find(scheme)!=-1) & (fname.find(thisbreakname)!=-1) :
 
                     # copy this array to correct position on global array
