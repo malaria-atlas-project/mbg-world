@@ -81,7 +81,7 @@ if (PERCOUNTRY=='True'):
     checkAndBuildPaths(salblim1km_path,VERBOSE=True,BUILD=False)
     
     # build paths to directory to house uniqueSalb.txt and pixelN.txt
-    checkAndBuildPaths(uniqueSalb_path.rpartition('/')[0]+'/',VERBOSE=True,BUILD=False)
+    checkAndBuildPaths(uniqueSalb_path.rpartition('/')[0],VERBOSE=True,BUILD=True)
     
     # run examineSalb on salblim1km to generate uniqueSalb.txt and pixelN.txt
     print '\n\trunning examineSalb..'
