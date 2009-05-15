@@ -79,6 +79,15 @@ if (PERCOUNTRY=='True'):
     print '\t\tS3filename: '+str(S3filename)
     S.downloadFileFromBucket(S3bucketname,S3filename,salblim1km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
     checkAndBuildPaths(salblim1km_path,VERBOSE=True,BUILD=False)
+    
+    # build paths to directory to house uniqueSalb.txt and pixelN.txt
+    checkAndBuildPaths(uniqueSalb_path.rpartition('/')[0],VERBOSE=True,BUILD=False)
+    
+    # run examineSalb on salblim1km to generate uniqueSalb.txt and pixelN.txt
+    print '\n\trunning examineSalb..'
+    temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
+    uniqueSalb=temp['uniqueSalb']
+    pixelN=temp['count']
 
     # build path for output to house combined per-pixel output maps
     print '\n\tChecking path for '+exportPathCombined_country
