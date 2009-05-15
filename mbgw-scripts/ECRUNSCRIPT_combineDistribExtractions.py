@@ -9,16 +9,16 @@ from extract_params import *
 S=S3() # initialise key object
 
 # deal with system arguments
-BURDEN = bool(sys.argv[1])
-PERPIXEL = bool(sys.argv[2])
-PERCOUNTRY = bool(sys.argv[3])
+BURDEN = 'False'#sys.argv[1]
+PERPIXEL = 'False'#sys.argv[2]
+PERCOUNTRY = 'True'#sys.argv[3]
 
-print sys.argv[2]
-print type(sys.argv[2])
-print PERPIXEL
-print type(PERPIXEL)
+#print sys.argv[2]
+#print type(sys.argv[2])
+#print PERPIXEL
+#print type(PERPIXEL)
 
-if (PERPIXEL==True):
+if (PERPIXEL=='True'):
 
     # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
     print '\n\tDownloading contents of S3 bucket "distributedoutput_perpixel" to local directory '+exportPathDistributed_perpixel
@@ -37,7 +37,7 @@ if (PERPIXEL==True):
     S.downloadFileFromBucket(S3bucketname,S3filename,lim5kmbnry_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
     checkAndBuildPaths(lim5kmbnry_path,VERBOSE=True,BUILD=False)
 
-    if (BURDEN==True):
+    if (BURDEN=='True'):
         print '\n\tDownloading grump5km file from S3..'
         S3bucketname = grump5km_path.split('/')[-2]
         print '\t\tS3bucketname: '+str(S3bucketname)
@@ -65,7 +65,7 @@ if (PERPIXEL==True):
             else:
                 print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'
 
-if (PERCOUNTRY==True):
+if (PERCOUNTRY=='True'):
 
     # download from S3 contents of bucket 'distributedoutput_country', will automatically build the local directory if necessary
     print '\n\tDownloading contents of S3 bucket "distributedoutput_country" to local directory '+exportPathDistributed_perpixel
