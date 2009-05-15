@@ -23,15 +23,18 @@ endRel = str(sys.argv[6])
 if endRel == 'None': endRel = None
 else: endRel = int(endRel)
 
-BURDEN = bool(sys.argv[7])
-PERPIXEL = bool(sys.argv[8])
-PERCOUNTRY = bool(sys.argv[9])
+BURDEN = True
+PERPIXEL = True
+PERCOUNTRY = True
+
+if sys.argv[7] == 'False' : BURDEN=False
+if sys.argv[8] == 'False' : PERPIXEL=False
+if sys.argv[9] == 'False' : PERCOUNTRY=False
 
 # build realisation block import path
 hdf5block_path = realisations_path
 hdf5block_path = hdf5block_path.replace('FILESTARTREL',str(FileStartRel))
 hdf5block_path = hdf5block_path.replace('FILEENDREL',str(FileEndRel))
-
 
 print "n_per: "+str(n_per)
 print "FileStartRel: "+str(FileStartRel)
