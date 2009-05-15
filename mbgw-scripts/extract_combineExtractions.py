@@ -8,6 +8,7 @@ import os
 import numpy as np
 import copy as cp
 import tables as tb
+from extract_PYlib import *
 from rpy import *
 from map_utils import quantile_funs as qs
 from map_utils import getAsciiheaderFromTemplateHDF5
@@ -196,8 +197,16 @@ def makeGlobalArray_categoVariables(variableName,blankarray,n_per,Nsalb):
 #############################################################################################################################################
 def getSummariesPerCountry(globalarray):
 
-    # read in array of salb IDs
-    uniqueSalb=fromfile(uniqueSalb_path,sep=",")
+    # ..first check that Salb grid has been pre-examined using examineSalb and lists of unique IDs and N pixels exist, if not then re-run examineSalb
+    try:
+        uniqueSalb=fromfile(uniqueSalb_path,sep=",")
+        pixelN=fromfile(pixelN_path,sep=",")
+    except IOError:
+        print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
+        temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
+        uniqueSalb=temp['uniqueSalb']
+        pixelN=temp['count'] 
+
     outTable=atleast_2d(uniqueSalb).T
     colNames = list(['salbID'])
 
