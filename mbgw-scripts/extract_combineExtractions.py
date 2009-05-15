@@ -295,7 +295,7 @@ def combineDistribExtractions_country():
     temp=makeGlobalArray_contVariables('meanPR',blankarray,n_per,Nsalb)
 
     # loop through all BURDEN_* files and add them to global array, then export global array, and optionallly accopmanying summary table
-    temp=makeGlobalArray_contVariables('BURDEN',blankarray,n_per,Nsalb)
+    makeGlobalArray_categoVariables('BURDEN',blankarray,n_per,Nsalb)
 
     # loop through all PAR_* files and add them to global arrays, then export global arrays, and optionallly accopmanying summary table
     makeGlobalArray_categoVariables('PAR',blankarray,n_per,Nsalb)
