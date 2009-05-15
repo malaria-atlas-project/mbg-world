@@ -117,6 +117,13 @@ def copySubTableToMain(subfname,maintable,n_per,Nsalb,filledCols):
     #endCol = startCol + (nrel*n_per)
     startCol = filledCols    
     endCol = filledCols + (nrel*n_per)
+
+    print str(subfname)
+    print 'startCol: '+str(startCol)
+    print 'endCol: '+str(endCol)
+    print 'filledCols: '+str(filledCols)
+    print '\n'
+
     maintable[:,startCol:endCol:1]=inputTable
     
     # increment number of columns now filled on maintable
