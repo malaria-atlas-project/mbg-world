@@ -177,6 +177,7 @@ def makeGlobalArray_categoVariables(variableName,blankarray,n_per,Nsalb):
             allfnames = os.listdir(exportPathDistributed_country)
             fnames = FnamesByVariableAndOrderedByRel(allfnames,variableName)
 
+            filledCols = 0
             for fname in fnames:
                 if (fname.find(variableName+'_')!=-1) & (fname.find(scheme)!=-1) & (fname.find(thisbreakname)!=-1) :
 

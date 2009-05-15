@@ -13,6 +13,8 @@ BURDEN = bool(sys.argv[1])
 PERPIXEL = bool(sys.argv[2])
 PERCOUNTRY = bool(sys.argv[3])
 
+print sys.argv[2]
+print type(sys.argv[2])
 print PERPIXEL
 print type(PERPIXEL)
 
