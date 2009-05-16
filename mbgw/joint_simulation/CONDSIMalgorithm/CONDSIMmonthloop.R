@@ -3,16 +3,16 @@
 ## License: Creative Commons BY-NC-SA
 ##################################################
 
-CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist){
+CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist,startRel,endRel){
 
     preLoopObj <- as.list(preLoopObj)
     OutMATlist <- as.list(OutMATlist)
 
 
  ## check list consistency: preLoopObj
-    ListSummaryORIGINAL<-read.table("listSummary_preLoopObj_original.txt",header=F)
-    listSummary<-returnListSummary(preLoopObj,"listSummary_preLoopObj_new.txt") 
-    ListSummaryNEW<-read.table("listSummary_preLoopObj_new.txt",header=F)
+    ListSummaryORIGINAL<-read.table(paste("listSummary_preLoopObj_original_",startRel,"_",endRel,".txt",sep=""),header=F)
+    listSummary<-returnListSummary(preLoopObj,paste("listSummary_preLoopObj_new_",startRel,"_",endRel,".txt",sep="")) 
+    ListSummaryNEW<-read.table(paste("listSummary_preLoopObj_new_",startRel,"_",endRel,".txt",sep=""),header=F)
     TEST<-identical(ListSummaryORIGINAL,ListSummaryNEW) 
     if(!TEST){
       print("!!!!!!!!!!!!!!!!ERROR!!!!!!!!!!!!!!!!!!!") 
@@ -21,9 +21,9 @@ CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist){
     }
 
  ## check list consistency: OutMATlist
-    ListSummaryORIGINAL<-read.table("listSummary_OutMATlist_original.txt",header=F)
-    listSummary<-returnListSummary(OutMATlist,"listSummary_OutMATlist_new.txt") 
-    ListSummaryNEW<-read.table("listSummary_OutMATlist_new.txt",header=F)
+    ListSummaryORIGINAL<-read.table(paste("listSummary_OutMATlist_original_",startRel,"_",endRel,".txt",sep=""),header=F)
+    listSummary<-returnListSummary(OutMATlist,paste("listSummary_OutMATlist_new_",startRel,"_",endRel,".txt",sep="")) 
+    ListSummaryNEW<-read.table(paste("listSummary_OutMATlist_new_",startRel,"_",endRel,".txt",sep=""),header=F)
     TEST<-identical(ListSummaryORIGINAL,ListSummaryNEW) 
     if(!TEST){
       print("!!!!!!!!!!!!!!!!ERROR!!!!!!!!!!!!!!!!!!!") 
@@ -196,7 +196,7 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
  
  ## return grid for this month and OutMATlist object to pass on to subsequent months
     monthObject<-list("MonthGrid"=MonthGrid,"OutMATlist"=OutMATlist)
-    listSummary<-returnListSummary(OutMATlist,"listSummary_OutMATlist_original.txt") 
+    listSummary<-returnListSummary(OutMATlist,paste("listSummary_OutMATlist_original_",startRel,"_",endRel,".txt",sep="")) 
     # image(MonthGrid)
     
     return(monthObject)
