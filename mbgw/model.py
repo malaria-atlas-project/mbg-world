@@ -19,20 +19,11 @@ import gc
 from tables import ObjectAtom
 from map_utils import FieldStepper, st_mean_comp
 
-__all__ = ['st_mean_comp', 'make_model', 'metadata_keys', 'f_name', 'nugget_name', 'f_has_nugget', 'postproc','x_name','diag_safe']
+__all__ = ['st_mean_comp', 'make_model', 'metadata_keys', 'f_name', 'nugget_name', 'f_has_nugget', 'postproc','x_name','diag_safe','non_cov_columns']
 
-if continent.find('Americas') > -1:
-    disttol = 0
-    ttol = 0
-elif continent.find('Asia') > -1:
-    disttol = 5.
-    ttol = 1.
-elif continent.find('Africa') > -1:
-    disttol = 10.
-    ttol = 1.
-else:
-    disttol = 0.
-    ttol = 0.
+
+continent = 'Africa'
+with_stukel = False
 
 Af_scale_params = {'mu': -2.54, 'tau': 1.42, 'alpha': -.015}
 Af_amp_params = {'mu': .0535, 'tau': 1.79, 'alpha': 3.21}
@@ -43,50 +34,40 @@ Am_amp_params = {'mu': .607, 'tau': .809, 'alpha': -1.17}
 As_scale_params = {'mu': -2.97, 'tau': 1.75, 'alpha': -.143}
 As_amp_params = {'mu': .0535, 'tau': 1.79, 'alpha': 3.21}
 
-def nearest_interp(lon_from, lat_from, data, lon_to, lat_to):
-    out = np.empty(len(lon_to))
-    for i in xrange(len(lon_to)):
-        ilon = np.argmin(np.abs(lon_from - lon_to[i]))
-        ilat = np.argmin(np.abs(lat_from - lat_to[i]))
-        out[i] =  data[ilat, ilon]
-    return out
+
+if continent.find('Americas') > -1:
+    scale_params = Am_scale_params
+    amp_params = Am_amp_params
+    disttol = 0/6378.
+    ttol = 0
+elif continent.find('Asia') > -1:
+    scale_params = As_scale_params
+    amp_params = As_amp_params    
+    disttol = 5./6378.
+    ttol = 1./12
+elif continent.find('Africa') > -1:
+    scale_params = Af_scale_params
+    amp_params = Af_amp_params    
+    disttol = 10./6378.
+    ttol = 1./12
+else:
+    scale_params = Af_scale_params
+    amp_params = Af_amp_params
+    disttol = 0./6378.
+    ttol = 0.
+
+
+# def nearest_interp(lon_from, lat_from, data, lon_to, lat_to):
+#     out = np.empty(len(lon_to))
+#     for i in xrange(len(lon_to)):
+#         ilon = np.argmin(np.abs(lon_from - lon_to[i]))
+#         ilat = np.argmin(np.abs(lat_from - lat_to[i]))
+#         out[i] =  data[ilat, ilon]
+#     return out
 
 region_trans = {'Africa':'AF','Americas':'AM','Asia':'AS'}
 
-def make_model(pos,neg,lon,lat,t,covariate_values,cpus=1):
-    
-    # ======================================
-    # = Make sure it's safe to make output =
-    # ======================================
-    
-    if not spatial:
-        name += '_nonspatial'
-    if with_stukel:
-        name += '_stukel'
-    for cname in covariate_names:
-        name += '_%s'%cname
-    
-    if name + '.hdf5' in os.listdir('.'):
-        print
-        print """=============
-= ATTENTION =
-============="""
-        print
-
-        OK=False
-        while not OK:
-            y=raw_input('Database %s already exists.\nDo you want to delete it? Error will be raised otherwise.\n>> ' % (name+'.hdf5'))
-            if y.lower() == 'yes':
-                print 'OK, moving to trash.'
-                os.system('mv %s ~/.Trash'%(name+'.hdf5'))
-                OK=True
-            elif y.lower() == 'no':
-                raise RuntimeError, 'But dash it all! I mean to say, what?'
-            else:
-                y=raw_input('Please type yes or no.\n>> ')
-            
-        
-    norun_name = '_'.join(name.split('_')[:2])
+def make_model(pos,neg,lon,lat,t,covariate_values,lo_age,up_age,cpus=1):
     
     C_time = [0.]
     f_time = [0.]
@@ -98,49 +79,31 @@ def make_model(pos,neg,lon,lat,t,covariate_values,cpus=1):
     
     data_mesh = combine_st_inputs(lon,lat,t)
     
-    disttol=disttol/6378.
-    ttol=ttol/12.
-
     # Find near spatiotemporal duplicates.
-    if spatial:
-        ui = []
-        ri = []
-        fi = []
-        ti = []
-        dx = np.empty(1)
-        for i in xrange(data_mesh.shape[0]):
-            match=False
-            for j in xrange(len(ui)):
-                pm.gp.geo_rad(dx, data_mesh[i,:2].reshape((1,2)), data_mesh[ui[j],:2].reshape((1,2)))
-                dt = abs(t[ui[j]]-t[i])
-                
-                if dx[0]<disttol and dt<ttol:
-                    match=True
-                    fi.append(j)
-                    ti[j].append(i)
-                    ri.append(i)
-                    break
+    ui = []
+    fi = []
+    ti = []
+    dx = np.empty(1)
+    for i in xrange(data_mesh.shape[0]):
+        match=False
+        for j in xrange(len(ui)):
+            pm.gp.geo_rad(dx, data_mesh[i,:2].reshape((1,2)), data_mesh[ui[j],:2].reshape((1,2)))
+            dt = abs(t[ui[j]]-t[i])
+            
+            if dx[0]<disttol and dt<ttol:
+                match=True
+                fi.append(j)
+                ti[j].append(i)
+                break
 
-            if not match:
-                fi.append(len(ui))            
-                ui.append(i)
-                ti.append([i])
-        ui=np.array(ui)
-        ti = [np.array(tii) for tii in ti]
-        fi = np.array(fi)
-        ri = np.array(ri)        
-        logp_mesh = data_mesh[ui,:]
-        if len(ri)>0:
-            repeat_mesh = data_mesh[ri,:]
-        else:
-            repeat_mesh = np.array([])
-    else:
-        ui = np.arange(len(t))
-        ti = [np.array([uii]) for uii in ui]
-        fi = ui
-        ri = np.array([])
-        logp_mesh = data_mesh
-        repeat_mesh = np.array([])
+        if not match:
+            fi.append(len(ui))            
+            ui.append(i)
+            ti.append([i])
+    ui=np.array(ui)
+    ti = [np.array(tii) for tii in ti]
+    fi = np.array(fi)   
+    logp_mesh = data_mesh[ui,:]
         
     # =====================
     # = Create PyMC model =
@@ -246,15 +209,15 @@ def make_model(pos,neg,lon,lat,t,covariate_values,cpus=1):
     
     # Obtain the spline representation of the log of the Monte Carlo-integrated 
     # likelihood function at each datapoint. The nodes are at .01,.02,...,.98,.99 .
-    junk, splreps = age_corr_likelihoods(all_pts, 10000, np.arange(.01,1.,.01), norun_name)
+    junk, splreps = age_corr_likelihoods(lo_age, up_age, pos, neg, 10000, np.arange(.01,1.,.01), norun_name)
     for i in xrange(len(splreps)):
         splreps[i] = list(splreps[i])
 
     # Don't worry, these are just reasonable initial values...
     if with_stukel:
-        val_now = pm.stukel_logit(np.array(all_pts.PF+1,dtype=float)/(all_pts.EXAMINED+2), a1.value, a2.value)
+        val_now = pm.stukel_logit((pos+1.)/(pos+neg+2.), a1.value, a2.value)
     else:
-        val_now = pm.logit(np.array(all_pts.PF+1,dtype=float)/(all_pts.EXAMINED+2))
+        val_now = pm.logit((pos+1.)/(pos+neg+2.))
     
     if data_mesh.shape[0] % chunk == 0:
         additional_index = 0
@@ -277,7 +240,7 @@ def make_model(pos,neg,lon,lat,t,covariate_values,cpus=1):
         try:
             @pm.data
             @pm.stochastic(dtype=np.int)
-            def N_pos_now(value = pm.utils.round_array(all_pts.PF[this_slice]), splrep = splreps[this_slice], eps_p_f = eps_p_f_now, a1=a1, a2=a2):
+            def N_pos_now(value = pm.utils.round_array(pos[this_slice]), splrep = splreps[this_slice], eps_p_f = eps_p_f_now, a1=a1, a2=a2):
                 p_now = pm.flib.stukel_invlogit(eps_p_f, a1, a2)
                 out = 0.
                 for i in xrange(len(value)):
@@ -307,3 +270,4 @@ f_has_nugget = True
 postproc = None
 x_name = 'data_mesh'
 diag_safe = True
+non_cov_colums = {'lo_age': 'int', 'up_age': 'int'}
