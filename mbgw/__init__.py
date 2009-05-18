@@ -9,6 +9,7 @@ try:
 except ImportError:
     pass
 
+from model import *
 
 
 # import agepr
