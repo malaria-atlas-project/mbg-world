@@ -17,14 +17,17 @@ import auxiliary_data
 import gc
 # from get_covariates import extract_environment_to_hdf5
 from tables import ObjectAtom
-from map_utils import FieldStepper, st_mean_comp
+from generic_mbg import *
 
-__all__ = ['st_mean_comp', 'make_model', 'metadata_keys', 'f_name', 'nugget_name', 'f_has_nugget', 'postproc','x_name','diag_safe','non_cov_columns']
 
+
+__all__ = ['make_model', 'metadata_keys', 'f_name', 'nugget_name', 'f_has_nugget', 'postproc','x_name','diag_safe','non_cov_columns']
 
 continent = 'Africa'
 with_stukel = False
+chunk = 2
 
+# Prior parameters specified by Simon, Pete and Andy
 Af_scale_params = {'mu': -2.54, 'tau': 1.42, 'alpha': -.015}
 Af_amp_params = {'mu': .0535, 'tau': 1.79, 'alpha': 3.21}
 
@@ -34,21 +37,21 @@ Am_amp_params = {'mu': .607, 'tau': .809, 'alpha': -1.17}
 As_scale_params = {'mu': -2.97, 'tau': 1.75, 'alpha': -.143}
 As_amp_params = {'mu': .0535, 'tau': 1.79, 'alpha': 3.21}
 
-
-if continent.find('Americas') > -1:
+# Poor man's sparsification
+if continent == 'Americas':
     scale_params = Am_scale_params
     amp_params = Am_amp_params
     disttol = 0/6378.
     ttol = 0
-elif continent.find('Asia') > -1:
+elif continent == 'Asia':
     scale_params = As_scale_params
     amp_params = As_amp_params    
     disttol = 5./6378.
     ttol = 1./12
-elif continent.find('Africa') > -1:
+elif continent == 'Africa':
     scale_params = Af_scale_params
     amp_params = Af_amp_params    
-    disttol = 10./6378.
+    disttol = 5./6378.
     ttol = 1./12
 else:
     scale_params = Af_scale_params
@@ -56,19 +59,8 @@ else:
     disttol = 0./6378.
     ttol = 0.
 
-
-# def nearest_interp(lon_from, lat_from, data, lon_to, lat_to):
-#     out = np.empty(len(lon_to))
-#     for i in xrange(len(lon_to)):
-#         ilon = np.argmin(np.abs(lon_from - lon_to[i]))
-#         ilat = np.argmin(np.abs(lat_from - lat_to[i]))
-#         out[i] =  data[ilat, ilon]
-#     return out
-
-region_trans = {'Africa':'AF','Americas':'AM','Asia':'AS'}
-
-def make_model(pos,neg,lon,lat,t,covariate_values,lo_age,up_age,cpus=1):
-    
+def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
+        
     C_time = [0.]
     f_time = [0.]
     M_time = [0.]
@@ -78,6 +70,10 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age,up_age,cpus=1):
     # =============================
     
     data_mesh = combine_st_inputs(lon,lat,t)
+    if lo_age is None:
+        lo_age = 2.*np.ones(data_mesh.shape[0])
+    if up_age is None:
+        up_age = 10.*np.ones(data_mesh.shape[0])
     
     # Find near spatiotemporal duplicates.
     ui = []
@@ -209,7 +205,7 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age,up_age,cpus=1):
     
     # Obtain the spline representation of the log of the Monte Carlo-integrated 
     # likelihood function at each datapoint. The nodes are at .01,.02,...,.98,.99 .
-    junk, splreps = age_corr_likelihoods(lo_age, up_age, pos, neg, 10000, np.arange(.01,1.,.01), norun_name)
+    junk, splreps = age_corr_likelihoods(lo_age, up_age, pos, neg, 10000, np.arange(.01,1.,.01))
     for i in xrange(len(splreps)):
         splreps[i] = list(splreps[i])
 
@@ -262,12 +258,21 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age,up_age,cpus=1):
     for v in covariate_dict.iteritems():
         out[v[0]] = v[1][0]
     return out
+
+def postproc(x=None, lo_age=None, up_age=None):
+    if lo_age is not None:
+       def postproc_(x, lo_age=lo_age, up_age=up_age):
+           # FIXME: This should be invlogit and times the
+           # age-corr factors.
+           return x
+    else:
+        # FIXME: This should be invlogit and times an age-corr factor.
+        return x
     
 metadata_keys = ['ti','fi','ui','with_stukel','chunk','disttol','ttol']
 f_name = 'eps_p_f'
 nugget_name = 'V'
 f_has_nugget = True
-postproc = None
 x_name = 'data_mesh'
 diag_safe = True
-non_cov_colums = {'lo_age': 'int', 'up_age': 'int'}
+non_cov_columns = {'lo_age': 'int', 'up_age': 'int'}
