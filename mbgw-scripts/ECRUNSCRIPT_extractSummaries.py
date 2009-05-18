@@ -17,9 +17,9 @@ totalN = int(sys.argv[4])
 
 REGION = str(sys.argv[5])
 
-if REGION=="AF" from extract_params_AF import *
-if REGION=="AM" from extract_params_AM import *
-if REGION=="AS" from extract_params_AS import *
+if REGION=="AF": from extract_params_AF import *
+if REGION=="AM": from extract_params_AM import *
+if REGION=="AS": from extract_params_AS import *
 
 startRel = str(sys.argv[6])
 if startRel == 'None': startRel = None

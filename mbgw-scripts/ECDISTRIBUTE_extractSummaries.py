@@ -9,9 +9,9 @@ from boto_PYlib import *
 import numpy as np
 from map_utils import checkAndBuildPaths
 
-if REGION=="AF" from extract_params_AF import *
-if REGION=="AM" from extract_params_AM import *
-if REGION=="AS" from extract_params_AS import *
+if REGION=="AF": from extract_params_AF import *
+if REGION=="AM": from extract_params_AM import *
+if REGION=="AS": from extract_params_AS import *
 
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
