@@ -6,6 +6,7 @@ print 'Starting: ECRUNSCRIPT_extractSummaries_perpixel_PREDOWNLOAD..'
 # import libraries
 from map_utils import checkAndBuildPaths
 from boto_PYlib import *
+import sys
 
 S=S3() # initialise key object
 
@@ -15,9 +16,9 @@ BURDEN = bool(sys.argv[2])
 PERPIXEL = bool(sys.argv[3])
 PERCOUNTRY = bool(sys.argv[4])
 
-if REGION=="AF" from extract_params_AF import *
-if REGION=="AM" from extract_params_AM import *
-if REGION=="AS" from extract_params_AS import *
+if REGION=="AF": from extract_params_AF import * 
+if REGION=="AM": from extract_params_AM import *
+if REGION=="AS": from extract_params_AS import *
 
 # make empty directory on instance to house realisation hdf5 file downloaded from S3
 print '\n\tBuilding directory: '+realisations_path.rpartition('/')[0]
