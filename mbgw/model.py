@@ -259,15 +259,14 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
         out[v[0]] = v[1][0]
     return out
 
-def postproc(x=None, lo_age=None, up_age=None):
+def postproc(x=None, lo_age=None, up_age=None, two_ten_facs=two_ten_factors(1000)):
     if lo_age is not None:
-       def postproc_(x, lo_age=lo_age, up_age=up_age):
-           # FIXME: This should be invlogit and times the
-           # age-corr factors.
-           return x
+        facs = age_corr_factors(lo_age, up_age, 1000)
+        def postproc_(x, lo_age=lo_age, up_age=up_age, facs=facs):
+            return pm.flib.invlogit(x) * facs[:,random.randint(1000)]
+        reutrn postproc_
     else:
-        # FIXME: This should be invlogit and times an age-corr factor.
-        return x
+        return invlogit(x) * two_ten_facs[np.random.randint(1000)]
     
 metadata_keys = ['ti','fi','ui','with_stukel','chunk','disttol','ttol']
 f_name = 'eps_p_f'
