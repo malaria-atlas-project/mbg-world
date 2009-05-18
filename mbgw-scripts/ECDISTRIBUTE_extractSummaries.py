@@ -1,7 +1,8 @@
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
-RESERVATIONID = str(sys.argv[1])
-REGION = str(sys.argv[2])
+import sys
+RESERVATIONID = sys.argv[1]
+REGION = sys.argv[2]
 
 # import libraries
 from amazon_ec import *

@@ -1,5 +1,6 @@
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
+import sys
 RESERVATIONID = str(sys.argv[1])
 REGION = str(sys.argv[2])
 
