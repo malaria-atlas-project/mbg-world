@@ -4,7 +4,7 @@ print "from RUNSCRIPT_extractSummaries:\n"
 from map_utils import checkAndBuildPaths
 from extract_PYlib import *
 from boto_PYlib import *
-from extract_params import *
+#from extract_params import *
 import os
 
 S=S3() # initialise key object
@@ -15,11 +15,17 @@ FileStartRel = int(sys.argv[2])
 FileEndRel = int(sys.argv[3])
 totalN = int(sys.argv[4]) 
 
-startRel = str(sys.argv[5])
+REGION = str(sys.argv[5])
+
+if REGION=="AF" from extract_params_AF import *
+if REGION=="AM" from extract_params_AM import *
+if REGION=="AS" from extract_params_AS import *
+
+startRel = str(sys.argv[6])
 if startRel == 'None': startRel = None
 else: startRel = int(startRel)
 
-endRel = str(sys.argv[6])
+endRel = str(sys.argv[7])
 if endRel == 'None': endRel = None
 else: endRel = int(endRel)
 
@@ -27,9 +33,9 @@ BURDEN = True
 PERPIXEL = True
 PERCOUNTRY = True
 
-if sys.argv[7] == 'False' : BURDEN=False
-if sys.argv[8] == 'False' : PERPIXEL=False
-if sys.argv[9] == 'False' : PERCOUNTRY=False
+if sys.argv[8] == 'False' : BURDEN=False
+if sys.argv[9] == 'False' : PERPIXEL=False
+if sys.argv[10] == 'False' : PERCOUNTRY=False
 
 # build realisation block import path
 hdf5block_path = realisations_path
@@ -53,7 +59,6 @@ print '\tS3bucketname: '+str(S3bucketname)
 S3filename = hdf5block_path.split('/')[-1]
 print '\tS3filename: '+str(S3filename)
 S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
-
 
 if PERPIXEL==True:
 
