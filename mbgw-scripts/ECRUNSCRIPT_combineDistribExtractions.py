@@ -13,9 +13,9 @@ BURDEN = True
 PERPIXEL = True
 PERCOUNTRY = True
 
-if sys.argv[7] == 'False' : BURDEN=False
-if sys.argv[8] == 'False' : PERPIXEL=False
-if sys.argv[9] == 'False' : PERCOUNTRY=False
+if sys.argv[1] == 'False' : BURDEN=False
+if sys.argv[2] == 'False' : PERPIXEL=False
+if sys.argv[3] == 'False' : PERCOUNTRY=False
 
 #print sys.argv[2]
 #print type(sys.argv[2])
