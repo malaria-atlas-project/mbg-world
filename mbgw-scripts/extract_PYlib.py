@@ -23,7 +23,7 @@ r.source('extract_Rlib.R')
 expandGridResPY=r['expandGridRes']
 
 # import parameters from param file
-from extract_params import *
+#from extract_params import *
 
 ##############################TEMPPLACEHOLDER
 def PrevPoptoBurden(PRsurface, POPsurface, tyears):
