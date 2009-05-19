@@ -2,17 +2,17 @@
 ## defines ID of reservation that contains the instances we will use on EC2
 import sys
 RESERVATIONID = sys.argv[1]
-REGION = sys.argv[2]
+PARAMFILE = sys.argv[2]
+
+print 'importing local params from '+str(PARAMFILE.partition('.')[0])
+localparams =__import__(PARAMFILE.partition('.')[0])
 
 # import libraries
-from amazon_ec import *
+from amazon_ec import * 
 from boto_PYlib import *
 import numpy as np
 from map_utils import checkAndBuildPaths
-
-if REGION=="AF": from extract_params_AF import *
-if REGION=="AM": from extract_params_AM import *
-if REGION=="AS": from extract_params_AS import *
+import time
 
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
@@ -21,14 +21,14 @@ S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
-STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutputSTDOUTERR_'+str(REGION)+'/'
+STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutputSTDOUTERR_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 
 
 # set path to realisations on S3 and extract bucket and generic file name
-relBucket = realisations_path.rsplit('/')[-2]
-relPath = realisations_path.rsplit('/')[-1]
+relBucket = localparams.realisations_path.rsplit('/')[-2]
+relPath = localparams.realisations_path.rsplit('/')[-1]
 
 # call queryRealizationsInBucket to obtain number and start/end realisation numbers of these realisation files
 relDict = S.queryRealizationsInBucket(relBucket,relPath,VERBOSE=True)
@@ -54,10 +54,10 @@ NTOTALREL = 2
 UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 
 # define any initialisation commands to exctue on instance before main job
-INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py '+str(REGION)+' True True True"']
+INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
 
 # construct main commands list
-CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i %s None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL,str(REGION)) for i in xrange(NJOBS)]
+CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 returns = map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    

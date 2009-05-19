@@ -1,22 +1,25 @@
 print "from RUNSCRIPT_extractSummaries:\n"
 
-# deal with system arguments
+# import libraries
+from map_utils import checkAndBuildPaths
+from extract_PYlib import *
+from boto_PYlib import *
+import os
+from extract_params import *
 import sys
+
+# deal with system arguments
+
 n_per = int(sys.argv[1])   
 FileStartRel = int(sys.argv[2])  
 FileEndRel = int(sys.argv[3])
 totalN = int(sys.argv[4]) 
-REGION = str(sys.argv[5])
 
-if REGION=="AF": from extract_params_AF import *
-if REGION=="AM": from extract_params_AM import *
-if REGION=="AS": from extract_params_AS import *
-
-startRel = str(sys.argv[6])
+startRel = str(sys.argv[5])
 if startRel == 'None': startRel = None
 else: startRel = int(startRel)
 
-endRel = str(sys.argv[7])
+endRel = str(sys.argv[6])
 if endRel == 'None': endRel = None
 else: endRel = int(endRel)
 
@@ -24,16 +27,16 @@ BURDEN = True
 PERPIXEL = True
 PERCOUNTRY = True
 
-if sys.argv[8] == 'False' : BURDEN=False
-if sys.argv[9] == 'False' : PERPIXEL=False
-if sys.argv[10] == 'False' : PERCOUNTRY=False
+if sys.argv[7] == 'False' : BURDEN=False
+if sys.argv[8] == 'False' : PERPIXEL=False
+if sys.argv[9] == 'False' : PERCOUNTRY=False
 
 # import libraries
 from map_utils import checkAndBuildPaths
 from extract_PYlib import *
 from boto_PYlib import *
 import os
-
+from extract_params import *
 
 S=S3() # initialise key object
 
