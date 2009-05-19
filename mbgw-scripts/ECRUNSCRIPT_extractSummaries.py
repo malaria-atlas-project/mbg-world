@@ -1,21 +1,11 @@
 print "from RUNSCRIPT_extractSummaries:\n"
 
-# import libraries
-from map_utils import checkAndBuildPaths
-from extract_PYlib import *
-from boto_PYlib import *
-#from extract_params import *
-import os
-import sys
-
-S=S3() # initialise key object
-
 # deal with system arguments
+import sys
 n_per = int(sys.argv[1])   
 FileStartRel = int(sys.argv[2])  
 FileEndRel = int(sys.argv[3])
 totalN = int(sys.argv[4]) 
-
 REGION = str(sys.argv[5])
 
 if REGION=="AF": from extract_params_AF import *
@@ -37,6 +27,17 @@ PERCOUNTRY = True
 if sys.argv[8] == 'False' : BURDEN=False
 if sys.argv[9] == 'False' : PERPIXEL=False
 if sys.argv[10] == 'False' : PERCOUNTRY=False
+
+# import libraries
+from map_utils import checkAndBuildPaths
+#from extract_PYlib import *
+run extract_PYlib REGION
+from boto_PYlib import *
+import os
+
+
+S=S3() # initialise key object
+
 
 # build realisation block import path
 hdf5block_path = realisations_path
