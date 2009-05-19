@@ -17,7 +17,7 @@ from map_utils import checkAndBuildPaths
 NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 # maximum number of tries before we give up on any individual job
-STDOUTPATH = '/home/pwg/mbg-world/extraction/CombinedOutputSTDOUTERR_'+str(time.ctime())+'/'
+STDOUTPATH = '/home/pwg/mbg-world/extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # define files to upload to instance before any execution
