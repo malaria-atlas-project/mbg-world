@@ -402,7 +402,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
-                ind = np.where(POPsurface!=-99999999)
+                ind = np.where(grump1km_ROW!=-99999999)
                 PRsurfaceVECTOR=chunkExp[ind]
                 POPsurfaceVECTOR=grump1km_ROW[ind]
                 burdenChunkVECTOR = PrevPoptoBurden(PRsurface = PRsurfaceVECTOR, POPsurface = POPsurfaceVECTOR, tyears = N_years)
