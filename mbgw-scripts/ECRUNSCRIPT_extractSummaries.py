@@ -30,8 +30,7 @@ if sys.argv[10] == 'False' : PERCOUNTRY=False
 
 # import libraries
 from map_utils import checkAndBuildPaths
-#from extract_PYlib import *
-run extract_PYlib REGION
+from extract_PYlib import *
 from boto_PYlib import *
 import os
 

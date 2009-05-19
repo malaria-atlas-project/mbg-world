@@ -24,7 +24,6 @@ expandGridResPY=r['expandGridRes']
 
 # import parameters from param file
 import sys
-REGION = str(sys.argv[1])
 if REGION=="AF": from extract_params_AF import *
 if REGION=="AM": from extract_params_AM import *
 if REGION=="AS": from extract_params_AS import *
