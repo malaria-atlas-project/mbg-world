@@ -1,8 +1,7 @@
 # deal with system arguments (expects two)
-## defines ID of reservation that contains the instances we will use on EC2
 import sys
-RESERVATIONID = sys.argv[1]
-PARAMFILE = sys.argv[2]
+RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
+PARAMFILE = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
 
 print 'importing local params from '+str(PARAMFILE.partition('.')[0])
 localparams =__import__(PARAMFILE.partition('.')[0])

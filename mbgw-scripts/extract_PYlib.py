@@ -401,7 +401,14 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     return(-9999)
 
                 # obtain a burden surface for this chunk as a function of population and PR
-                burdenChunk = PrevPoptoBurden(PRsurface = chunkExp, POPsurface = grump1km_ROW, tyears = N_years)
+                ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
+                ind = np.where(POPsurface!=-99999999)
+                PRsurfaceVECTOR=chunkExp[ind]
+                POPsurfaceVECTOR=grump1km_ROW[ind]
+                burdenChunkVECTOR = PrevPoptoBurden(PRsurface = PRsurfaceVECTOR, POPsurface = POPsurfaceVECTOR, tyears = N_years)
+                burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct oforat to populate with burdenChunkVECTOR
+                burdenChunk[ind]=burdenChunkVECTOR
+                
                 
                 # create an ID matrix for this chunk for each endemicity class in each scheme                
                 #xxx11a = r.Sys_time()
