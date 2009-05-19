@@ -32,7 +32,7 @@ if (BURDEN==True):
     print '\tS3bucketname: '+str(S3bucketname)
     S3filename = burdentrace_path.split('/')[-1]
     print '\tS3filename: '+str(S3filename)
-    S.downloadFileFromBucket(S3bucketname,S3filename,burdentrace_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
+    S.downloadFileFromBucket(S3bucketname,S3filename,burdentrace_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
 
 if (PERPIXEL==True):
     # make empty directory on instance to house output files ready to be uploaded back to S3

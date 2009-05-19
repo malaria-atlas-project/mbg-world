@@ -406,7 +406,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 PRsurfaceVECTOR=chunkExp[ind]
                 POPsurfaceVECTOR=grump1km_ROW[ind]
                 burdenChunkVECTOR = PrevPoptoBurden(PRsurface = PRsurfaceVECTOR, POPsurface = POPsurfaceVECTOR, tyears = N_years)
-                burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct oforat to populate with burdenChunkVECTOR
+                burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format to populate with burdenChunkVECTOR
                 burdenChunk[ind]=burdenChunkVECTOR
                 
                 
