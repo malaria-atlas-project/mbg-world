@@ -31,3 +31,9 @@ git clone git://github.com/malaria-atlas-project/map_utils.git
 cd map_utils
 python setup.py install
 cd
+
+rm -r -f pr-incidence
+git clone git://github.com/malaria-atlas-project/pr-incidence.git
+cd pr-incidence
+python setup.py install
+cd

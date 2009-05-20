@@ -7,17 +7,32 @@ print 'Starting: ECRUNSCRIPT_extractSummaries_perpixel_PREDOWNLOAD..'
 from map_utils import checkAndBuildPaths
 from boto_PYlib import *
 from extract_params import *
+import sys
 
 S=S3() # initialise key object
 
 # deal with system arguments
-BURDEN = bool(sys.argv[1])
-PERPIXEL = bool(sys.argv[2])
-PERCOUNTRY = bool(sys.argv[3])
+BURDEN = True
+PERPIXEL = True
+PERCOUNTRY = True
+
+if sys.argv[1] == 'False' : BURDEN=False
+if sys.argv[2] == 'False' : PERPIXEL=False
+if sys.argv[3] == 'False' : PERCOUNTRY=False
 
 # make empty directory on instance to house realisation hdf5 file downloaded from S3
 print '\n\tBuilding directory: '+realisations_path.rpartition('/')[0]
 checkAndBuildPaths(realisations_path.rpartition('/')[0],VERBOSE=True,BUILD=True)
+
+
+# optionally download the burden traces from S3 storage
+if (BURDEN==True):
+    print '\nDownloading burden traces from S3..'
+    S3bucketname = burdentrace_path.split('/')[-2]
+    print '\tS3bucketname: '+str(S3bucketname)
+    S3filename = burdentrace_path.split('/')[-1]
+    print '\tS3filename: '+str(S3filename)
+    S.downloadFileFromBucket(S3bucketname,S3filename,burdentrace_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
 
 if (PERPIXEL==True):
     # make empty directory on instance to house output files ready to be uploaded back to S3

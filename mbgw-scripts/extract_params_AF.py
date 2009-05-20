@@ -7,19 +7,23 @@ utilFolder = '/root/map_utils/map_utils/'
 keyPath = '/root/s3code.txt' 
  
 # main input hdf5  file of simulated realisations of f
-realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_two/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_three/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 #filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
+
+# hdf 5 file containng traces for burden function
+burdentrace_path='/mnt/burdentraces/Africa+_scale_0.6_model_exp.hdf5'
  
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/mnt/distributedoutput_country/'
-exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel/'
+exportPathDistributed_country = '/mnt/distributedoutput_country_af/'
+exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_af/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/mnt/combinedoutput_country/'
-exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel/'
+exportPathCombined_country = '/mnt/combinedoutput_country_af/'
+exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_af/'
  
 # input 1km salb raster of unique spatial IDs
 salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_AF.hdf5"
+salb1km_path="/mnt/auxiliary_data/salb1km-e2_y-x+_AF.hdf5"
 #salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
  
 # input 1km and 5km raster of population per cell
@@ -32,11 +36,10 @@ lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+_AF.hdf5"
 #lim5kmbnry_path="/home/pwg/mbg-world/datafiles/auxiliary_data/lim5kmbnry-e_y-x+_ken.hdf5"
  
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
-uniqueSalb_path='/mnt/misc/uniqueSalb.txt'
-pixelN_path='/mnt/misc/pixelN.txt'
- 
-# if string given, this is where the standard output and standard error will be sent, if 0, then none sent
-STDOUTPUT = '/mnt/DistributedOutput/scriptoutput/'   
+uniqueSalb_path='/mnt/misc/uniqueSalb_af.txt'
+uniqueSalbwholecountries_path='/mnt/misc/uniqueSalbwholecountries_af.txt'
+pixelN_path='/mnt/misc/pixelN_af.txt'
+pixelNwholecountries_path='/mnt/misc/pixelNwholecountries_af.txt'
  
 # class definition dictionaries
 breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}

@@ -4,12 +4,12 @@ print "from RUNSCRIPT_extractSummaries:\n"
 from map_utils import checkAndBuildPaths
 from extract_PYlib import *
 from boto_PYlib import *
-from extract_params import *
 import os
-
-S=S3() # initialise key object
+from extract_params import *
+import sys
 
 # deal with system arguments
+
 n_per = int(sys.argv[1])   
 FileStartRel = int(sys.argv[2])  
 FileEndRel = int(sys.argv[3])
@@ -30,6 +30,16 @@ PERCOUNTRY = True
 if sys.argv[7] == 'False' : BURDEN=False
 if sys.argv[8] == 'False' : PERPIXEL=False
 if sys.argv[9] == 'False' : PERCOUNTRY=False
+
+# import libraries
+from map_utils import checkAndBuildPaths
+from extract_PYlib import *
+from boto_PYlib import *
+import os
+from extract_params import *
+
+S=S3() # initialise key object
+
 
 # build realisation block import path
 hdf5block_path = realisations_path
@@ -53,7 +63,6 @@ print '\tS3bucketname: '+str(S3bucketname)
 S3filename = hdf5block_path.split('/')[-1]
 print '\tS3filename: '+str(S3filename)
 S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
-
 
 if PERPIXEL==True:
 
