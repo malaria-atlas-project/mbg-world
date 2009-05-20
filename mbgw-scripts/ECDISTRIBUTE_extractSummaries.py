@@ -1,3 +1,6 @@
+# example command line:
+# run ECDISTRIBUTE_extractSummaries r-51b72938 extract_params_AF.py
+
 # deal with system arguments (expects two)
 import sys
 RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2

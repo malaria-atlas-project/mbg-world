@@ -10,6 +10,7 @@ import copy as cp
 import pymc as pm
 import tables as tb
 import mbgw
+import pr_incidence
 import time
 import st_cov_fun
 from mbgw.joint_simulation import *
@@ -17,6 +18,7 @@ from math import sqrt
 from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
+
 
 # import R function
 r.source('extract_Rlib.R')
@@ -315,6 +317,11 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             salblim1km_ROW = salblim1km.root.data[slice(startRow1km,endRow1km,1),:]
             grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
+            # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
+            ind = np.where(grump1km_ROW!=-99999999)
+            POPsurfaceVECTOR=grump1km_ROW[ind]
+            BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=POPsurfaceVECTOR, nyr=N_years, burn=0)
+            
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
             zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
             #xxx5 = xxx5 + (r.Sys_time() - xxx5a) 
@@ -402,10 +409,8 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
-                ind = np.where(grump1km_ROW!=-99999999)
                 PRsurfaceVECTOR=chunkExp[ind]
-                POPsurfaceVECTOR=grump1km_ROW[ind]
-                burdenChunkVECTOR = PrevPoptoBurden(PRsurface = PRsurfaceVECTOR, POPsurface = POPsurfaceVECTOR, tyears = N_years)
+                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR)
                 burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format to populate with burdenChunkVECTOR
                 burdenChunk[ind]=burdenChunkVECTOR
                 
@@ -655,6 +660,11 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
     # if we are extracting burden summaries, import 5km population grid
     if BURDEN==True:
         grump5km = tb.openFile(grump5km_path)
+        
+        # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
+        ind = np.where(grump5km.root.data[:,:]!=-99999999)
+        POPsurfaceVECTOR=grump5km.root.data[:,:][ind]
+        BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=POPsurfaceVECTOR, nyr=N_years, burn=0) 
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
@@ -759,7 +769,13 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             # get burden realisation for this PR and increment running burden matrix
             if BURDEN==True:
-                burdenChunk = PrevPoptoBurden(PRsurface = chunkTMEAN, POPsurface = grump5km.root.data[:,:], tyears = N_years)
+
+                ## convert PRsurface to vector before passing, then back=convert afterwards
+                PRsurfaceVECTOR=chunkTMEAN[ind]
+                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR)
+                burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
+                burdenChunk[ind]=burdenChunkVECTOR
+
                 meanBUR = meanBUR + (burdenChunk/totalN)
                 meanBUR2 = meanBUR2 + (np.square(burdenChunk)/totalN)
             
