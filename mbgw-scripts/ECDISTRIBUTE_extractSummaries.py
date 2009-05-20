@@ -26,8 +26,6 @@ MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
-
-
 # set path to realisations on S3 and extract bucket and generic file name
 relBucket = localparams.realisations_path.rsplit('/')[-2]
 relPath = localparams.realisations_path.rsplit('/')[-1]
@@ -62,4 +60,9 @@ INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extrac
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
+startTime = time.time()
 returns = map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+endTime = time.time()-startTime
+
+print 'total run time for '+str(NJOBS)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
+

@@ -10,7 +10,7 @@ import copy as cp
 import pymc as pm
 import tables as tb
 import mbgw
-import pr_incidence
+from pr_incidence import *
 import time
 import st_cov_fun
 from mbgw.joint_simulation import *
@@ -26,13 +26,6 @@ expandGridResPY=r['expandGridRes']
 
 # import parameters from param file
 from extract_params import *
-
-##############################TEMPPLACEHOLDER
-def PrevPoptoBurden(PRsurface, POPsurface, tyears):
-    burdensurface = POPsurface*PRsurface*tyears
-    return burdensurface
-
-#############################TEMPPLACEHOLDER
  
 #############################################################################################################################################
 def examineSalb (salblim1km,uniqueSalb_path={},pixelN_path={},ignore={}):
