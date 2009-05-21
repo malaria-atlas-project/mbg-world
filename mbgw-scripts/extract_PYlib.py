@@ -237,9 +237,11 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         #set missing vlaues in f block to 0
         #from scipy.io import write_array
         #write_array('/home/pwg/MBGWorld/extraction/temp_PRrel1.txt', f_chunk[0,:,:])
-        print(sum(isnan(f_chunk)))
+        print('NaNs in f_chunk:' +str(sum(isnan(f_chunk))))
+        print('0s in f_chunk:' +str(sum(f_chunk==0)))
         f_chunk[isnan(f_chunk)]=0
-        print(sum(isnan(f_chunk))) 
+        print('NaNs in f_chunk:' +str(sum(isnan(f_chunk))))
+        print('0s in f_chunk:' +str(sum(f_chunk==0)))
         ####################################
         #xxx3 = xxx3 + (r.Sys_time() - xxx3a)
 
@@ -303,7 +305,10 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             #xxx5a = r.Sys_time() 
             # get row of 5km PR surface accross all months in chunk  (assumes f_chunk is correct way up i.e. map view)
             f_chunk_ROW = f_chunk[:,jj,:]
-
+            
+            # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
+            ind5km = np.where(f_chunk_ROW!=-99999999)         
+            
             # get corresponding 5 rows of 1km Salb and population surface (assumes they are correct way up i.e. map view)
             startRow1km=jj*HiResLowResRatio
             endRow1km=startRow1km+(HiResLowResRatio)
@@ -311,8 +316,8 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
             # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
-            ind = np.where(grump1km_ROW!=-99999999)
-            POPsurfaceVECTOR=grump1km_ROW[ind]
+            ind1km = np.where(grump1km_ROW!=-99999999)
+            POPsurfaceVECTOR=grump1km_ROW[ind1km]
             BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=POPsurfaceVECTOR, nyr=N_years, burn=0)
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
@@ -402,11 +407,10 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
-                PRsurfaceVECTOR=chunkExp[ind]
-                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR)
-                burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format to populate with burdenChunkVECTOR
-                burdenChunk[ind]=burdenChunkVECTOR
-                
+                PRsurfaceVECTOR=chunkTMEAN[ind5km]
+                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR,pop_pr_res=HiResLowResRatio)
+                burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format (1km) to populate with burdenChunkVECTOR
+                burdenChunk[ind1km]=burdenChunkVECTOR
                 
                 # create an ID matrix for this chunk for each endemicity class in each scheme                
                 #xxx11a = r.Sys_time()
@@ -765,7 +769,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
                 ## convert PRsurface to vector before passing, then back=convert afterwards
                 PRsurfaceVECTOR=chunkTMEAN[ind]
-                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR)
+                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR,pop_pr_res=1)
                 burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
                 burdenChunk[ind]=burdenChunkVECTOR
 
