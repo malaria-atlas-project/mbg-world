@@ -23,7 +23,6 @@ class delayed_hdf(object):
 data_dict = {}
 for fname in os.listdir(__root__):
     if fname[-4:]=='hdf5':
-        print fname
         try:
             # data_dict[fname[:-5]] = tables.openFile('%s/%s'%(__root__,fname)).root
             data_dict[fname[:-5]] = delayed_hdf('%s/%s'%(__root__,fname))
