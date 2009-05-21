@@ -306,9 +306,6 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             # get row of 5km PR surface accross all months in chunk  (assumes f_chunk is correct way up i.e. map view)
             f_chunk_ROW = f_chunk[:,jj,:]
             
-            # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
-            ind5km = np.where(f_chunk_ROW!=-99999999)         
-            
             # get corresponding 5 rows of 1km Salb and population surface (assumes they are correct way up i.e. map view)
             startRow1km=jj*HiResLowResRatio
             endRow1km=startRow1km+(HiResLowResRatio)
@@ -379,6 +376,9 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # aggregate through time to obtain spatial-only array for this nugget-realisation
                 #xxx9a = r.Sys_time()
                 chunkTMEAN = atleast_2d(np.mean(chunk,0))
+            
+                # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
+                ind5km = np.where(chunkTMEAN!=-99999999) 
                 #xxx9 = xxx9 + (r.Sys_time() - xxx9a)
 
                 # run check that this time-aggregated chunk has same spatial dimensions as time block
