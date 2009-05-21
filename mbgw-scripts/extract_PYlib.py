@@ -313,9 +313,9 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
             # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
-            ind1km = np.where(grump1km_ROW!=-99999999)
-            POPsurfaceVECTOR=grump1km_ROW[ind1km]
-            BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=POPsurfaceVECTOR, nyr=N_years, burn=0)
+            #ind1km = np.where(grump1km_ROW!=-99999999)
+            #POPsurfaceVECTOR=grump1km_ROW[ind1km]
+            BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=grump1km_ROW, nyr=N_years, burn=0)
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
             zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
@@ -407,10 +407,10 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
-                PRsurfaceVECTOR=chunkTMEAN[ind5km]
-                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR,pop_pr_res=HiResLowResRatio)
-                burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format (1km) to populate with burdenChunkVECTOR
-                burdenChunk[ind1km]=burdenChunkVECTOR
+                #PRsurfaceVECTOR=chunkTMEAN[ind5km]
+                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop_pr_res=HiResLowResRatio)
+                #burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format (1km) to populate with burdenChunkVECTOR
+                #burdenChunk[ind1km]=burdenChunkVECTOR
                 
                 # create an ID matrix for this chunk for each endemicity class in each scheme                
                 #xxx11a = r.Sys_time()
@@ -659,9 +659,9 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         grump5km = tb.openFile(grump5km_path)
         
         # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
-        ind = np.where(grump5km.root.data[:,:]!=-99999999)
-        POPsurfaceVECTOR=grump5km.root.data[:,:][ind]
-        BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=POPsurfaceVECTOR, nyr=N_years, burn=0) 
+        #ind = np.where(grump5km.root.data[:,:]!=-99999999)
+        #POPsurfaceVECTOR=grump5km.root.data[:,:][ind]
+        BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, pop=grump5km.root.data[:,:], nyr=N_years, burn=0) 
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
@@ -768,10 +768,10 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             if BURDEN==True:
 
                 ## convert PRsurface to vector before passing, then back=convert afterwards
-                PRsurfaceVECTOR=chunkTMEAN[ind]
-                burdenChunkVECTOR = BurdenPredictorObj(pr=PRsurfaceVECTOR,pop_pr_res=1)
-                burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
-                burdenChunk[ind]=burdenChunkVECTOR
+                #PRsurfaceVECTOR=chunkTMEAN[ind]
+                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop_pr_res=1)
+                #burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
+                #burdenChunk[ind]=burdenChunkVECTOR
 
                 meanBUR = meanBUR + (burdenChunk/totalN)
                 meanBUR2 = meanBUR2 + (np.square(burdenChunk)/totalN)
