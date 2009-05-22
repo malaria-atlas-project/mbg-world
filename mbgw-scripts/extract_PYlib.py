@@ -134,6 +134,14 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     n_cols=len(hr.lon_axis)
     N_facs = int(1e5)
     N_years = (slices[2].stop - slices[2].start)/12
+    
+    # define start and end rows for each iteation of loop (taking into account variable width of last remaining chunk)
+    rowList=np.arange(0,nrows)
+    startRows=rowList[0:n_rows:rowsPerChunk]
+    endRows = startRows+rowsPerChunk
+    if endRows[-1]>(n_rows+1):
+        endRows[-1]=(n_rows+1)
+    NrowChunks = len(startRows)    
 
     # Get nugget variance and age-correction factors    
     V = hr.PyMCsamples.col('V')[:]    
@@ -298,7 +306,8 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
         timea = time.time()
         interimCnt=0 
-        for jj in xrange(0,n_rows): 
+#        for jj in xrange(0,n_rows): 
+        for jj in xrange(0,NrowChunks): 
 
             interimCnt=interimCnt+1
             if interimCnt==100:
@@ -309,11 +318,12 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     
             #xxx5a = r.Sys_time() 
             # get row of 5km PR surface accross all months in chunk  (assumes f_chunk is correct way up i.e. map view)
-            f_chunk_ROW = f_chunk[:,jj,:]
+            #f_chunk_ROW = f_chunk[:,jj,:]
+            f_chunk_ROW = f_chunk[:,startRow:endRow:1,:]
             
             # get corresponding 5 rows of 1km Salb and population surface (assumes they are correct way up i.e. map view)
-            startRow1km=jj*HiResLowResRatio
-            endRow1km=startRow1km+(HiResLowResRatio)
+            startRow1km=startRow*HiResLowResRatio
+            endRow1km=endRow*HiResLowResRatio
             salblim1km_ROW = salblim1km.root.data[slice(startRow1km,endRow1km,1),:]
             grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
