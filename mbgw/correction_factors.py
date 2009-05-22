@@ -12,7 +12,7 @@ from cf_helper import cfh, cfhs
 # magic_load.magic_load('age_pr_datasets','/home/anand/MAP/Age standardization/age_pr_datasets/__init__.py')
 from age_pr_datasets import *
 import auxiliary_data
-
+import time
 from scipy import interpolate as interp
 
 __all__ = ['two_ten_factors', 'age_corr_factors', 'known_age_corr_factors', 'known_age_corr_likelihoods_f', 'stochastic_known_age_corr_likelihoods', 'age_corr_likelihoods', 'age_corr_factors_from_limits']
@@ -80,15 +80,15 @@ def age_corr_factors_from_limits(a_lo, a_hi, N):
     
 
 
-def age_corr_factors(A, N):
+def age_corr_factors(lo_age, up_age, N):
     """
-    factors = age_corr_factors(A,N)
+    factors = age_corr_factors(lo_age, up_age, N)
     
-    Factors returns a len(A) by N array of samples from the prior 
+    Factors returns a len(lo_age) by N array of samples from the prior 
     distribution of r, where PfPR[a_min, a_max) = r P'. P' is the 
     location-caused component.
     """
-    N_recs = len(A)
+    N_recs = len(lo_age)
     factors = empty((N_recs, N))
     p_indices = random.randint(P_trace.shape[0], size=N)
     S_indices = random.randint(S_trace.shape[0], size=N)
@@ -99,8 +99,8 @@ def age_corr_factors(A, N):
                 
     for i in xrange(N_recs):
         
-        a_index_min = np.where(a<=A.LOW_AGE[i])[0][-1]
-        a_index_max = np.where(a>=A.UP_AGE[i])[0]
+        a_index_min = np.where(a<=lo_age[i])[0][-1]
+        a_index_max = np.where(a>=up_age[i])[0]
         if len(a_index_max)==0:
             a_index_max = len(a)-1
         else:
@@ -269,54 +269,8 @@ def stochastic_known_age_corr_likelihoods(pos, A, fac_array):
         funs.append(this_fun)        
     return funs
     
-# def known_age_corr_likelihoods(pos, A, fac_array, P_mesh):
-#     """
-#     Computes spline representations over P_mesh for the likelihood 
-#     of N_pos | N_exam, A
-#     """
-#     
-#     # Allocate work and output arrays.
-#     N_recs = len(A)
-#     N = fac_array.shape[1]
-#     
-#     likelihoods = empty((N_recs, len(P_mesh)))
-#     likes_now = empty((N, len(P_mesh)), dtype=float128)
-#     splreps = []
-#     
-#     # For each record
-#     for i in xrange(N_recs):
-#         Np = N_pos[i]
-#         Ne = N_exam[i]
-#         Ai = A[i]
-# 
-#         # For each sample from the posterior of r
-#         for j in xrange(N):
-#             # Compute actual PfPR[A[i]]
-#             P_adjusted = fac_array[Ai,j] * P_mesh
-#             # Record likelihood
-#             likes_now[j,:] = Np * log(P_adjusted) + (Ne-Np) * log(1.-P_adjusted)
-#             
-#         # Average log-likelihoods.
-#         likelihoods[i,:] = np.apply_along_axis(logsum,0,likes_now) - log(N)#(mean(likes_now,axis=0))
-#         
-#         # Clean out occasional infinities on the edges.
-#         good_indices = where(1-isinf(likelihoods[i,:]))[0]
-#         
-#         # Compute spline representations.
-#         this_splrep = interp.splrep(x=P_mesh[good_indices], y=likelihoods[i,good_indices].squeeze(), xb=0, xe=1)
-#         def this_fun(x, sp=this_splrep, Pml=P_mesh[good_indices].min(), Pmh=P_mesh[good_indices].max()):
-#             out = np.atleast_1d(interp.splev(x, sp))
-#             out[np.where(x<Pml)] = -np.Inf
-#             out[np.where(x>Pmh)] = -np.Inf
-#             return out.reshape(np.shape(x))
-#             
-#         splreps.append(this_fun)
-#         
-#         # if np.any(this_splrep[1]>0):
-#         
-#     return splreps
-
-def age_corr_likelihoods(A, N, P_mesh, datafile_name):
+# FIXME: Don't do age_corr_likelihoods by Monte Carlo, just use finite sums. Consider log-Simpson from the EP algorithm.
+def age_corr_likelihoods(lo_age, up_age, pos, neg, N, P_mesh):
     """
     Returns samples from the log-likelihood p(N|A,P'=P_mesh,r), 
     where A is a MAP-style record array and r[i] is the factor 
@@ -325,33 +279,21 @@ def age_corr_likelihoods(A, N, P_mesh, datafile_name):
     \int_r p(N|A,P'=P_mesh,r) p(r|A).
     """
     
-    splreps_name = datafile_name + '_splreps.hdf5'
-    if splreps_name in os.listdir('./'):
-        splrep_file = openFile(splreps_name)
-        splreps = splrep_file.root.splreps[:]
-        likelihoods = splrep_file.root.likelihoods[:]
-        splrep_file.close()
-        return likelihoods, splreps
-    
     print 'Recomputing likelihood spline representations...'
     # Call to age_corr_factors to get samples from the predictive distribution of r.
-    factors = age_corr_factors(A,N)
+    factors = age_corr_factors(lo_age, up_age, N)
     
     # Allocate work and output arrays.
-    N_recs = len(A)
+    N_recs = len(pos)
     likelihoods = empty((N_recs, len(P_mesh)))
     likes_now = empty((N, len(P_mesh)), dtype=float128)
     splreps = []
     indices = random.randint(factors.shape[1], size=N)
 
-    splrep_file = openFile(splreps_name,'w')
-    splrep_file.createVLArray(splrep_file.root,'splreps',ObjectAtom())
-    splrep_file.createCArray(splrep_file.root, 'likelihoods', FloatAtom(), (N_recs, len(P_mesh)))
-
     # For each record
     for i in xrange(N_recs):
-        N_pos = A.PF[i]
-        N_exam = A.EXAMINED[i]
+        N_pos = pos[i]
+        N_exam = pos[i] + neg[i]
 
         # For each sample from the posterior of r
         for j in xrange(N):
@@ -370,13 +312,5 @@ def age_corr_likelihoods(A, N, P_mesh, datafile_name):
         # Compute spline representations.
         this_splrep = interp.splrep(x=P_mesh[good_indices], y=likelihoods[i,good_indices].squeeze(), xb=0, xe=1)
         splreps.append(this_splrep)
-        splrep_file.root.splreps.append(this_splrep)
 
-    print 'Done'
-    print splrep_file.root.likelihoods.shape, (likelihoods - likelihoods.max()).shape
-    splrep_file.root.likelihoods[:,:] = likelihoods - likelihoods.max()
-
-    splrep_file.close()
-    
     return likelihoods-likelihoods.max(), splreps
-            
