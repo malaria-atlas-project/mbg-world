@@ -22,7 +22,7 @@ cd
 rm -r -f generic_mbg
 git clone git://github.com/malaria-atlas-project/generic_mbg.git
 cd generic_mbg 
-ln -s ../datafiles datafiles
+ln -s ../datafiles datafiles 
 python setup.py develop
 cd
 
