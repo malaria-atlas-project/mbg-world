@@ -19,6 +19,7 @@ from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
 
+rowsPerChunk=1
 
 # import R function
 r.source('extract_Rlib.R')

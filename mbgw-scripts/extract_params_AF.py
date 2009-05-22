@@ -54,6 +54,9 @@ breaksDict={"MBGW":breaks_MBGW}
  
 # ratio of high to low resolution
 HiResLowResRatio=5
+
+# how many rows of the 5km PR surface will we deal with at a time in extractSummaries_country()
+rowsPerChunk=1
  
 # parameter determining number of rows of the coarser grid (5km) to process at a time. Default is 1. (currently unsupported)
 rowsInslice5km=5 
