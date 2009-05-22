@@ -309,6 +309,10 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         interimCnt=0 
 #        for jj in xrange(0,n_rows): 
         for jj in xrange(0,NrowChunks): 
+        
+            # which rows of the 5km PR block are we dealing with in this iteration
+            startRow=startRows[jj]
+            endRows=endRows[jj]
 
             interimCnt=interimCnt+1
             if interimCnt==100:
