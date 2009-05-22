@@ -178,7 +178,7 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
             @pm.deterministic
             def C(amp=amp,scale=scale,inc=inc,ecc=ecc,scale_t=scale_t, t_lim_corr=t_lim_corr, sin_frac=sin_frac):
                 return pm.gp.FullRankCovariance(my_st, amp=amp, scale=scale, inc=inc, ecc=ecc,st=scale_t, sd=.5,
-                                                tlc=t_lim_corr, sf = sin_frac, n_threads=cpus)
+                                                tlc=t_lim_corr, sf = sin_frac)
 
             covariate_dict, C_eval = cd_and_C_eval(covariate_values, C, data_mesh, ui)
 
