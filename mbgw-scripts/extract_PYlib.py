@@ -397,12 +397,12 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 #xxx9 = xxx9 + (r.Sys_time() - xxx9a)
 
                 # run check that this time-aggregated chunk has same spatial dimensions as time block
-                test=chunk.shape[1:]==chunkTMEAN.shape[0:]
-                if test==False:
-                    print("WARNING !!!!: spatial dimensions of time-aggregated block 'chunkTMEAN' do not match pre-aggregation 'chunk': EXITING!!")
-                    print ('chunk.shape[1:]: '+str(chunk.shape[1:]))
-                    print ('chunkTMEAN.shape[1:]: '+str(chunkTMEAN.shape[1:]))
-                    return(-9999)
+                #test=chunk.shape[1:]==chunkTMEAN.shape[0:]
+                #if test==False:
+                #    print("WARNING !!!!: spatial dimensions of time-aggregated block 'chunkTMEAN' do not match pre-aggregation 'chunk': EXITING!!")
+                #    print ('chunk.shape[1:]: '+str(chunk.shape[1:]))
+                #    print ('chunkTMEAN.shape[1:]: '+str(chunkTMEAN.shape[1:]))
+                #    return(-9999)
 
                 #xxx10a = r.Sys_time()
                 # now expand the 5km PR chunk to match underlying 1km grid
