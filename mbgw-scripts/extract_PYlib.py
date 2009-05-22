@@ -771,7 +771,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
                 ## convert PRsurface to vector before passing, then back=convert afterwards
                 #PRsurfaceVECTOR=chunkTMEAN[ind]
-                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump1km_ROW,pop_pr_res=1)
+                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump5km.root.data[:,:],pop_pr_res=1)
                 #burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
                 #burdenChunk[ind]=burdenChunkVECTOR
 

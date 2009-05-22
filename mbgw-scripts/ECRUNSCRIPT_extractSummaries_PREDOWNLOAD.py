@@ -1,7 +1,7 @@
 # script to download to an instance, before anything execute,  any necessary auxilliary files, and to 
 # pre-build any necessary directories
 
-print 'Starting: ECRUNSCRIPT_extractSummaries_perpixel_PREDOWNLOAD..'
+print 'Starting: ECRUNSCRIPT_extractSummaries_PREDOWNLOAD..'
 
 # import libraries
 from map_utils import checkAndBuildPaths
