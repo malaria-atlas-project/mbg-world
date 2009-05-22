@@ -5,9 +5,9 @@ from mbgw.joint_simulation import *
 import tables as tb
 from mbgw.master_grid import *
 
-
-# Maximum memory usage in kriging stage
-memmax = 1.e8
+# Establish blocks based on spatial distance only.
+memmax = 2.5e8
+N_nearest = 1000
 
 def simulate(n, fname, grid_lims, nmonths, start_year, burn, outfile_name, mask_name, relp=1e-3):
     """

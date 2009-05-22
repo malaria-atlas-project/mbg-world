@@ -19,6 +19,12 @@ ln -s ../datafiles datafiles
 python setup.py develop
 cd
 
+rm -r -f generic-mbg
+git clone git://github.com/malaria-atlas-project/generic-mbg.git
+cd generic-mbg 
+python setup.py install
+cd
+
 rm -r -f st-cov-fun
 git clone git://github.com/malaria-atlas-project/st-cov-fun.git
 cd st-cov-fun
@@ -29,5 +35,11 @@ cd
 rm -r -f map_utils
 git clone git://github.com/malaria-atlas-project/map_utils.git
 cd map_utils
+python setup.py install
+cd
+
+rm -r -f pr-incidence
+git clone git://github.com/malaria-atlas-project/pr-incidence.git
+cd pr-incidence
 python setup.py install
 cd
