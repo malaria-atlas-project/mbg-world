@@ -212,6 +212,11 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         BURDENdict[scheme].update(BURDEN)
     #xxx2 = xxx2 + (r.Sys_time() - xxx2a)
 
+     # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
+     #ind1km = np.where(grump1km_ROW!=-99999999)
+     #POPsurfaceVECTOR=grump1km_ROW[ind1km]
+     BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, nyr=N_years, burn=0)
+
     # loop through each realisation
     for ii in xrange(0,n_realizations): #1:500 realisations n_realizations   
     
@@ -311,11 +316,6 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             endRow1km=startRow1km+(HiResLowResRatio)
             salblim1km_ROW = salblim1km.root.data[slice(startRow1km,endRow1km,1),:]
             grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
-            
-            # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
-            #ind1km = np.where(grump1km_ROW!=-99999999)
-            #POPsurfaceVECTOR=grump1km_ROW[ind1km]
-            BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, nyr=N_years, burn=0)
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
             zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
