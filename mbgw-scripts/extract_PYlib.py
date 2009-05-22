@@ -136,7 +136,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     N_years = (slices[2].stop - slices[2].start)/12
     
     # define start and end rows for each iteation of loop (taking into account variable width of last remaining chunk)
-    rowList=np.arange(0,nrows)
+    rowList=np.arange(0,n_rows)
     startRows=rowList[0:n_rows:rowsPerChunk]
     endRows = startRows+rowsPerChunk
     if endRows[-1]>(n_rows+1):
