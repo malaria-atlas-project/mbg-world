@@ -19,11 +19,10 @@ ln -s ../datafiles datafiles
 python setup.py develop
 cd
 
-rm -r -f generic_mbg
-git clone git://github.com/malaria-atlas-project/generic_mbg.git
-cd generic_mbg 
-ln -s ../datafiles datafiles 
-python setup.py develop
+rm -r -f generic-mbg
+git clone git://github.com/malaria-atlas-project/generic-mbg.git
+cd generic-mbg 
+python setup.py install
 cd
 
 rm -r -f st-cov-fun
