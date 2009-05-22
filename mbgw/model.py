@@ -105,10 +105,9 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
     # = Create PyMC model =
     # =====================
     
-    M, M_eval = trivial_means(logp_mesh)
-    
     init_OK = False
     while not init_OK:
+        M, M_eval = trivial_means(logp_mesh)
     
         # Inverse-gamma prior on nugget variance V.
         tau = pm.Gamma('tau', value=2., alpha=.001, beta=.001/.25)
@@ -182,11 +181,11 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
 
             covariate_dict, C_eval = cd_and_C_eval(covariate_values, C, data_mesh, ui)
 
-            try:
-                np.linalg.cholesky(C_eval.value)
-            except np.linalg.LinAlgError:
-                print inc.value, ecc.value, amp.value, scale.value, scale_t.value, t_lim_corr.value, sin_frac.value
-                raise pm.ZeroProbability, 'C_eval not positive definite'
+            # try:
+            #     np.linalg.cholesky(C_eval.value)
+            # except np.linalg.LinAlgError:
+            #     print inc.value, ecc.value, amp.value, scale.value, scale_t.value, t_lim_corr.value, sin_frac.value
+            #     raise pm.ZeroProbability, 'C_eval not positive definite'
 
             # The field evaluated at the uniquified data locations
             f = pm.MvNormalCov('f',M_eval,C_eval,value=M_eval.value)
@@ -195,7 +194,8 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
             @pm.deterministic(trace=False)
             def f_eval(f=f):
                 return f[fi]
-
+            
+            raise pm.ZeroProbability
             init_OK = True
         except pm.ZeroProbability, msg:
             print 'Trying again: %s'%msg
