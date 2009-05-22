@@ -427,7 +427,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 #PRsurfaceVECTOR=chunkTMEAN[ind5km]
                 print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))
                 print 'shape(grump1km_ROW): '+str(shape(grump1km_ROW)) 
-                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump1km_ROW,pop_pr_res=HiResLowResRatio)
+                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN.squeeze(),pop=grump1km_ROW,pop_pr_res=HiResLowResRatio)
                 #burdenChunk = grump1km_ROW*2
                 print 'shape(burdenChunk): '+str(shape(burdenChunk))
                 print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))+'\n'
