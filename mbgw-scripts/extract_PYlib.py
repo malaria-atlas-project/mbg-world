@@ -425,11 +425,11 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
                 #PRsurfaceVECTOR=chunkTMEAN[ind5km]
-                print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))
-                print 'shape(grump1km_ROW): '+str(shape(grump1km_ROW)) 
+                #print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))
+                #print 'shape(grump1km_ROW): '+str(shape(grump1km_ROW)) 
                 burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump1km_ROW,pop_pr_res=HiResLowResRatio)
-                print 'shape(burdenChunk): '+str(shape(burdenChunk))
-                print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))
+                #print 'shape(burdenChunk): '+str(shape(burdenChunk))
+                #print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))
                 #burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format (1km) to populate with burdenChunkVECTOR
                 #burdenChunk[ind1km]=burdenChunkVECTOR
                 
