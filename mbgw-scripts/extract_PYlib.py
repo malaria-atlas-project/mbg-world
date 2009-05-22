@@ -19,7 +19,7 @@ from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
 
-rowsPerChunk=2
+rowsPerChunk=1
 
 # import R function
 r.source('extract_Rlib.R')
@@ -307,7 +307,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
         timea = time.time()
         interimCnt=0 
-#        for jj in xrange(0,n_rows): 
+        #for jj in xrange(0,n_rows): 
         for jj in xrange(0,NrowChunks): 
         
             # which rows of the 5km PR block are we dealing with in this iteration
