@@ -19,6 +19,13 @@ ln -s ../datafiles datafiles
 python setup.py develop
 cd
 
+rm -r -f mbg-world
+git clone git://github.com/malaria-atlas-project/generic_mbg.git
+cd generic_mbg
+ln -s ../datafiles datafiles
+python setup.py develop
+cd
+
 rm -r -f st-cov-fun
 git clone git://github.com/malaria-atlas-project/st-cov-fun.git
 cd st-cov-fun
