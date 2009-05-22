@@ -8,7 +8,7 @@ import pymc as pm
 import numpy as np
 import os
 from copy import copy
-from correction_factors import age_corr_likelihoods
+from correction_factors import age_corr_likelihoods, age_corr_factors, two_ten_factors
 from scipy import interpolate as interp
 from st_cov_fun import *
 import time
@@ -105,10 +105,9 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
     # = Create PyMC model =
     # =====================
     
-    M, M_eval = trivial_means(logp_mesh)
-    
     init_OK = False
     while not init_OK:
+        M, M_eval = trivial_means(logp_mesh)
     
         # Inverse-gamma prior on nugget variance V.
         tau = pm.Gamma('tau', value=2., alpha=.001, beta=.001/.25)
@@ -141,18 +140,18 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
         amp = pm.Lambda('amp', lambda log_amp = log_amp: np.exp(log_amp))
 
         # Subjective skew-normal prior on scale (the range, phi_x) in log-space.
-        log_scale = pm.SkewNormal('log_scale',**scale_params)
+        log_scale = pm.SkewNormal('log_scale',value=-1,**scale_params)
         scale = pm.Lambda('scale', lambda log_scale = log_scale: np.exp(log_scale))
 
         # Exponential prior on the temporal scale/range, phi_t. Standard one-over-x
         # doesn't work bc data aren't strong enough to prevent collapse to zero.
-        scale_t = pm.Exponential('scale_t', .1)
+        scale_t = pm.Exponential('scale_t', .1,value=.1)
 
         # Uniform prior on limiting correlation far in the future or past.
-        t_lim_corr = pm.Uniform('t_lim_corr',0,1,value=.8)
+        t_lim_corr = pm.Uniform('t_lim_corr',0,1,value=.01)
 
         # # Uniform prior on sinusoidal fraction in temporal variogram
-        sin_frac = pm.Uniform('sin_frac',0,1)
+        sin_frac = pm.Uniform('sin_frac',0,1,value=.01)
         
         vars_to_writeout.extend(['inc','ecc','amp','scale','scale_t','t_lim_corr','sin_frac'])
     
@@ -178,18 +177,18 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
             @pm.deterministic
             def C(amp=amp,scale=scale,inc=inc,ecc=ecc,scale_t=scale_t, t_lim_corr=t_lim_corr, sin_frac=sin_frac):
                 return pm.gp.FullRankCovariance(my_st, amp=amp, scale=scale, inc=inc, ecc=ecc,st=scale_t, sd=.5,
-                                                tlc=t_lim_corr, sf = sin_frac, n_threads=cpus)
+                                                tlc=t_lim_corr, sf = sin_frac)
 
             covariate_dict, C_eval = cd_and_C_eval(covariate_values, C, data_mesh, ui)
 
             # The field evaluated at the uniquified data locations
             f = pm.MvNormalCov('f',M_eval,C_eval,value=M_eval.value)
-
+            
             # The field evaluated at all the data locations
             @pm.deterministic(trace=False)
             def f_eval(f=f):
                 return f[fi]
-
+            
             init_OK = True
         except pm.ZeroProbability, msg:
             print 'Trying again: %s'%msg
@@ -259,15 +258,15 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
         out[v[0]] = v[1][0]
     return out
 
-def postproc(x=None, lo_age=None, up_age=None):
+n_facs = 1000
+def postproc(x=None, lo_age=None, up_age=None, two_ten_facs=two_ten_factors(n_facs)):
     if lo_age is not None:
-       def postproc_(x, lo_age=lo_age, up_age=up_age):
-           # FIXME: This should be invlogit and times the
-           # age-corr factors.
-           return x
+        facs = age_corr_factors(lo_age, up_age, n_facs)
+        def postproc_(x, lo_age=lo_age, up_age=up_age, facs=facs):
+            return pm.flib.invlogit(x) * facs[:,np.random.randint(n_facs)]
+        return postproc_
     else:
-        # FIXME: This should be invlogit and times an age-corr factor.
-        return x
+        return invlogit(x) * two_ten_facs[np.random.randint(n_facs)]
     
 metadata_keys = ['ti','fi','ui','with_stukel','chunk','disttol','ttol']
 f_name = 'eps_p_f'
