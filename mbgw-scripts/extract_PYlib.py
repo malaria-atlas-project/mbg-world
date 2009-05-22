@@ -400,8 +400,8 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 test=chunk.shape[1:]==chunkTMEAN.shape[1:]
                 if test==False:
                     print("WARNING !!!!: spatial dimensions of time-aggregated block 'chunkTMEAN' do not match pre-aggregation 'chunk': EXITING!!")
-                    print ('chunk.shape: '+str(chunk.shape))
-                    print ('chunkTMEAN.shape: '+str(chunkTMEAN.shape))
+                    print ('chunk.shape[1:]: '+str(chunk.shape[1:]))
+                    print ('chunkTMEAN.shape[1:]: '+str(chunkTMEAN.shape[1:]))
                     return(-9999)
 
                 #xxx10a = r.Sys_time()
