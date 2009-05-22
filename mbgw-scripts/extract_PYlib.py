@@ -393,13 +393,15 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 chunkTMEAN = atleast_2d(np.mean(chunk,0))
             
                 # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
-                ind5km = np.where(chunkTMEAN!=-99999999) 
+                #ind5km = np.where(chunkTMEAN!=-99999999) 
                 #xxx9 = xxx9 + (r.Sys_time() - xxx9a)
 
                 # run check that this time-aggregated chunk has same spatial dimensions as time block
                 test=chunk.shape[1:]==chunkTMEAN.shape[1:]
                 if test==False:
                     print("WARNING !!!!: spatial dimensions of time-aggregated block 'chunkTMEAN' do not match pre-aggregation 'chunk': EXITING!!")
+                    print ('chunk.shape: '+str(chunk.shape))
+                    print ('chunkTMEAN.shape: '+str(chunkTMEAN.shape))
                     return(-9999)
 
                 #xxx10a = r.Sys_time()
