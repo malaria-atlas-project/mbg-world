@@ -684,7 +684,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
         #ind = np.where(grump5km.root.data[:,:]!=-99999999)
         #POPsurfaceVECTOR=grump5km.root.data[:,:][ind]
-        BurdenPredictorObj = BurdenPredictor.pr5km_pop5km(hf_name=burdentrace_path, nyr=N_years, burn=0) 
+        BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, nyr=N_years, burn=0) 
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
@@ -794,7 +794,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
                 ## convert PRsurface to vector before passing, then back=convert afterwards
                 #PRsurfaceVECTOR=chunkTMEAN[ind]
-                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump5km.root.data[:,:],pop_pr_res=1)
+                burdenChunk = BurdenPredictorObj.pr5km_pop5km(pr=chunkTMEAN,pop=grump5km.root.data[:,:],pop_pr_res=1)
                 #burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
                 #burdenChunk[ind]=burdenChunkVECTOR
 
