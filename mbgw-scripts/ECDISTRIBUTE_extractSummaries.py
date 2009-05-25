@@ -38,7 +38,7 @@ NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
 
 ####################################TEMP
-NJOBS = 1
+#NJOBS = 1
 ####################################TEMP
 
 FileStartRels = relDict['StartRelList']
@@ -47,7 +47,7 @@ NPER  = 2
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
-NTOTALREL = 2
+#NTOTALREL = 2
 ####################################TEMP
 
 # define files to upload to instance (from local machine) before any execution
@@ -57,8 +57,7 @@ UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup
 INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
 
 # construct main commands list
-#CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
-CMDS=[]
+CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
