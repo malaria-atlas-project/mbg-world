@@ -333,7 +333,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
-            zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
+            zeroChunk = zeros(np.product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
             #xxx5 = xxx5 + (r.Sys_time() - xxx5a) 
 
             #plotMapPY(salblim1km.root.data[:,:],NODATA=-9999)
@@ -366,15 +366,15 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             for rr in xrange(0,Nsalb_ROW): 
                 countryIDmatrix = cp.deepcopy(zeroChunk)
                 countryIDmatrix[salblim1km_ROW==uniqueSalb_ROW[rr]]=1
-                sumCountryID = sumCountryID + sum(countryIDmatrix)
+                sumCountryID = sumCountryID + np.sum(countryIDmatrix)
                 tmpdict={str(uniqueSalb_ROW[rr]):cp.deepcopy(countryIDmatrix)}
                 countryIDdict.update(tmpdict)
-            sumCountryID = sumCountryID + sum(salblim1km_ROW==-9999)    
+            sumCountryID = sumCountryID + np.sum(salblim1km_ROW==-9999)    
             #xxx7 = xxx7 + (r.Sys_time() - xxx7a)
             
             # run check that sum of total pixels in all countries in this block match expected total
-            if sumCountryID != product(salblim1km_ROW.shape):
-                print "WARNING!! sum of pixels in each country in chunk "+str(jj)+" is "+str(sumCountryID)+" != expected total ("+str(product(salblim1km_ROW.shape))+")"
+            if sumCountryID != np.product(salblim1km_ROW.shape):
+                print "WARNING!! sum of pixels in each country in chunk "+str(jj)+" is "+str(sumCountryID)+" != expected total ("+str(np.product(salblim1km_ROW.shape))+")"
 
             # loop through n_per draws of the nugget..
             for kk in xrange(0,n_per):
@@ -418,8 +418,8 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # run check that there are no PR==-9999 pixels (assigned to non-stable pixels in CS code) in stable areas on salblim1km
                 testmatrix = cp.deepcopy(chunkExp)
                 testmatrix[salblim1km_ROW == -9999] = 0
-                if (sum(testmatrix == -9999) > 0):
-                    print ("WARNING!!: ("+str(sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
+                if (np.sum(testmatrix == -9999) > 0):
+                    print ("WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
                     return(-9999)
 
                 # obtain a burden surface for this chunk as a function of population and PR
@@ -466,8 +466,8 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     classIDdict[scheme].update(classIDarrays)
 
                     # run check that sum of total pixels in all classes in this block match expected total
-                    #if sumClassID != product(chunkExp.shape):
-                    #    print "WARNING!! sum of pixels in each class in chunk "+str(jj)+" is "+str(sumClassID)+" != expected total ("+str(product(chunkExp.shape))+")"
+                    #if sumClassID != np.product(chunkExp.shape):
+                    #    print "WARNING!! sum of pixels in each class in chunk "+str(jj)+" is "+str(sumClassID)+" != expected total ("+str(np.product(chunkExp.shape))+")"
                 #xxx11 = xxx11 + (r.Sys_time() - xxx11a)
 
                 # loop through each unique country in this chunk: calculate running mean PR, running total burden and PAR in each endemicity class in each scheme
@@ -480,7 +480,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                     #xxx12a = r.Sys_time()
                     # calculate sum of PR in this country,convert to running mean using known country pixel count, and add to the relevant part of countryMeanPRrel_ChunkRunning
-                    PRsum = sum(chunkExp*countryID)
+                    PRsum = np.sum(chunkExp*countryID)
                     countryMeanPRrel_ChunkRunning[thiscountry_salbLUT,kk] = countryMeanPRrel_ChunkRunning[thiscountry_salbLUT,kk]+(PRsum/pixelN[thiscountry_salbLUT])
 
                     #xxx13a = r.Sys_time()
@@ -500,12 +500,12 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                             
                             # calculate sum of population in this class and country and add this sum to the relevant part of PARdict_ChunkRunning
                             PARtemp=grump1km_ROW * countryClassID
-                            PARsum = sum(PARtemp)
+                            PARsum = np.sum(PARtemp)
                             PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] = PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] + PARsum
 
                             # similarly, calculate sum of burden in this country, and add to relevant part of countryBURDENrel_ChunkRunning 
                             BURDENtemp = burdenChunk*countryClassID
-                            BURDENsum = sum(BURDENtemp)
+                            BURDENsum = np.sum(BURDENtemp)
                             BURDENdict_ChunkRunning[scheme]['BURDEN'][thisbreakname][thiscountry_salbLUT,kk] = BURDENdict_ChunkRunning[scheme]['BURDEN'][thisbreakname][thiscountry_salbLUT,kk] + BURDENsum
                             #xxx12 = xxx12 + (r.Sys_time() - xxx12a)                            
 
@@ -753,7 +753,9 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         ####################################
         
         # run check that there are no missing values in this f chunk
-        if sum(sum(sum(np.isnan(f_chunk))))>0:
+        #if sum(sum(sum(np.isnan(f_chunk))))>0:
+        if np.isnan(f_chunk).any()==True:
+        
             print "WARNING!! found "+str(sum(np.isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
             return(-9999)
 

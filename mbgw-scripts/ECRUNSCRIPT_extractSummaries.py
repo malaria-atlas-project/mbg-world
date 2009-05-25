@@ -31,13 +31,6 @@ if sys.argv[7] == 'False' : BURDEN=False
 if sys.argv[8] == 'False' : PERPIXEL=False
 if sys.argv[9] == 'False' : PERCOUNTRY=False
 
-# import libraries
-from map_utils import checkAndBuildPaths
-from extract_PYlib import *
-from boto_PYlib import *
-import os
-from extract_params import *
-
 S=S3() # initialise key object
 
 
