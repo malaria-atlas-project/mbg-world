@@ -136,7 +136,7 @@ if (PERCOUNTRY==True):
     failCount = 0
     while failCount<=3:
         try:
-            S.uploadDirectoryAsBucket('misc',uniqueSalb_path.rpartition('/')[0],uploadConstituentFiles=True,overwriteContent=True)
+            S.uploadDirectoryAsBucket(examineSalbFolder,uniqueSalb_path.rpartition('/')[0],uploadConstituentFiles=True,overwriteContent=True)
             break
         except RuntimeError:
             failCount+=1 
