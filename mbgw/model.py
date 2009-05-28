@@ -21,7 +21,7 @@ from generic_mbg import *
 
 
 
-__all__ = ['make_model', 'metadata_keys', 'f_name', 'nugget_name', 'f_has_nugget', 'postproc','x_name','diag_safe','non_cov_columns']
+__all__ = ['make_model']
 
 continent = 'Africa'
 with_stukel = False
@@ -257,21 +257,4 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
     for v in covariate_dict.iteritems():
         out[v[0]] = v[1][0]
     return out
-
-n_facs = 1000
-def postproc(x=None, lo_age=None, up_age=None, two_ten_facs=two_ten_factors(n_facs)):
-    if lo_age is not None:
-        facs = age_corr_factors(lo_age, up_age, n_facs)
-        def postproc_(x, lo_age=lo_age, up_age=up_age, facs=facs):
-            return pm.flib.invlogit(x) * facs[:,np.random.randint(n_facs)]
-        return postproc_
-    else:
-        return invlogit(x) * two_ten_facs[np.random.randint(n_facs)]
     
-metadata_keys = ['ti','fi','ui','with_stukel','chunk','disttol','ttol']
-f_name = 'eps_p_f'
-nugget_name = 'V'
-f_has_nugget = True
-x_name = 'data_mesh'
-diag_safe = True
-non_cov_columns = {'lo_age': 'int', 'up_age': 'int'}
