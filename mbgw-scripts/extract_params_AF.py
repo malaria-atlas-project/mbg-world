@@ -36,10 +36,11 @@ lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+_AF.hdf5"
 #lim5kmbnry_path="/home/pwg/mbg-world/datafiles/auxiliary_data/lim5kmbnry-e_y-x+_ken.hdf5"
  
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
-uniqueSalb_path='/mnt/misc/uniqueSalb_af.txt'
-uniqueSalbwholecountries_path='/mnt/misc/uniqueSalbwholecountries_af.txt'
-pixelN_path='/mnt/misc/pixelN_af.txt'
-pixelNwholecountries_path='/mnt/misc/pixelNwholecountries_af.txt'
+examineSalbFolder='examinesalb'
+uniqueSalb_path='/mnt/examineSalb/uniqueSalb_af.txt'
+uniqueSalbwholecountries_path='/mnt/examineSalb/uniqueSalbwholecountries_af.txt'
+pixelN_path='/mnt/examineSalb/pixelN_af.txt'
+pixelNwholecountries_path='/mnt/examineSalb/pixelNwholecountries_af.txt'
  
 # class definition dictionaries
 breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}

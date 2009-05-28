@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-51b72938 extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-3d27bd54 extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -20,8 +20,8 @@ import time
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
-NINSTANCES = 1
-MAXJOBSPERINSTANCE = 1
+NINSTANCES = 20
+MAXJOBSPERINSTANCE = 3
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
@@ -38,16 +38,17 @@ NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
 
 ####################################TEMP
-NJOBS = 1
+NJOBS = 180
+NRELS = 180
 ####################################TEMP
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 2
+NPER  = 20
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
-NTOTALREL = 2
+#NTOTALREL = 2
 ####################################TEMP
 
 # define files to upload to instance (from local machine) before any execution
@@ -61,7 +62,7 @@ CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
-returns = map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+returns = map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=True,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
 
 print 'total run time for '+str(NJOBS)+' jobs with NPER='+str(NPER)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)

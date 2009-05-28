@@ -43,3 +43,4 @@ git clone git://github.com/malaria-atlas-project/pr-incidence.git
 cd pr-incidence
 python setup.py install
 cd
+
