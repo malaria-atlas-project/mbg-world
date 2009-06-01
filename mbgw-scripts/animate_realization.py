@@ -18,7 +18,7 @@ def chunk_to_str(c):
     else:
         yr_str = '%i years'%yrs
         
-    mos = int(rem(c,12))
+    mos = int(remainder(c,12))
     if mos==0:
         mo_str = ''
     elif mos==1:
@@ -38,7 +38,8 @@ moname = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 
 
 fname = sys.argv[1]
 # fname = 'test_sim.hdf5'
-t_chunk = 12
+# t_chunk = 12
+t_chunk = 1
 t_start = 0
 t_end = -1
 
@@ -49,7 +50,7 @@ r = hf.root.realizations
 V = hf.root.PyMCsamples.cols.V[:]
 def time_to_str(i):
     t = hf.root.t_axis[i] + 2009
-    mo = int(rem(t,1)*12)
+    mo = int(remainder(t,1)*12)
     yr = int(t)
     return moname[mo] + ' %i'%yr
 

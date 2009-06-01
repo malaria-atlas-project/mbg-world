@@ -25,7 +25,7 @@ def chunk_to_str(c):
     else:
         yr_str = '%i years'%yrs
         
-    mos = int(rem(c,12))
+    mos = int(remainder(c,12))
     if mos==0:
         mo_str = ''
     elif mos==1:
@@ -62,7 +62,7 @@ def targ(inner,continent,fname,missing_val,t_start,t_end,t_chunk,chunk_str):
     sh = sl.shape
     
     t = hf.root.t_axis[inner] + 2009
-    mo = int(round(rem(t*12,12)))
+    mo = int(round(remainder(t*12,12)))
     yr = int(t)
     time_str = moname[mo] + ' %i'%yr
     
