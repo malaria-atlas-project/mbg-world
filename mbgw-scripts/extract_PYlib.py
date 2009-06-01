@@ -744,7 +744,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         subsetmonth=0 
         for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
             f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
-            subsetmonth=subsetmonth+=1
+            subsetmonth=subsetmonth+1
         f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
 
         ########TEMP###########
