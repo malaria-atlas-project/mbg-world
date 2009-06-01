@@ -46,8 +46,8 @@ print "totalN: "+str(totalN)
 print "startRel: "+str(startRel)
 print "endRel: "+str(endRel)
 print "BURDEN: "+str(BURDEN) 
-print "PERPIXEL: "+str(BURDEN) 
-print "PERCOUNTRY: "+str(BURDEN) 
+print "PERPIXEL: "+str(PERPIXEL) 
+print "PERCOUNTRY: "+str(PERCOUNTRY) 
 
 # download this realisation file from S3 storage
 print '\nDownloading realisation from S3..'
