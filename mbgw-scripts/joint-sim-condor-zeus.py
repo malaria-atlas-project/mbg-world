@@ -19,8 +19,8 @@ burn = int(sys.argv[6])
 memmax = float(sys.argv[7])
 thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
-nmonths = 288 
-start_year = 1985
+nmonths = 12 
+start_year = 2007
 mask_name = 'landSea-e'
 relp=1e-3
 
@@ -31,7 +31,7 @@ my_start = indices[i]
 my_end = indices[i+1]
 
 
-ofdir = '/share/scratch/malaria-atlas-project/MAP-outputs/'
+ofdir = '.'
 infile_base = fname.split('/')[-1].replace('.hdf5','')
 outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 outfile_name = ofdir+outfile_base
@@ -52,12 +52,4 @@ print 'Thinning: %i'%thinning
 
 print 'Creating realizations'
 create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
-print 'Done'
-
-print 'Uploading to boto'
-S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
-S.uploadFileToBucket(infile_base.lower(),outfile_name,False,True)
-print 'Done'
-print 'Removing hdf5 archive locally'
-os.remove(outfile_name)
 print 'Done'
