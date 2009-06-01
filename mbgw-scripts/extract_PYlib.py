@@ -18,6 +18,9 @@ from math import sqrt
 from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
+from IPython.Debugger import Pdb
+
+pdb = Pdb(color_scheme='Linux')
 
 rowsPerChunk=1
 
@@ -245,6 +248,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
         for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
             f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        pdb.set_trace()
         f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
 
         ########TEMP###########

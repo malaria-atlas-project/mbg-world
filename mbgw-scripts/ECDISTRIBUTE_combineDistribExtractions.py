@@ -1,3 +1,6 @@
+# example command line:
+# run ECDISTRIBUTE_combineDistribExtractions r-095f3f60 extract_params_AF.py
+
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
 import sys
