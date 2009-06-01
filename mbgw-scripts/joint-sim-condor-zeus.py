@@ -21,7 +21,7 @@ thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 nmonths = 12 
 start_year = 2007
-mask_name = 'landSea-e'
+mask_name = 'st_mask5km-e_y-x+'
 relp=1e-3
 
 hf = tb.openFile(fname)
@@ -33,7 +33,7 @@ my_end = indices[i+1]
 
 ofdir = '.'
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_base = 'realizations_mem_%i_%s-nokrige.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
