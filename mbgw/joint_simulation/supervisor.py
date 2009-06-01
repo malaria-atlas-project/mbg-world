@@ -279,7 +279,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     print '\tKriging.'
     t1 = time.time()  
     for i in xrange(grid_shape[2]-1,-1,-1):    
-        row += out_arr[real_index,:,:,i]
+        row = out_arr[real_index,:,:,i]
 
         # NaN  the oceans to save storage
         row[np.where(1-mask)] = missing_val
