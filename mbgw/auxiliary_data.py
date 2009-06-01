@@ -2,7 +2,12 @@ import tables
 import os, sys
 import mbgw
 
-__root__ = mbgw.__path__[0] + '/../datafiles/auxiliary_data'
+
+try:
+    __root__ = mbgw.__path__[0] + '/../datafiles/auxiliary_data'
+    os.listdir(__root__)
+except:
+    __root__ = '/datafiles/auxiliary_data'
 
 class delayed_hdf(object):
     def __init__(self, fname):
