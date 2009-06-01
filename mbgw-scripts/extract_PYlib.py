@@ -734,6 +734,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         MCMCrel = startRel+ii 
 
         print "realisation "+str(FileStartRel+MCMCrel)+" of set "+str(FileStartRel)+" to "+str(FileEndRel)+" ("+str(n_realizations)+" realisations)"    
+#        print "realisation "+str(MCMCrel)+" of set "+str(startRel)+" to "+str(endRel)+" ("+str(n_realizations)+" realisations)" 
 
         #xxx3a = r.Sys_time() 
         # Pull out parasite rate chunk (i.e. import n months of block)    
