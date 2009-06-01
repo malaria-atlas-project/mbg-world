@@ -18,9 +18,8 @@ from math import sqrt
 from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
-from IPython.Debugger import Pdb
-
-pdb = Pdb(color_scheme='Linux')
+#from IPython.Debugger import Pdb
+#pdb = Pdb(color_scheme='Linux')
 
 rowsPerChunk=1
 
@@ -137,7 +136,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     n_rows=len(hr.lat_axis)
     n_cols=len(hr.lon_axis)
     N_facs = int(1e5)
-    N_years = (slices[2].stop - slices[2].start)/12
+    N_years = (slices[2].stop - slices[2].start)/12.
     
     # define start and end rows for each iteation of loop (taking into account variable width of last remaining chunk)
     rowList=np.arange(0,n_rows)
@@ -248,7 +247,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
         for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
             f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
-        pdb.set_trace()
+        #pdb.set_trace()
         f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
 
         ########TEMP###########
@@ -675,7 +674,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
     n_rows=len(hr.lat_axis)
     n_cols=len(hr.lon_axis)
     N_facs = int(1e5)
-    N_years = (slices[2].stop - slices[2].start)/12
+    N_years = (slices[2].stop - slices[2].start)/12.
 
     # Get nugget variance and age-correction factors    
     V = hr.PyMCsamples.col('V')[:]    
@@ -754,7 +753,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         ########TEMP###########
         #set missing vlaues in f block to 0
         #print(sum(np.isnan(f_chunk)))
-        f_chunk[np.isnan(f_chunk)]=0
+        #f_chunk[np.isnan(f_chunk)]=0
         #print(sum(np.isnan(f_chunk)))
         ####################################
         
