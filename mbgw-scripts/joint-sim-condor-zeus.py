@@ -33,7 +33,7 @@ my_end = indices[i+1]
 
 ofdir = '.'
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_base = 'realizations_mem_%i_%s-nokrige.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_base = 'nokrige.hdf5'
 outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
