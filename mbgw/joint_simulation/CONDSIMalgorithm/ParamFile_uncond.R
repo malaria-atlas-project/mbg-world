@@ -9,17 +9,9 @@
     THINY<-8
     THINT<-4
     
-    
-        ColDepth<-1   # how many columns of previously simulated data will be used to predict subsequent column
-    MonthDepth<-1 # how many months of previously simulated data will be used to predict subsequent months 
-    THINX<-1
-    THINY<-1
-    THINT<-1
-    
 
  ## are we going to simulate subsets of each column? non null value specifies length of each subset
-   SUBSETCOL<-c()     
-    # SUBSETCOL<-100     
+    SUBSETCOL<-100     
 
  ## do we want to print row/col progress, warnings etc
     VERBOSE<-0 #0 = no messages; 1= some messages; 2=loads of messages
