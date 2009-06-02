@@ -1,11 +1,12 @@
 ########################################################################################################## 
-plotMap<-function(inputmatrix,titsuf="x",NODATA=c()){
+plotMap<-function(inputmatrix,titsuf="x",NODATA=c(),flipVertical=FALSE){
   if(class(inputmatrix)!="matrix"){
     print(paste("WARNING!! input to PlotMap is not a matrix (",class(inputmatrix),") - will not be plotted",sep=""))
     return()
   }
+  if(flipVertical) inputmatrix<-flipVertical(inputmatrix)
   if(class(NODATA)!="NULL") inputmatrix[inputmatrix==NODATA]<-NA
-  x11();image(t(inputmatrix[nrow(inputmatrix):1,]),main=paste("month",titsuf))
+  image(t(inputmatrix[nrow(inputmatrix):1,]),main=paste("month",titsuf))
 }
 ########################################################################################################## 
 plotmonth<-function(grid,dummy=c(),dummy2=c()){
