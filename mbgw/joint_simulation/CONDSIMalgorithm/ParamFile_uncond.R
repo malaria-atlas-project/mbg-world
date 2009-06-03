@@ -5,9 +5,9 @@
  ## define search parameters
     ColDepth<-30   # how many columns of previously simulated data will be used to predict subsequent column
     MonthDepth<-24 # how many months of previously simulated data will be used to predict subsequent months 
-    THINX<-8
-    THINY<-8
-    THINT<-4
+    THINX<-1
+    THINY<-1
+    THINT<-1
     
 
  ## are we going to simulate subsets of each column? non null value specifies length of each subset

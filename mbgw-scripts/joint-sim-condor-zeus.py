@@ -31,9 +31,9 @@ my_start = indices[i]
 my_end = indices[i+1]
 
 
-ofdir = '.'
+ofdir = ''
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_base = 'nokrige.hdf5'
+outfile_base = 'nokrige-thick.hdf5'
 outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
