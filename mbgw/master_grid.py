@@ -14,10 +14,15 @@ AM_lims = {'topRow': 1494,
 'leftCol': 2038,
 'rightCol': 3401}
 
-AF_lims = {'topRow': 1000,
-'bottomRow': 2000,
-'leftCol': 3000,
-'rightCol': 4000}
+AF_lims = {'topRow': 1393,
+'bottomRow': 2745,
+'leftCol': 3879,
+'rightCol': 5628}
+
+#AF_lims = {'topRow': 1536,
+#'bottomRow': 1776,
+#'leftCol': 5000,
+#'rightCol': 5250}
 
 AS_lims = {'topRow': 1018,
 'bottomRow': 2512,
@@ -30,7 +35,8 @@ KE_lims = {'topRow' : 789,
 'leftCol' : 2999,
 'rightCol' : 3203}
 
-rad_to_km = 6378.1/pi
+
+rad_to_km = 6378.1
 km_to_rad = 1./rad_to_km
 rad_to_deg = 180./pi
 deg_to_rad = 1./rad_to_deg

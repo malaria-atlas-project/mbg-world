@@ -7,6 +7,12 @@ calculateDistanceMatrices<-function(PixelLocationObj){
 
 if(VERBOSE>=1)print("Populating distance matrices")
 
+
+#print ("PixelLocationObj$xd from calculateDistanceMatrices 1:")
+#print (PixelLocationObj$xd)
+
+
+
  ## define vectors
     xp<-PixelLocationObj$xp
     yp<-PixelLocationObj$yp
@@ -16,7 +22,18 @@ if(VERBOSE>=1)print("Populating distance matrices")
     td<-PixelLocationObj$td
 
  ## convert pixel positions first to lat (absolute location because DDs change with lat) and long (relative location) , then to radians
+#print ("CELLSIZE from calculateDistanceMatrices 1:")
+#print (CELLSIZE)
+
+#print ("PixelLocationObj$xd from calculateDistanceMatrices 1:")
+#print (PixelLocationObj$xd)
+
+
     xd<-xd * CELLSIZE * (pi/180) 
+
+#print ("xd from calculateDistanceMatrices 2:")
+#print (xd)
+
     yd<-(TOPEDGELAT - (yd * CELLSIZE) + (0.5*CELLSIZE)) * (pi/180)
 #    yd<-yd * CELLSIZE * (pi/180) 
     xp<-xp * CELLSIZE * (pi/180)
@@ -28,11 +45,17 @@ if(VERBOSE>=1)print("Populating distance matrices")
 
  ## define number of data and prediciton pixels
     ndata<-length(xd) 
+
+#print("ndata:")
+#print(ndata)
+
     npred<-length(xp) 
      
  ## populate spatial distance matrices   
 
-  # populate D-D spatial distance matrix DtoD.iso (input/output in radians, ouptut then converted to kms)      
+#print("test1")
+#print("test1.1")
+  # populate D-D spatial distance matrix DtoD.iso 
     geographic.list<-.Fortran("geographic",      
                   D=as.double(rep(0,ndata^2)),      
                   x=as.double(cbind(xd,yd)),      
@@ -40,9 +63,9 @@ if(VERBOSE>=1)print("Populating distance matrices")
                   nx=as.integer(ndata),      
                   ny=as.integer(ndata),      
                   symm=as.logical(TRUE))      
-    DtoD.iso<-geographic.list$D*6378.137 # convert from radians to kms using Earth's radius      
+    DtoD.iso<-geographic.list$D
     if(VERBOSE>=1) print("done geographic DtoD")
-  
+#print("test2")  
   # populate D-D bearing matrix DtoD.a               
     euc.angle.list<-.Fortran("euc_angle",      
                   theta=as.double(rep(0,ndata^2)),      
@@ -53,7 +76,7 @@ if(VERBOSE>=1)print("Populating distance matrices")
                   symm=as.logical(TRUE))      
     DtoD.a<-euc.angle.list$theta   
     if(VERBOSE>=1) print("done bearing DtoD")
-        
+#print("test3")        
   # calculate resulting D-D anisotropic great-circle distance matrix slagDtoD     
     dist.to.aniso.list<-.Fortran("dist_to_aniso",         
                   out=as.double(rep(0,ndata^2)),         
@@ -68,7 +91,7 @@ if(VERBOSE>=1)print("Populating distance matrices")
     if(VERBOSE>=1) print("done aniso DtoD")
     rm(DtoD.iso)
     rm(DtoD.a)
-
+print("test3")
   # populate D-P spatial distance matrix/vector DtoP.iso      
     geographic.list<-.Fortran("geographic",      
                   D=as.double(rep(0,ndata*npred)),      
@@ -77,9 +100,9 @@ if(VERBOSE>=1)print("Populating distance matrices")
                   nx=as.integer(ndata),      
                   ny=as.integer(npred),      
                   symm=as.logical(FALSE))      
-    DtoP.iso<-geographic.list$D*6378.137  # convert from radians to kms using Earth's radius           
+    DtoP.iso<-geographic.list$D
     if(VERBOSE>=1) print("done geographic DtoP")
-
+#print("test4")
   # populate D-P bearing matrix DtoP.a     
     euc.angle.list<-.Fortran("euc_angle",      
                   theta=as.double(rep(0,ndata*npred)),      
@@ -90,7 +113,7 @@ if(VERBOSE>=1)print("Populating distance matrices")
                   symm=as.logical(FALSE))      
     DtoP.a<-euc.angle.list$theta      
     if(VERBOSE>=1) print("done bearing DtoP")
-
+#print("test5")
   # calculate resulting D-P anisotropic great-circle distance matrix slagDtoP 
     dist.to.aniso.list<-.Fortran("dist_to_aniso",
                   out=as.double(rep(0,ndata*npred)),
@@ -105,7 +128,7 @@ if(VERBOSE>=1)print("Populating distance matrices")
     if(VERBOSE>=1) print("done aniso DtoP")
     rm(DtoP.iso)
     rm(DtoP.a)
-
+#print("test6")
   # populate P-P spatial distance matrix PtoP.iso      
     geographic.list<-.Fortran("geographic",      
                   D=as.double(rep(0,npred*npred)),      
@@ -114,9 +137,9 @@ if(VERBOSE>=1)print("Populating distance matrices")
                   nx=as.integer(npred),      
                   ny=as.integer(npred),      
                   symm=as.logical(TRUE))      
-    PtoP.iso<-geographic.list$D*6378.137 # convert from radians to kms using Earth's radius      
+    PtoP.iso<-geographic.list$D
     if(VERBOSE>=1) print("done geographic PtoP")
-  
+#print("test7")  
   # populate P-P bearing matrix PtoP.a               
     euc.angle.list<-.Fortran("euc_angle",      
                   theta=as.double(rep(0,npred*npred)),      

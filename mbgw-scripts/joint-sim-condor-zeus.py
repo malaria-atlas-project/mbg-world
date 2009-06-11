@@ -19,10 +19,13 @@ burn = int(sys.argv[6])
 memmax = float(sys.argv[7])
 thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
-nmonths = 12 
-start_year = 2007
+nmonths = int(sys.argv[9])
+start_year = 2000
 mask_name = 'st_mask5km-e_y-x+'
 relp=1e-3
+
+paramfileINDEX = int(sys.argv[10])
+NinThinnedBlock = int(sys.argv[11])
 
 hf = tb.openFile(fname)
 n_total = len(hf.root.chain0.PyMCsamples)
@@ -33,7 +36,7 @@ my_end = indices[i+1]
 
 ofdir = ''
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_base = 'nokrige-thick.hdf5'
+outfile_base = 'nokrige-thick_'+str(paramfileINDEX)+'.hdf5'
 outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
@@ -51,5 +54,5 @@ print 'memmax: %i'%memmax
 print 'Thinning: %i'%thinning
 
 print 'Creating realizations'
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock)
 print 'Done'
