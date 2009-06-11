@@ -12,6 +12,7 @@ from fast_krige import *
 import st_cov_fun
 from parse_and_check import *
 import time
+import copy as cp
 from mbgw.master_grid import *
 from mbgw import auxiliary_data
 import os
@@ -23,13 +24,16 @@ os.chdir(r_path)
 from rpy import r
 r.source("CONDSIMpreloop.R")
 r.source("CONDSIMmonthloop.R")
+r.source('/home/pwg/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/MVRNORM.R')
+mvrnormPY=r['MVRNORM']
+
 os.chdir(curpath)
 import scipy
 from scipy import ndimage, mgrid
 from map_utils import grid_convert
+from IPython.Debugger import Pdb
 
-
-__all__ = ['create_realization', 'create_many_realizations','reduce_realizations']
+__all__ = ['create_realization', 'create_many_realizations','reduce_realizations','getThinnedBlockXYTZlists','array3d_2_XYTZlist','gridParams_2_XYTmarginallists','predictPointsFromBlock']
 
 def get_covariate_submesh(name, grid_lims):
     """
@@ -52,10 +56,12 @@ def get_covariate_submesh(name, grid_lims):
 
     return out
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
+    
+    
     
     # Establish grids
     xllc_here = (xllc + cellsize * (grid_lims['leftCol']-1))*deg_to_rad
@@ -78,19 +84,24 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
 
     # Check that all data are in bounds
     data_locs = meta.logp_mesh[:]    
-    bad = []
     in_mesh = np.ones(data_locs.shape[0],dtype=bool)
-    for l in data_locs:
+    for i in xrange(len(data_locs)):
+        l = data_locs[i]
         for j in xrange(3):
             if l[j] <= grids[j][0] or l[j] >= grids[j][1]:
                 in_mesh[i]=False
-                bad.append(l)
-    if len(bad) > 0:
-        bad = np.array(bad)
-        bad[:,0] *= rad_to_deg
-        bad[:,1] *= rad_to_deg
-        bad[:,2] += 2009
-        print 'Warning: The following data locations [lon,lat,t] are out of bounds: \n'+str(bad)
+
+    print '****',np.sum(in_mesh)
+    #from pylab import plot,clf,show
+    
+    #print np.asarray(grids)
+    
+    #plot(data_locs[:,0], data_locs[:,1], 'k.')
+    #dl = data_locs[np.where((data_locs[:,-1]<=grids[-1][1])*(data_locs[:,-1]>=grids[-1][0]))]
+    #plot(dl[:,0],dl[:,1],'r.')
+    
+    #plot(grids[0][:2],grids[1][:2],'b.',markersize=16)
+    #show()
 
     # Find the mesh indices closest to the data locations
     data_mesh_indices = np.empty(data_locs.shape, dtype=np.int)
@@ -129,9 +140,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         [new_node.append(node[index]) for index in indices]
     outfile.root._v_attrs.orig_filename = trace._v_file.filename
     
-    data_locs = data_locs[in_mesh]
-    data_mesh_indices = data_mesh_indices[in_mesh]
-    
+
     # Total number of pixels in month.
     npix = grid_shape[0]*grid_shape[1]/thinning**2
     # Maximum number of pixels in tile.
@@ -158,18 +167,19 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
             except KeyError:
                 print 'Warning, no column named %s'%key+'_coef'
                 continue
-            mean_ondata += getattr(meta, key)[:][in_mesh] * this_coef
+            mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
             this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
             covariate_mesh += this_pred_covariate        
 
         # Pull covariance information out of trace
         this_C = trace.group0.C[indices[i]]
         this_C = pm.gp.NearlyFullRankCovariance(this_C.eval_fun, relative_precision=relp, **this_C.params)
-        
 
+        #data_vals = trace.PyMCsamples[i]['f'][in_mesh]
+        #create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices)
 
-        data_vals = trace.PyMCsamples[i]['f'][in_mesh]
-        create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices)
+        data_vals = trace.PyMCsamples[i]['f'][:]
+        create_realization(outfile.root.realizations, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,paramfileINDEX,NinThinnedBlock)
         outfile.flush()
     outfile.close()
 
@@ -177,7 +187,8 @@ def normalize_for_mapcoords(arr, max):
     arr /= arr.max()
     arr *= max
 
-def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
+# def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
+def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,paramfileINDEX,NinThinnedBlock):
 
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
@@ -218,7 +229,7 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     Cp = C.params
     
     # Prepare input dictionaries
-    covParamObj = {'Scale': Cp['scale'][0]*rad_to_km,
+    covParamObj = {'Scale': Cp['scale'][0],
                     'amp': Cp['amp'][0], 
                     'inc': Cp['inc'][0], 
                     'ecc': Cp['ecc'][0], 
@@ -232,9 +243,14 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
     
     # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
+    t1 = time.time()
     os.chdir(r_path)
-    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max())
-    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    #preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max())
+    #tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,paramfileINDEX)
+    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+
     preLoopClassTree, junk = parse_tree(tree_reader)
     preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
     
@@ -243,27 +259,68 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     OutMATClassTree, junk = parse_tree(tree_reader)
     OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
     os.chdir(curpath)
-    
+    preLoop_time = time.time()-t1
+    print "preLoop_time :"+str(preLoop_time)
+        
     # Create and store unconditional realizations
     print '\tGenerating unconditional realizations.'
     t1 = time.time()
     for i in xrange(grid_shape[2]):
+        print 'On month :'+str(i)
+        #print 'OutMATlist:'
+        #print OutMATlist
         os.chdir(r_path)
-        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max())
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
+        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
         os.chdir(curpath)
         OutMATlist= monthObject['OutMATlist']
         MonthGrid = monthObject['MonthGrid']
         out_arr[real_index,:,:,i] = grid_convert(MonthGrid,'y-x+','x+y+')[:grid_shape[0], :grid_shape[1]]
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
+    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
     
     # delete unneeded R products
     del OutMATlist, preLoopObj, MonthGrid, monthObject
     
     # Figure out pdata
     pdata = np.empty(tdata.shape)
-    for i in xrange(len(pdata)):
-        pdata[i] = out_arr[(real_index,) + tuple(data_mesh_indices[i,:])]
+    for i in xrange(len(where_in)):
+        pdata[where_in[i]] = out_arr[(real_index,) + tuple(data_mesh_indices[i,:])]
+
+    # jointly simulate at data points conditional on block    
+
+    ## first get XYZT list of locations of a regular thinned sample from block
+    array3d = out_arr[real_index,:,:,:]
+    ThinnedBlockXYTZlists = getThinnedBlockXYTZlists (array3d,grids,NinThinnedBlock)
+    xyt_in = ThinnedBlockXYTZlists['xyt_in']
+    z_in = ThinnedBlockXYTZlists['z_in']
+
+    # get locations of data outside block (referenced by grid location)
+    XYT_out_gridlocs = data_mesh_indices[where_out]
+    
+    ## convert these grid lcoations into actual position in radians and months
+    coordsDict = gridParams_2_XYTmarginallists(grids)
+    xcoords = coordsDict['xcoords']
+    ycoords = coordsDict['ycoords']
+    tcoords = coordsDict['tcoords']
+
+    x_out = xcoords[XYT_out_gridlocs[:,0]]
+    y_out = ycoords[XYT_out_gridlocs[:,1]]
+    t_out = tcoords[XYT_out_gridlocs[:,2]]
+   
+    xyt_out = np.vstack((x_out,y_out,t_out)).T
+
+    # now we have locations and values of thinned sample from the block, and locations we want to predict at outside the block,go ahead and 
+    # get simulated values of the latter, conditonal on the former
+
+    print '\tsimulating over '+str(len(xyt_out[:,0]))+' locations outside block using thinned block sample of '+str(len(z_in))+' points'
+    t1=time.time()
+    z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straighfromtrace)
+    print '\ttime for simulation: '+str(time.time()-t1)
+   
+    # assign these values to pdata    
+    pdata[where_out] = z_out
     
     # Bring in data.
     print '\tKriging to bring in data.'    
@@ -274,24 +331,13 @@ def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, td
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
     
-    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
     t1 = time.time()  
     for i in xrange(grid_shape[2]-1,-1,-1):    
-        thin_row.fill(0.)
-        
-        thin_x[:,:,2] = axes[2][i]
-        x[:,:,2] = axes[2][i]
-        
-        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)                
-        row = ndimage.map_coordinates(thin_row, mapgrid)
-        
-        row += covariate_mesh
-        row += M(x)
-        row += out_arr[real_index,:,:,i]
+        row = out_arr[real_index,:,:,i]
 
         # NaN  the oceans to save storage
-        row[np.where(1-mask)] = missing_val
+        #row[np.where(1-mask)] = missing_val
         
         out_arr[real_index,:,:,i] = row          
     t2 = time.time()
@@ -338,3 +384,172 @@ def reduce_realizations(filename, reduce_fns, slices, a_lo, a_hi, n_per):
                 products[f] = f(chunk, product_sofar)
     
     return products
+    
+def getThinnedBlockXYTZlists(array3d,grids,NinThinnedBlock):
+
+    # extract grid parameters for ease
+    ncols = grids[0][2]
+    nrows = grids[1][2]
+    nmonths = grids[2][2]
+
+    # do dirty calculation to approximately evenly spread sample of size NinThinnedBlock accross ST unconditioned block
+    Nmonthstosample = int(np.ceil((nmonths/12)*4))
+    Tthinrate=nmonths/Nmonthstosample
+    Npermonth = NinThinnedBlock/Nmonthstosample
+    XYthinRate = int(np.ceil(np.sqrt(nrows*ncols)/np.sqrt(Npermonth)))
+    data_footprint=(slice(0,nrows,XYthinRate),slice(0,ncols,XYthinRate),slice(0,nmonths,Tthinrate))
+
+    # extract unconditoned values from block at these locations
+    z_cube = array3d[data_footprint]
+    
+    # now need to define correposnding long,lat, and time values for these locations
+    
+    ## first make cubes of lon,lat,time corresponding to z_cube
+    ### get grid's marginal coordinates
+    coordsDict = gridParams_2_XYTmarginallists(grids)
+    xcoords = coordsDict['xcoords']
+    ycoords = coordsDict['ycoords']
+    tcoords = coordsDict['tcoords']
+
+    ### thinned vectors
+    xcoords = xcoords[slice(0,nrows,XYthinRate)]
+    ycoords = ycoords[slice(0,ncols,XYthinRate)]
+    tcoords = tcoords[slice(0,nmonths,Tthinrate)]
+
+    ### get XYT and Z lists from this extracted block
+    XYTZdict = array3d_2_XYTZlist(z_cube,xcoords,ycoords,tcoords)
+    
+    return(XYTZdict)
+
+def array3d_2_XYTZlist(z_cube,xcoords,ycoords,tcoords):
+
+    '''
+    array as a 3d numpy array
+    xcoords,ycoords,tcoords are 1d numpy arrays containing coordinate positions of marginal axes
+    (these can be obtained by a call to gridParams_2_XYTmarginallists)
+    '''
+    
+    ### vectors converted to cubes
+    xarray = np.vstack(((xcoords,))*len(ycoords))
+    yarray = np.vstack(((ycoords,))*len(xcoords)).T
+    x_cube = np.dstack(((xarray,))*len(tcoords))
+    y_cube = np.dstack(((yarray,))*len(tcoords))
+    t_cube = np.ones(np.product((len(ycoords),len(xcoords),len(tcoords)))).reshape((len(ycoords),len(xcoords),len(tcoords)))
+    t_cube = t_cube*tcoords
+
+    ### check shapes of x,y,t,and z cubes are identical
+    if (np.shape(x_cube)!=np.shape(z_cube)): raise ValueError, 'shape of x_cube ('+str(np.shape(x_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
+    if (np.shape(y_cube)!=np.shape(z_cube)): raise ValueError, 'shape of y_cube ('+str(np.shape(y_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
+    if (np.shape(t_cube)!=np.shape(z_cube)): raise ValueError, 'shape of t_cube ('+str(np.shape(t_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
+
+    # collapse x,y,t,and z cubes to 1d arrays  
+    z_in = np.ravel(z_cube)
+    x_in = np.ravel(x_cube)
+    y_in = np.ravel(y_cube)
+    t_in = np.ravel(t_cube)
+    xyt_in  = np.vstack((y_in,x_in,t_in)).T
+    
+    return({"xyt_in":xyt_in,"z_in":z_in})
+
+def gridParams_2_XYTmarginallists(grids):
+
+    '''
+    grids is list of three tuples: [(min lon,max lon,n lon),(min lat,max lat,n lat),(min t,max t,n t)]
+    returns coordinate values in same units for marginal x,y,t axes (dictionary of three 1-d arrays)
+    '''
+    
+    # extract grid parameters for ease
+    ncols = grids[0][2]
+    nrows = grids[1][2]
+    nmonths = grids[2][2]
+    
+    cellsize=((grids[0][1]-grids[0][0])/(grids[0][2]-1))
+    tsize=((grids[2][1]-grids[2][0])/(grids[2][2]-1))
+    xmin_centroid = grids[0][0]
+    ymax_centroid = grids[1][1]
+    tmin_centroid = grids[2][0]
+
+    # full vectors of grid locations
+    xcoords = xmin_centroid + (np.arange(ncols) * cellsize)    
+    ycoords = ymax_centroid - (np.arange(nrows) * cellsize) 
+    tcoords = tmin_centroid + (np.arange(nmonths)*tsize)
+    
+    return({"xcoords":xcoords,"ycoords":ycoords,"tcoords":tcoords})
+
+def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,VERBOSE=False):
+
+    '''
+    params to pass:
+    XYT_in    : (2d numpy array)   three column array housing absolute x,y,t locations of thinned sample from unconditoned block
+    XYT_out   : (2d numpy array)   as above but for data locations we are predicting to outside of block
+    z_in      : (1d numpy array)   values of unconditoied block at XYZ_in locations
+    C         : (method)           covariance function method obtained from mcmc output hdf5 file (hf.root.group0.C)
+
+    returns:
+    z_out     : (1d numpy array)    vector of simulated values
+    ''' 
+
+    # define and check lengths
+    n_in = len(XYT_in[:,0])
+    if (len(z_in)!=n_in): raise ValueError, 'Length of XYT_in ('+str(len(XYT_in[:,0]))+') does not match length of z_in ('+str(len(z_in))+')'
+
+    n_out = len(XYT_out[:,0])
+    MaxToSim=float(n_in)
+
+    # define seperate x,y,t vectors for ease
+    x_in = XYT_in[:,0]
+    y_in = XYT_in[:,1]
+    t_in = XYT_in[:,2]
+
+    x_out = XYT_out[:,0]
+    y_out = XYT_out[:,1]
+    t_out = XYT_out[:,2]
+
+    # define zero-mean vectors
+    mean_in = np.zeros(n_in)
+    mean_out = np.zeros(n_out)
+    
+    # initialise vector for output values
+    z_out = np.ones(n_out)*-9999
+
+    ## populate full covariance matrices 
+    tstart=time.time()
+    t1=time.time()
+    C_out_out = C((np.vstack((x_out,y_out,t_out)).T),(np.vstack((x_out,y_out,t_out)).T))
+    tfor_C_out_out = time.time()-t1
+    if VERBOSE: print '\ttfor_C_out_out ('+str(len(x_out))+'x'+str(len(x_out))+' to '+str(len(x_out))+'x'+str(len(x_out))+') was : '+str(tfor_C_out_out)
+
+    t1=time.time()
+    C_in_out = C(np.vstack((x_in,y_in,t_in)).T,np.vstack((x_out,y_out,t_out)).T)
+    tfor_C_in_out = time.time()-t1
+    if VERBOSE: print '\ttfor_C_in_out ('+str(len(x_in))+'x'+str(len(x_in))+' to '+str(len(x_out))+'x'+str(len(x_out))+') was : '+str(tfor_C_in_out)
+
+    t1=time.time()
+    C_in_in = C(np.vstack((x_in,y_in,t_in)).T,np.vstack((x_in,y_in,t_in)).T)
+    tfor_C_in_in = time.time()-t1
+    if VERBOSE: print '\ttfor_C_in_in ('+str(len(x_in))+'x'+str(len(x_in))+' to '+str(len(x_in))+'x'+str(len(x_in))+') was : '+str(tfor_C_in_in)
+
+    # perform matrix operations
+    t1=time.time()
+    C_in_in.inv=np.linalg.inv(C_in_in)
+    if VERBOSE: print '\ttime for inverting C_in_in (shape:'+str(np.shape(C_in_in))+') was : '+str(time.time()-t1)
+
+    t1=time.time()
+    PostMeanInterim=np.linalg.linalg.dot(C_in_out.T,C_in_in.inv)
+    PostVar=C_out_out - np.linalg.linalg.dot((np.linalg.linalg.dot(C_in_out.T,C_in_in.inv)),C_in_out)
+    PostMean=mean_out + np.linalg.linalg.dot(PostMeanInterim , (z_in-mean_in) )
+    if VERBOSE: print '\ttime for remaining matrix operations was :'+str(time.time()-t1)
+
+    t1=time.time()
+    z_out=mvrnormPY(1,MU=PostMean,COV=PostVar)
+    if VERBOSE: print '\ttime for joint simulation over '+str(len(sim))+' points was :'+str(time.time()-t1)
+
+    if VERBOSE: print 'Total time was '+str(tstart-time.time())
+
+    # check z_out contains no unsimulated values (-9999)
+    if(np.any(z_out==-9999)): raise Warning, str(np.sum(z_out==-9999))+'unpredicted values found in z_out'
+
+    # return 1d array of simulated values    
+    return z_out
+
+

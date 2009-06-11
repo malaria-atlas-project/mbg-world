@@ -3,7 +3,10 @@
 ## License: Creative Commons BY-NC-SA
 ##################################################
 
-CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist,startRel,endRel){
+
+#CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist,startRel,endRel){
+
+CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist, startRel,endRel,paramfileINDEX){
 
     preLoopObj <- as.list(preLoopObj)
     OutMATlist <- as.list(OutMATlist)
@@ -61,8 +64,9 @@ CONDSIMmonthloop<-function(month,preLoopObj,OutMATlist,startRel,endRel){
     }
 
  ## invoke parameter file
-    source("ParamFile_uncond.R")
-
+#    source("ParamFile_uncond.R")
+    source(paste("ParamFile_uncond_",paramfileINDEX,".R",sep=""))
+    
  ## set up grid parameters    
     source("setupGridParams.R")
 
@@ -184,7 +188,8 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
  ## this current month now becomes month t-1, other MonthDepth months all shuffle along
   # loop through matrices in memory and shuffle them all back in time by one (if we are storing any previous months)
     if(MonthDepth>0){ 
-      for(i in MonthDepth:1){ 
+      for(i in MonthDepth:1){
+#print(paste('on i=',i,' MonthDepth=',MonthDepth,' length(OutMATlist)=',length(OutMATlist),sep="")) 
          OutMATlist[[i+1]]<-OutMATlist[[i]]
       }
     }

@@ -23,9 +23,12 @@ makeFullPIxelLocationLists<-function(){
 
   # define lists of positions for all pixels: contemporary month
     xseq<--ColDepth:-1 # only taking ColDepth columns to left of prediction column
-    if(class(THINX)!="NULL"){
-      xseq<-rev(rev(xseq)[seq(1,length(xseq),by=THINX)])   ## this line ensures that, whatever thinning is imlemented, the nearst left column is always included.
-    }  
+    if(class(THINX)=="numeric") xseq<-rev(rev(xseq)[seq(1,length(xseq),by=THINX)])   ## implement thinning at specified level - this line also ensures that, whatever thinning is imlemented, the nearst left column is always included.
+    if(THINX=="EXPO") xseq<-rev(-(1:floor(sqrt(ColDepth)))^2) ## implement thinning by spacing pixels exponentially along width of ColDepth
+
+print("xseq 1:")
+print(xseq)
+ 
     yd<-rep(yseq,length(xseq))
     xd<-as.vector(t(matrix(xseq,nrow=length(xseq),ncol=length(yseq))))
     td<-rep(0,length(xseq)*length(yseq))
@@ -33,6 +36,8 @@ makeFullPIxelLocationLists<-function(){
   # define lists of positions for all pixels: previous months up to MonthDepth
     if(MonthDepth!=0){
       xseq<-c(xseq,0,rev(abs(xseq)))  #taking ColDepth columns to both left and right of prediction column, plus the one directly underneath
+print("xseq 2:")
+print(xseq)
       yd<-c(yd,rep(rep(yseq,length(xseq)),length(tseq)))
       xd<-c(xd,rep(as.vector(t(matrix(xseq,nrow=length(xseq),ncol=length(yseq)))),length(tseq)))
       td<-c(td,as.vector(t(matrix(tseq,nrow=length(tseq),ncol=length(xseq)*length(yseq))))) 
