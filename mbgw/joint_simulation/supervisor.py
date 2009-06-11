@@ -330,17 +330,31 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
 
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
-    
-    print '\tKriging.'
-    t1 = time.time()  
-    for i in xrange(grid_shape[2]-1,-1,-1):    
-        row = out_arr[real_index,:,:,i]
-
-        # NaN  the oceans to save storage
-        #row[np.where(1-mask)] = missing_val
-        
-        out_arr[real_index,:,:,i] = row          
+ 
     t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
+    
+    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
+    print '\tKriging.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]-1,-1,-1):
+        thin_row.fill(0.)
+        
+        thin_x[:,:,2] = axes[2][i]
+        x[:,:,2] = axes[2][i]
+        
+        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
+        row = ndimage.map_coordinates(thin_row, mapgrid)
+        
+        row += covariate_mesh
+        row += M(x)
+        row += out_arr[real_index,:,:,i]
+ 
+        # NaN the oceans to save storage
+        row[np.where(1-mask)] = missing_val
+        
+        out_arr[real_index,:,:,i] = row
+    
     print '\t\tDone in %f'%(t2-t1)        
         
 
