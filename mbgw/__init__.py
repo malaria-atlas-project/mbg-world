@@ -44,7 +44,7 @@ nugget_name = 'V'
 f_has_nugget = True
 x_name = 'data_mesh'
 diag_safe = True
-non_cov_columns = {'lo_age': 'int', 'up_age': 'int'}
+non_cov_columns = {'lo_age': 'int', 'up_age': 'int', 'pos': 'float', 'neg': 'float'}
 
 bins = np.array([0,.01,.05,.1,.2,.4,1])
 
