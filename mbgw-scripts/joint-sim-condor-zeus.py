@@ -20,8 +20,8 @@ memmax = float(sys.argv[7])
 thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 
-nmonths = 12 
-start_year = 2007
+nmonths = 12*3
+start_year = 2005
 
 #nmonths = int(sys.argv[9])
 

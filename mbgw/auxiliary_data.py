@@ -3,9 +3,10 @@ import os, sys
 import mbgw
 
 __root__ = mbgw.__path__[0] + '/../datafiles/auxiliary_data'
+print __root__
 
 class delayed_hdf(object):
-    def __init__(fname):
+    def __init__(self,fname):
         self.fname = fname
         self.initialized = False
         self.hfile = None

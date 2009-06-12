@@ -92,16 +92,19 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
                 in_mesh[i]=False
 
     print '****',np.sum(in_mesh)
-    #from pylab import plot,clf,show
-    
-    #print np.asarray(grids)
-    
-    #plot(data_locs[:,0], data_locs[:,1], 'k.')
-    #dl = data_locs[np.where((data_locs[:,-1]<=grids[-1][1])*(data_locs[:,-1]>=grids[-1][0]))]
-    #plot(dl[:,0],dl[:,1],'r.')
-    
-    #plot(grids[0][:2],grids[1][:2],'b.',markersize=16)
-    #show()
+    # from pylab import plot,clf,show
+    # 
+    # print np.asarray(grids)
+    # 
+    # plot(data_locs[:,0], data_locs[:,1], 'k.')
+    # dl = data_locs[np.where((data_locs[:,-1]<=grids[-1][1])*(data_locs[:,-1]>=grids[-1][0]))]
+    # plot(dl[:,0],dl[:,1],'r.')
+    # 
+    # plot(grids[0][:2],grids[1][:2],'b.',markersize=16)
+    # plot(grids[0][:2],grids[1][:2],'b.',markersize=16)
+    # # show()
+    # from IPython.Debugger import Pdb
+    # Pdb(color_scheme='Linux').set_trace()   
 
     # Find the mesh indices closest to the data locations
     data_mesh_indices = np.empty(data_locs.shape, dtype=np.int)
@@ -179,7 +182,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         #create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices)
 
         data_vals = trace.PyMCsamples[i]['f'][:]
-        create_realization(outfile.root.realizations, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,paramfileINDEX,NinThinnedBlock)
+        create_realization(outfile.root.realizations, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock)
         outfile.flush()
     outfile.close()
 
@@ -188,7 +191,7 @@ def normalize_for_mapcoords(arr, max):
     arr *= max
 
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
-def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,paramfileINDEX,NinThinnedBlock):
+def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
 
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
@@ -245,11 +248,11 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
     t1 = time.time()
     os.chdir(r_path)
-    #preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max())
-    #tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
+    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
 
-    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,paramfileINDEX)
-    tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
+    #preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,paramfileINDEX)
+    #tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
 
     preLoopClassTree, junk = parse_tree(tree_reader)
     preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
@@ -326,7 +329,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     print '\tKriging to bring in data.'    
     print '\tPreprocessing.'
     t1 = time.time()    
-    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)   
+    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)
 
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
@@ -524,7 +527,7 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,VERBOSE=False):
     mean_out = np.zeros(n_out)
     
     # initialise vector for output values
-    z_out = np.ones(n_out)*-9999
+    #z_out = np.ones(n_out)*-9999
 
     ## populate full covariance matrices 
     tstart=time.time()
@@ -558,10 +561,13 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,VERBOSE=False):
     z_out=mvrnormPY(1,MU=PostMean,COV=PostVar)
     if VERBOSE: print '\ttime for joint simulation over '+str(len(sim))+' points was :'+str(time.time()-t1)
 
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
+
     if VERBOSE: print 'Total time was '+str(tstart-time.time())
 
     # check z_out contains no unsimulated values (-9999)
-    if(np.any(z_out==-9999)): raise Warning, str(np.sum(z_out==-9999))+'unpredicted values found in z_out'
+    #if(np.any(z_out==-9999)): raise Warning, str(np.sum(z_out==-9999))+'unpredicted values found in z_out'
 
     # return 1d array of simulated values    
     return z_out
