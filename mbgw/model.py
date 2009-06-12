@@ -126,8 +126,7 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
 
         # Make it easier for inc (psi) to jump across 0: let nonmod_inc roam freely over the reals,
         # and mod it by pi to get the 'inc' parameter.
-        nonmod_inc = pm.Uninformative('nonmod_inc', value=.5, trace=False)
-        inc = pm.Lambda('inc', lambda nonmod_inc = nonmod_inc: nonmod_inc % np.pi)
+        inc = pm.CircVonMises('inc', 0, 0)
 
         # Use a uniform prior on sqrt ecc (sqrt ???). Using a uniform prior on ecc itself put too little
         # probability mass on appreciable levels of anisotropy.
