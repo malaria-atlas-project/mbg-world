@@ -1,6 +1,7 @@
 import numpy as np
 import pymc as pm
 import mbgw
+import time
 from mbgw.joint_simulation import *
 import tables as tb
 import mbgw.master_grid as mg
@@ -20,8 +21,8 @@ memmax = float(sys.argv[7])
 thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
 
-nmonths = 12*3
-start_year = 2005
+nmonths = 12
+start_year = 2007
 
 #nmonths = int(sys.argv[9])
 
@@ -40,7 +41,8 @@ my_end = indices[i+1]
 
 ofdir = ''
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-outfile_base = 'nokrige-thick_'+str(paramfileINDEX)+'.hdf5'
+#outfile_base = 'nokrige-thick_'+str(paramfileINDEX)+'.hdf5'
+outfile_base = 'test_inAndout_krige_'+str(paramfileINDEX)+'.hdf5'
 outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
@@ -59,7 +61,13 @@ print 'Thinning: %i'%thinning
 
 print 'Creating realizations'
 
+t1=time.time()
 create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock)
+
+print 'Total time was '+str(time.time()-t1)
+
+#from IPython.Debugger import Pdb
+#Pdb(color_scheme='Linux').set_trace()
 
 #print 'Uploading to boto'
 #S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')

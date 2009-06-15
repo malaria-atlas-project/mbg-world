@@ -9,20 +9,25 @@ xllc = -180
 yllc = -57
 cellsize = 0.04166665
 
-AM_lims = {'topRow': 1494,
-'bottomRow': 2602,
+AM_lims = {'topRow': 1890,
+'bottomRow': 2140,
 'leftCol': 2038,
 'rightCol': 3401}
 
-#AF_lims = {'topRow': 1393,
-#'bottomRow': 2745,
-#'leftCol': 3879,
-#'rightCol': 5628}
+AF_lims = {'topRow': 1393,
+'bottomRow': 2745,
+'leftCol': 3879,
+'rightCol': 5628}
 
-AF_lims = {'topRow': 1536,
-'bottomRow': 1776,
-'leftCol': 5000,
-'rightCol': 5250}
+#AF_lims = {'topRow': 1700,
+#'bottomRow': 2400,
+#'leftCol': 4300,
+#'rightCol': 5000}
+
+#AF_lims = {'topRow': 1536,
+#'bottomRow': 1776,
+#'leftCol': 5000,
+#'rightCol': 5250}
 
 AS_lims = {'topRow': 1018,
 'bottomRow': 2512,

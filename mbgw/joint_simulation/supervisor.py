@@ -111,7 +111,12 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
 
     for i in xrange(len(data_locs)):
         for j in xrange(3):
+
+
+            ####??????????
             data_mesh_indices[i,j] = np.argmin(np.abs(data_locs[i,j] - axes[j]))
+            ####??????????
+
 
     if n_in_trace is None:
         n_in_trace=len(trace.group0.C) 
@@ -294,34 +299,69 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     # jointly simulate at data points conditional on block    
 
     ## first get XYZT list of locations of a regular thinned sample from block
-    array3d = out_arr[real_index,:,:,:]
-    ThinnedBlockXYTZlists = getThinnedBlockXYTZlists (array3d,grids,NinThinnedBlock)
+
+    #array3d = out_arr[real_index,:,:,:]
+    ThinnedBlockXYTZlists = getThinnedBlockXYTZlists (out_arr,real_index,grids,NinThinnedBlock)
     xyt_in = ThinnedBlockXYTZlists['xyt_in']
     z_in = ThinnedBlockXYTZlists['z_in']
 
-    # get locations of data outside block (referenced by grid location)
-    XYT_out_gridlocs = data_mesh_indices[where_out]
+    ## get locations of data outside block (referenced by grid location)
+    #XYT_out_gridlocs = data_mesh_indices[where_out]
+    # 
+    ### convert these grid lcoations into actual position in radians and months
+    #coordsDict = gridParams_2_XYTmarginallists(grids)
+    #xcoords = coordsDict['xcoords']
+    #ycoords = coordsDict['ycoords']
+    #tcoords = coordsDict['tcoords']
+    #
+    #x_out = xcoords[XYT_out_gridlocs[:,0]]
+    #y_out = ycoords[XYT_out_gridlocs[:,1]]
+    #t_out = tcoords[XYT_out_gridlocs[:,2]]
+    #   
+    #xyt_out = np.vstack((x_out,y_out,t_out)).T
     
-    ## convert these grid lcoations into actual position in radians and months
-    coordsDict = gridParams_2_XYTmarginallists(grids)
-    xcoords = coordsDict['xcoords']
-    ycoords = coordsDict['ycoords']
-    tcoords = coordsDict['tcoords']
-
-    x_out = xcoords[XYT_out_gridlocs[:,0]]
-    y_out = ycoords[XYT_out_gridlocs[:,1]]
-    t_out = tcoords[XYT_out_gridlocs[:,2]]
-   
-    xyt_out = np.vstack((x_out,y_out,t_out)).T
+    # get locations of data outside block 
+    xyt_out = data_locs[where_out]
 
     # now we have locations and values of thinned sample from the block, and locations we want to predict at outside the block,go ahead and 
     # get simulated values of the latter, conditonal on the former
 
     print '\tsimulating over '+str(len(xyt_out[:,0]))+' locations outside block using thinned block sample of '+str(len(z_in))+' points'
     t1=time.time()
-    z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straighfromtrace)
+    z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straighfromtrace,relp)
     print '\ttime for simulation: '+str(time.time()-t1)
-   
+
+    #########################################CHECK COVARIANCE STRUCTURE
+    r.X11(width=12,height=12)
+    r.par(mfrow=(3,2))
+
+    # test covariance structure of points outside block (spatial)
+    cfdict_out = getEmpiricalCovarianceFunction(xyt_out[:,0:2:1],z_out,mu=0,nbins=15, cutoff = 0.6)
+    plotEmpiricalCovarianceFunction(cfdict_out,CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.6, title="Points outside (S)")
+
+    # test covariance structure of points outside block (temporal)
+    cfdict_out = getEmpiricalCovarianceFunction(xyt_out[:,2],z_out,mu=0,nbins=12, cutoff = 1)
+    plotEmpiricalCovarianceFunction(cfdict_out,CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 1, title="Points outside (T)")
+
+    # test covariance structure of points inside block (spatial)
+    cfdict_in = getEmpiricalCovarianceFunction(xyt_in[:,0:2:1],z_in,mu=0,nbins=15, cutoff = 0.6)
+    plotEmpiricalCovarianceFunction(cfdict_in,CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.6, title="Points inside (S)")
+
+    # test covariance structure of points inside block (temporal)
+    cfdict_in_t = getEmpiricalCovarianceFunction(xyt_in[:,2],z_in,mu=0,nbins=12, cutoff =1)
+    plotEmpiricalCovarianceFunction(cfdict_in_t,CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 1, title="Points inside (T)")
+
+    # test covariance structure of combined points inside and outside block (spatial)
+    cfdict_inout = getEmpiricalCovarianceFunction(np.vstack((xyt_in[:,0:2:1],xyt_out[:,0:2:1])),np.hstack((z_in,z_out)),mu=0,nbins=10, cutoff = 0.6)
+    plotEmpiricalCovarianceFunction(cfdict_inout,CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.6, title="Points in and outside (S)")
+    
+    # test covariance structure of combined points inside and outside block (temporal)
+    cfdict_inout = getEmpiricalCovarianceFunction(np.hstack((xyt_in[:,2],xyt_out[:,2])),np.hstack((z_in,z_out)),mu=0,nbins=12, cutoff = 1)
+    plotEmpiricalCovarianceFunction(cfdict_inout,CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 1, title="Points in and outside (T)")
+    #########################################CHECK COVARIANCE STRUCTURE
+    
+    
+       
     # assign these values to pdata    
     pdata[where_out] = z_out
     
@@ -330,12 +370,9 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     print '\tPreprocessing.'
     t1 = time.time()    
     dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
 
-    t2 = time.time()
-    print '\t\tDone in %f'%(t2-t1)
- 
-    t2 = time.time()
-    print '\t\tDone in %f'%(t2-t1)
     
     thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
@@ -358,7 +395,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
         
         out_arr[real_index,:,:,i] = row
     
-    print '\t\tDone in %f'%(t2-t1)        
+    print '\t\tDone in %f'%(time.time()-t1)        
         
 
 def reduce_realizations(filename, reduce_fns, slices, a_lo, a_hi, n_per):
@@ -402,7 +439,7 @@ def reduce_realizations(filename, reduce_fns, slices, a_lo, a_hi, n_per):
     
     return products
     
-def getThinnedBlockXYTZlists(array3d,grids,NinThinnedBlock):
+def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock):
 
     # extract grid parameters for ease
     ncols = grids[0][2]
@@ -410,14 +447,15 @@ def getThinnedBlockXYTZlists(array3d,grids,NinThinnedBlock):
     nmonths = grids[2][2]
 
     # do dirty calculation to approximately evenly spread sample of size NinThinnedBlock accross ST unconditioned block
-    Nmonthstosample = int(np.ceil((nmonths/12)*4))
+    Nmonthstosample = int(np.ceil((nmonths/12.)*6))
     Tthinrate=nmonths/Nmonthstosample
     Npermonth = NinThinnedBlock/Nmonthstosample
     XYthinRate = int(np.ceil(np.sqrt(nrows*ncols)/np.sqrt(Npermonth)))
-    data_footprint=(slice(0,nrows,XYthinRate),slice(0,ncols,XYthinRate),slice(0,nmonths,Tthinrate))
+    data_footprint=(slice(real_index,real_index+1,1),slice(0,nrows,XYthinRate),slice(0,ncols,XYthinRate),slice(0,nmonths,Tthinrate))
 
-    # extract unconditoned values from block at these locations
-    z_cube = array3d[data_footprint]
+    # extract unconditoned values from block at these locations and convert to 3d matrix (remove realisation dimension)
+    z_cube = np.squeeze(relblock4d[data_footprint])
+    z_cube = np.atleast_3d(z_cube)
     
     # now need to define correposnding long,lat, and time values for these locations
     
@@ -493,7 +531,7 @@ def gridParams_2_XYTmarginallists(grids):
     
     return({"xcoords":xcoords,"ycoords":ycoords,"tcoords":tcoords})
 
-def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,VERBOSE=False):
+def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
 
     '''
     params to pass:
@@ -513,63 +551,131 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,VERBOSE=False):
     n_out = len(XYT_out[:,0])
     MaxToSim=float(n_in)
 
-    # define seperate x,y,t vectors for ease
-    x_in = XYT_in[:,0]
-    y_in = XYT_in[:,1]
-    t_in = XYT_in[:,2]
-
-    x_out = XYT_out[:,0]
-    y_out = XYT_out[:,1]
-    t_out = XYT_out[:,2]
-
-    # define zero-mean vectors
-    mean_in = np.zeros(n_in)
-    mean_out = np.zeros(n_out)
-    
-    # initialise vector for output values
-    #z_out = np.ones(n_out)*-9999
-
-    ## populate full covariance matrices 
-    tstart=time.time()
-    t1=time.time()
-    C_out_out = C((np.vstack((x_out,y_out,t_out)).T),(np.vstack((x_out,y_out,t_out)).T))
-    tfor_C_out_out = time.time()-t1
-    if VERBOSE: print '\ttfor_C_out_out ('+str(len(x_out))+'x'+str(len(x_out))+' to '+str(len(x_out))+'x'+str(len(x_out))+') was : '+str(tfor_C_out_out)
-
-    t1=time.time()
-    C_in_out = C(np.vstack((x_in,y_in,t_in)).T,np.vstack((x_out,y_out,t_out)).T)
-    tfor_C_in_out = time.time()-t1
-    if VERBOSE: print '\ttfor_C_in_out ('+str(len(x_in))+'x'+str(len(x_in))+' to '+str(len(x_out))+'x'+str(len(x_out))+') was : '+str(tfor_C_in_out)
-
-    t1=time.time()
-    C_in_in = C(np.vstack((x_in,y_in,t_in)).T,np.vstack((x_in,y_in,t_in)).T)
-    tfor_C_in_in = time.time()-t1
-    if VERBOSE: print '\ttfor_C_in_in ('+str(len(x_in))+'x'+str(len(x_in))+' to '+str(len(x_in))+'x'+str(len(x_in))+') was : '+str(tfor_C_in_in)
-
-    # perform matrix operations
-    t1=time.time()
-    C_in_in.inv=np.linalg.inv(C_in_in)
-    if VERBOSE: print '\ttime for inverting C_in_in (shape:'+str(np.shape(C_in_in))+') was : '+str(time.time()-t1)
-
-    t1=time.time()
-    PostMeanInterim=np.linalg.linalg.dot(C_in_out.T,C_in_in.inv)
-    PostVar=C_out_out - np.linalg.linalg.dot((np.linalg.linalg.dot(C_in_out.T,C_in_in.inv)),C_in_out)
-    PostMean=mean_out + np.linalg.linalg.dot(PostMeanInterim , (z_in-mean_in) )
-    if VERBOSE: print '\ttime for remaining matrix operations was :'+str(time.time()-t1)
-
-    t1=time.time()
-    z_out=mvrnormPY(1,MU=PostMean,COV=PostVar)
-    if VERBOSE: print '\ttime for joint simulation over '+str(len(sim))+' points was :'+str(time.time()-t1)
-
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
-
-    if VERBOSE: print 'Total time was '+str(tstart-time.time())
-
-    # check z_out contains no unsimulated values (-9999)
-    #if(np.any(z_out==-9999)): raise Warning, str(np.sum(z_out==-9999))+'unpredicted values found in z_out'
-
+    M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
+    C = pm.gp.NearlyFullRankCovariance(C.eval_fun, relative_precision=relp, **C.params)
+    pm.gp.observe(M,C,obs_mesh=XYT_in,obs_vals=z_in)
+    f = pm.gp.Realization(M,C)
+ 
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
+ 
     # return 1d array of simulated values    
-    return z_out
+    return f(XYT_out)
 
+##############################################################################
+def getEmpiricalCovarianceFunction(xy,z,mu,nbins=None, cutoff = 0.8):
+
+    # work out if we passed a two- or one-column set of locations
+    if (len(np.shape(xy))==1):
+        d1=xy
+        d2=None
+        
+    if (len(np.shape(xy))==2):
+        d1=xy[:,0]
+        d2=xy[:,1]
+        
+
+    # get distance matrix
+
+    ## if no second dimension supplied, assume we are evaluating along a transect, or through time:
+    if (d2 is None):
+        X = np.vstack(((d1,))*len(d1))
+        DX = X-X.T
+        Dxy = np.sqrt(DX*DX)
+        
+    ## if two dimensions supplied, assum,e we want cross-distances (i.e. we have two spatial dimensions)
+    if (d2 is not None):
+        X = np.vstack(((d1,))*len(d1))
+        dX = X-X.T
+        Y = np.vstack(((d2,))*len(d2))
+        dY = Y-Y.T
+        Dxy = np.sqrt(dX*dX +dY*dY)
+
+    # get empirical point-to-point covariance matrix
+    temp = z-mu
+    TEMP = np.vstack(((temp,))*len(temp))
+    TEMP = TEMP*TEMP.T
+    
+    # convert lag and C matrices to vector based only on lower triangle(and diagonal)
+    IDmat = np.ones(np.product(np.shape(TEMP))).reshape(np.shape(TEMP))
+    Cvector = TEMP[np.where(np.tril(IDmat,k=0)==1)]
+    Dvector = Dxy[np.where(np.tril(IDmat,k=0)==1)]
+
+    # if we are not binning, then return vectors of all pairwise covariances and lags
+    if (nbins is None): return ({'C':Cvector,'lag':Dvector})
+    
+    # if we are binning
+    
+    ## establish maximum distance, and get nbins equal bins along this distance
+    mxlag = Dvector.max()*cutoff
+    binWidth = mxlag/(nbins)
+    binMins = np.arange(nbins)*binWidth
+    binMaxs = binMins+binWidth
+    
+    # loop through bins and get expected covariance
+    Cbins = np.ones(nbins)*-9999
+    Dbins = np.ones(nbins)*-9999
+    for i in np.arange(nbins):
+        lagID = np.where((Dvector>=binMins[i]) & (Dvector<binMaxs[i]))
+        if (len(lagID[0])>0):  # i.e only populate this lag if there is any data in it
+            Cbins[i]=np.mean(Cvector[lagID])
+            Dbins[i]=np.mean(Dvector[lagID])
+        
+    # remove bins with no data
+    IDkeep = np.where((Cbins!=-9999) & (Dbins!=-9999))
+    Cbins = Cbins[IDkeep]
+    Dbins = Dbins[IDkeep]
+    
+    return ({'C':Cbins,'lag':Dbins})
+
+def plotEmpiricalCovarianceFunction(EmpCovFuncDict,CovModelObj=None,spaceORtime="space", cutoff = 0.8, title=None):
+
+    # get starting axis limits from empirical covariacne function
+    if (cutoff is None): XLIM=(0,EmpCovFuncDict['lag'].max())
+    if (cutoff is not None): XLIM=(0,EmpCovFuncDict['lag'].max()*cutoff)
+    ymin = np.min((EmpCovFuncDict['C'].min(),0))    
+    ymax = EmpCovFuncDict['C'].max()
+        
+    # if passed, get theoretical covariance model:
+    if (CovModelObj is not None):
+
+        xplot = np.arange(100)*(XLIM[1]/100)
+
+        # if spatial, add both X and Y orientations:
+        if (spaceORtime=="space"):
+
+            yplotYCOV = CovModelObj([[0,0,0]], np.vstack((np.zeros(len(xplot)),xplot,np.zeros(len(xplot)))).T)
+            yplotYCOV = np.asarray(yplotYCOV).squeeze()
+            if (np.max(yplotYCOV)>ymax): ymax = np.max(yplotYCOV)     
+            if (np.min(yplotYCOV)<ymin): ymin = np.min(yplotYCOV)
+            
+            yplotXCOV = CovModelObj([[0,0,0]], np.vstack((xplot,np.zeros(len(xplot)),np.zeros(len(xplot)))).T)
+            yplotXCOV = np.asarray(yplotXCOV).squeeze()
+            if (np.max(yplotXCOV)>ymax): ymax = np.max(yplotXCOV)     
+            if (np.min(yplotXCOV)<ymin): ymin = np.min(yplotXCOV)
+
+        if (spaceORtime=="time"):
+
+            yplotTCOV = CovModelObj([[0,0,0]], np.vstack((np.zeros(len(xplot)),np.zeros(len(xplot)),xplot)).T)
+            yplotTCOV = np.asarray(yplotTCOV).squeeze()
+            if (np.max(yplotTCOV)>ymax): ymax = np.max(yplotTCOV)     
+            if (np.min(yplotTCOV)<ymin): ymin = np.min(yplotTCOV)
+
+    # make up base plot of empirical covairance
+    YLIM = (ymin,ymax)
+    if (spaceORtime=="space"): XLAB = "lag (s)"
+    if (spaceORtime=="time"): XLAB = "lag (t)"
+    r.plot(EmpCovFuncDict['lag'],EmpCovFuncDict['C'],ylim=YLIM,xlim=XLIM,xlab=XLAB,ylab="covariance")
+
+    # optionally add theoretical covaraicne functions 
+    if (CovModelObj is not None):
+        if (spaceORtime=="space"):
+            r.lines(xplot,yplotXCOV,col=3)
+            r.lines(xplot,yplotYCOV,col=4)
+        if (spaceORtime=="time"):
+            r.lines(xplot,yplotTCOV,col=2)
+    
+    # if passed, add plot title
+    if (title is not None):
+        r.title(main=title)
 
