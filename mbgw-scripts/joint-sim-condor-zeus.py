@@ -6,7 +6,7 @@ from mbgw.joint_simulation import *
 import tables as tb
 import mbgw.master_grid as mg
 import os,sys
-from boto_PYlib import *
+from map_utils import boto_PYlib
 
 print 'Imports done'
 
