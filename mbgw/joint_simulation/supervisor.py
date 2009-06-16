@@ -24,7 +24,7 @@ os.chdir(r_path)
 from rpy import r
 r.source("CONDSIMpreloop.R")
 r.source("CONDSIMmonthloop.R")
-r.source('/home/pwg/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/MVRNORM.R')
+r.source('MVRNORM.R')
 mvrnormPY=r['MVRNORM']
 
 os.chdir(curpath)

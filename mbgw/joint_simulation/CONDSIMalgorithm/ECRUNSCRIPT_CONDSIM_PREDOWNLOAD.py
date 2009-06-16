@@ -39,6 +39,6 @@ S3bucketname = urb5km_path.split('/')[-2]
 print '\tS3bucketname: '+str(S3bucketname)
 S3filename = urb5km_path.split('/')[-1]
 print '\tS3filename: '+str(S3filename)
-S.downloadFileFromBucket(S3bucketname,S3filename,burdentrace_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+S.downloadFileFromBucket(S3bucketname,S3filename,urb5km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
 
 print '\nDONE: ECRUNSCRIPT_extractSummaries_PREDOWNLOAD'
