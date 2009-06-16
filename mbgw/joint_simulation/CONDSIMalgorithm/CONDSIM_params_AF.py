@@ -29,7 +29,7 @@ trace_path="/mnt/auxiliary_data/QRYPFPR010708_Africa_Run_9.10.2008.hdf5"
 realizations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_four/'
 
 # how many points will we take from the block to condition the unconditioned field at the outside data locations?
-NinThinnedBlock =15000
+NinThinnedBlock =5000
 
 # set some other memory and kriging parameters
 burn = 2000
