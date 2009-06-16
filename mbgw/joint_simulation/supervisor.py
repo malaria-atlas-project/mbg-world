@@ -339,18 +339,18 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
 
     # test marginal space and time covariance structures of points outside block
     cfdict_out = getEmpiricalCovarianceFunction_STmarginals(xyt_out,z_out,mu=0,margTol_S=0.05,margTol_T=0.9/12,nbins=20, cutoff = 0.8)
-    plotEmpiricalCovarianceFunction(cfdict_out['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points outside (S)")
-    plotEmpiricalCovarianceFunction(cfdict_out['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points outside (T)")
+    plotEmpiricalCovarianceFunction(cfdict_out['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points outside (S) "+str(paramfileINDEX))
+    plotEmpiricalCovarianceFunction(cfdict_out['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points outside (T)"+str(paramfileINDEX))
 
     # test marginal space and time covariance structures of points inside block
     cfdict_in = getEmpiricalCovarianceFunction_STmarginals(xyt_in,z_in,mu=0,margTol_S=0.05,margTol_T=0.9/12,nbins=20, cutoff = 0.8)
-    plotEmpiricalCovarianceFunction(cfdict_in['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)")
-    plotEmpiricalCovarianceFunction(cfdict_in['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)")
+    plotEmpiricalCovarianceFunction(cfdict_in['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)"+str(paramfileINDEX))
+    plotEmpiricalCovarianceFunction(cfdict_in['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
 
     # test marginal space and time covariance structures of points inside and outside block
     cfdict_inout = getEmpiricalCovarianceFunction_STmarginals(np.vstack((xyt_in,xyt_out)),np.hstack((z_in,z_out)),mu=0,margTol_S=0.05,margTol_T=0.9/12,nbins=20, cutoff = 0.8)
-    plotEmpiricalCovarianceFunction(cfdict_inout['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)")
-    plotEmpiricalCovarianceFunction(cfdict_inout['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)")
+    plotEmpiricalCovarianceFunction(cfdict_inout['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)"+str(paramfileINDEX))
+    plotEmpiricalCovarianceFunction(cfdict_inout['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
 
     #########################################CHECK COVARIANCE STRUCTURE
 
