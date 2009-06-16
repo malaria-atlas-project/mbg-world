@@ -27,7 +27,7 @@ start_year = 2007
 #nmonths = int(sys.argv[9])
 
 mask_name = 'st_mask5km-e_y-x+'
-relp=1e-3
+relp=1e-6
 
 paramfileINDEX = int(sys.argv[9])
 NinThinnedBlock = int(sys.argv[10])

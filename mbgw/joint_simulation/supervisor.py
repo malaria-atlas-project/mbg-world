@@ -31,7 +31,8 @@ os.chdir(curpath)
 import scipy
 from scipy import ndimage, mgrid
 from map_utils import grid_convert
-from map_utils import EmpiricalCovarianceLib
+from map_utils import getEmpiricalCovarianceFunction_STmarginals
+from map_utils import plotEmpiricalCovarianceFunction
 from IPython.Debugger import Pdb
 
 __all__ = ['create_realization', 'create_many_realizations','reduce_realizations','getThinnedBlockXYTZlists','array3d_2_XYTZlist','gridParams_2_XYTmarginallists','predictPointsFromBlock']
@@ -352,6 +353,10 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     plotEmpiricalCovarianceFunction(cfdict_inout['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)")
 
     #########################################CHECK COVARIANCE STRUCTURE
+
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
+
        
     # assign these values to pdata    
     pdata[where_out] = z_out
