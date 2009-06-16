@@ -41,4 +41,13 @@ S3filename = urb5km_path.split('/')[-1]
 print '\tS3filename: '+str(S3filename)
 S.downloadFileFromBucket(S3bucketname,S3filename,urb5km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
 
+## global 5km periurban indicator surface
+print '\nDownloading 5km periurban indicator surface from S3..'
+S3bucketname = periurb5km_path.split('/')[-2]
+print '\tS3bucketname: '+str(S3bucketname)
+S3filename = periurb5km_path.split('/')[-1]
+print '\tS3filename: '+str(S3filename)
+S.downloadFileFromBucket(S3bucketname,S3filename,periurb5km_path,overwriteContent=False,makeDirectory=True,VERBOSE=True)
+
+
 print '\nDONE: ECRUNSCRIPT_extractSummaries_PREDOWNLOAD'

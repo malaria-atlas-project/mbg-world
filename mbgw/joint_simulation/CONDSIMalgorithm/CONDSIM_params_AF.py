@@ -14,10 +14,13 @@ utilFolder = '/root/map_utils/map_utils/'
 keyPath = '/root/s3code.txt' 
  
 # location and name of global 5km hdf5 stable limits mask
-lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+.hdf5"
+lim5kmbnry_path="/root/mbg-world/datafiles/auxiliary_data/st_mask5km-e_y-x+.hdf5"
 
 # location and name of global 5km hdf5 urban indicator surface
-urb5km_path="/mnt/auxiliary_data/urb5km-e_y-x+.hdf5"
+urb5km_path="/root/mbg-world/datafiles/auxiliary_data/urb5km-e_y-x+.hdf5"
+
+# location and name of global 5km hdf5 periurban indicator surface
+periurb5km_path="/root/mbg-world/datafiles/auxiliary_data/periurb5km-e_y-x+.hdf5"
 
 # location and name of trace file 
 trace_path="/mnt/auxiliary_data/QRYPFPR010708_Africa_Run_9.10.2008.hdf5"

@@ -22,9 +22,9 @@ ln -s ../datafiles datafiles
 python setup.py develop
 cd
 
-rm -r -f generic_mbg
-git clone git://github.com/malaria-atlas-project/generic_mbg.git
-cd generic_mbg 
+rm -r -f generic-mbg
+git clone git://github.com/malaria-atlas-project/generic-mbg.git
+cd generic-mbg 
 ln -s ../datafiles datafiles 
 python setup.py develop
 cd
