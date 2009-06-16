@@ -12,7 +12,7 @@ import sys
 # deal with system arguments (expects two)
 RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
 PARAMFILE_PY = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
-PARAMFILE_R = sys.argv[3]  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
+PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
 
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
@@ -33,7 +33,7 @@ NJOBS = n_total / iter_per_job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 
 # define any initialisation commands to exctue on instance before main job
-INITCMDS=['bash /root/cloud_setup.sh','"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python CONDSIM_defineParameterFile.py '+str(PARAMFILE_PY)+';python ECRUNSCRIPT_CONDSIM_PREDOWNLOAD.py True True True"']
+INITCMDS=['bash /root/cloud_setup.sh','"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python CONDSIM_defineParameterFile.py '+str(PARAMFILE_PY)+';python ECRUNSCRIPT_CONDSIM_PREDOWNLOAD.py"']
 
 # construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(NJOBS)]

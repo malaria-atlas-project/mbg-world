@@ -15,6 +15,8 @@ apt-get install python-boto
 rm -r -f mbg-world
 git clone git://github.com/malaria-atlas-project/mbg-world.git
 cd mbg-world
+git checkout -b master
+git pull origin master
 ln -s ../datafiles datafiles
 python setup.py develop
 cd

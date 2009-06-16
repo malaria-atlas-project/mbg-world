@@ -11,9 +11,9 @@ import sys
 
 S=S3(keyPath) # initialise key object
 
-# make empty directory on instance to house realisation hdf5 file that wil be generated
-print '\n\tBuilding directory: '+realisations_path.rpartition('/')[0]
-checkAndBuildPaths(realisations_path.rpartition('/')[0],VERBOSE=True,BUILD=True)
+# make empty directory on instance to house realization hdf5 file that wil be generated
+print '\n\tBuilding directory: '+realizations_path.rpartition('/')[0]
+checkAndBuildPaths(realizations_path.rpartition('/')[0],VERBOSE=True,BUILD=True)
 
 # download from S3 the necessary auxilliary files..
 
