@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_CONDSIM r-3fd4a056 CONDSIM_params_AF.py 15
+# run ECDISTRIBUTE_CONDSIM r-3fd4a056 CONDSIM_params_AF.py 15 2
 
 # import libraries
 from map_utils import amazon_ec
@@ -13,19 +13,20 @@ import sys
 RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
 PARAMFILE_PY = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
 PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
+MAXJOBSPERINSTANCE = int(sys.argv[4]) 
 
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
 NINSTANCES = 1
-MAXJOBSPERINSTANCE = 1
+#MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/stdout_CONDSIM/DistributedOutputSTDOUTERR_'+str(PARAMFILE_PY.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # set realization number parameters
-n_total = 1 #600
+n_total = 2 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 
