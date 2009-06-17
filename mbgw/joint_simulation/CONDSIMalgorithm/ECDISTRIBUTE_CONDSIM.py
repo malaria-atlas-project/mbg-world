@@ -37,7 +37,7 @@ UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-wo
 INITCMDS=['bash /root/cloud_setup.sh','"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python CONDSIM_defineParameterFile.py '+str(PARAMFILE_PY)+';python ECRUNSCRIPT_CONDSIM_PREDOWNLOAD.py"']
 
 # construct main commands list
-CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(NJOBS)]
+CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(NJOBS)]
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()

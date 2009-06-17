@@ -166,6 +166,9 @@ run examineRealization "/home/pwg/mbg-world/mbgw-scripts/test_inAndout_krige_16.
 #run examineRealization "/home/pwg/mbg-world/mbgw-scripts/AS_nokrige-thick_9.hdf5" 0 11 False TRUE 9
 
 
+cd
+cd /home/pwg/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm
+run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 4 True TRUE 15
 
 
 

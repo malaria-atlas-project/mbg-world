@@ -1,5 +1,5 @@
 # example call
-# run examineRealization "/home/pwg/Realizations/nokrige.hdf5" 0 0 False TRUE 1
+# run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 0 False TRUE 15 0 11 False True
 
 # import python libraries
 from rpy import *
@@ -18,6 +18,7 @@ from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
 
 from getGridCovarianceInY import * 
+from getGridCovarianceInT import *
 # import R function
 r.source('/home/pwg/mbg-world/mbgw-scripts/extract_Rlib.R')
 plotMapPY=r['plotMap']
@@ -31,99 +32,166 @@ Rel = int(sys.argv[2])
 Month = int(sys.argv[3]) 
 conditioned = sys.argv[4]
 flipVertical = sys.argv[5]
-
-#print(filename)
-#print(Rel)
-
 paramfileINDEX = int(sys.argv[6])
+TemporalStartMonth = int(sys.argv[7])
+TemporalEndMonth = int(sys.argv[8])
+SPACE = sys.argv[9]
+TIME = sys.argv[10]
 
+hf = tb.openFile(filename)    
+hr = hf.root
 
 # set input params
 #Rel = 0 
 #filename = "/home/pwg/Realizations/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_6_7.hdf5"
 
 
-# define basic parameters
-slices=[slice(None,None,None), slice(None,None,None), slice(Month,Month+1,None)]
-hf = tb.openFile(filename)    
-hr = hf.root
+###CHECK SPATIAL COVARIANCE AND BASIC FEATURE OF A SINGLE MONTH
+if SPACE=="True":
 
-slices = tuple(slices)     
-n_realizations = 1
-n_rows=len(hr.lat_axis)
-n_cols=len(hr.lon_axis)
-N_facs = int(1e5)
-N_years = (slices[2].stop - slices[2].start)/12.
+    # define basic parameters
+    slices=[slice(None,None,None), slice(None,None,None), slice(Month,Month+1,None)]
 
-
-# Pull out parasite rate chunk (i.e. import n months of block)    
-slices = tuple(slices)  
-tot_slice = (slice(Rel,Rel+1,None),) + slices    
-
-n_months = tot_slice[3].stop - tot_slice[3].start
-f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
-subsetmonth=0 
-
-#print tot_slice
-#print f_chunk[:,:,:,subsetmonth]
-
-for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
-    f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
-    subsetmonth=subsetmonth+1
-f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
-f_chunk[f_chunk==-9999]=nan
+    slices = tuple(slices)     
+    n_realizations = 1
+    n_rows=len(hr.lat_axis)
+    n_cols=len(hr.lon_axis)
+    N_facs = int(1e5)
+    N_years = (slices[2].stop - slices[2].start)/12.
 
 
-# plot this grid
-r.X11(width=10,height=4)
-r.par(mfrow=(1,3))
-plotMapPY(f_chunk.squeeze(),flipVertical=flipVertical)
+    # Pull out parasite rate chunk (i.e. import n months of block)    
+    slices = tuple(slices)  
+    tot_slice = (slice(Rel,Rel+1,None),) + slices    
 
-# compare global variance to parameter draw
-observedVar = round(np.var(f_chunk[np.isnan(f_chunk)==False]),3)
-theoreticalVar = ((hr.PyMCsamples.col('amp')[Rel])**2)
-varString = 'observedVar = :'+str(observedVar)+';  amp^2 =: '+str(theoreticalVar)
-print varString
+    n_months = tot_slice[3].stop - tot_slice[3].start
+    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+    subsetmonth=0 
 
-# plot histogram
-junk=r.hist(f_chunk[np.isnan(f_chunk)==False],main=varString,xlab="",ylab="")
+    #print tot_slice
+    #print f_chunk[:,:,:,subsetmonth]
 
-# calculate and plot empirical covariance function in N-S direction
-gridIN = cp.deepcopy(f_chunk).squeeze()
+    for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+        f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        subsetmonth=subsetmonth+1
+    f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+    f_chunk[f_chunk==-9999]=nan
 
-if conditioned=="False": meanIN=0
-if conditioned=="True": meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[Month])
-cellWidth=5/6378.137
-covDict = getGridCovarianceInY(gridIN,meanIN,cellWidth)    
+    # plot this grid
+    r.X11(width=10,height=4)
+    r.par(mfrow=(1,3))
+    plotMapPY(f_chunk.squeeze(),flipVertical=flipVertical)
 
-# obtain theoretical covariance function from input MCMC paramater values: pymc method
-C = hr.group0.C[Rel]
-xplot = covDict['RadDist']
-yplot1 = C([[0,0,0]], np.vstack((np.zeros(len(xplot)),xplot,np.zeros(len(xplot)))).T)
-yplot1 = np.asarray(yplot1).squeeze()
+    # compare global variance to parameter draw
+    observedVar = round(np.var(f_chunk[np.isnan(f_chunk)==False]),3)
+    theoreticalVar = ((hr.PyMCsamples.col('amp')[Rel])**2)
+    varString = 'observedVar = :'+str(observedVar)+';  amp^2 =: '+str(theoreticalVar)
+    print varString
 
-# obtain theoretical covariance function from input MCMC paramater values: R method
-Scale=hr.PyMCsamples.col("scale")[Rel]
-amp=hr.PyMCsamples.col("amp")[Rel]
-inc=hr.PyMCsamples.col("inc")[Rel]
-ecc=hr.PyMCsamples.col("ecc")[Rel]
-t_lim_corr=hr.PyMCsamples.col("t_lim_corr")[Rel]
-scale_t=hr.PyMCsamples.col("scale_t")[Rel]
-sin_frac=hr.PyMCsamples.col("sin_frac")[Rel]
-
-CfromR=temptestcovPY(xplot,np.zeros(len(xplot)),np.zeros(len(xplot)),Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
-yplot = CfromR[0,:]
+    # plot histogram
+    junk=r.hist(f_chunk[np.isnan(f_chunk)==False],main=varString,xlab="",ylab="")
 
 
-# plot
 
-ymax = max(np.max(covDict['E_cov']),np.max(xplot),np.max(yplot))
-ymin = min(np.min(covDict['E_cov']),np.min(xplot),np.min(yplot))
+    # calculate and plot empirical covariance function in N-S direction
+    gridIN = cp.deepcopy(f_chunk).squeeze()
 
-r.plot(covDict['RadDist'],covDict['E_cov'],xlab="radians",ylab="C",main=str(paramfileINDEX),ylim=(ymin,ymax))    
-r.lines(xplot,yplot1,col=2)
-r.lines(xplot,yplot,col=3)
+    if conditioned=="False": meanIN=0
+    if conditioned=="True": meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[Month])
+    cellWidth=5/6378.137
+    covDict = getGridCovarianceInY(gridIN,meanIN,cellWidth)    
 
+    # obtain theoretical covariance function from input MCMC paramater values: pymc method
+    C = hr.group0.C[Rel]
+    xplot = covDict['RadDist']
+    yplot1 = C([[0,0,0]], np.vstack((np.zeros(len(xplot)),xplot,np.zeros(len(xplot)))).T)
+    yplot1 = np.asarray(yplot1).squeeze()
+
+    # obtain theoretical covariance function from input MCMC paramater values: R method
+    Scale=hr.PyMCsamples.col("scale")[Rel]
+    amp=hr.PyMCsamples.col("amp")[Rel]
+    inc=hr.PyMCsamples.col("inc")[Rel]
+    ecc=hr.PyMCsamples.col("ecc")[Rel]
+    t_lim_corr=hr.PyMCsamples.col("t_lim_corr")[Rel]
+    scale_t=hr.PyMCsamples.col("scale_t")[Rel]
+    sin_frac=hr.PyMCsamples.col("sin_frac")[Rel]
+
+    CfromR=temptestcovPY(xplot,np.zeros(len(xplot)),np.zeros(len(xplot)),Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
+    yplot = CfromR[0,:]
+
+    # plot
+
+    ymax = max(np.max(covDict['E_cov']),np.max(xplot),np.max(yplot))
+    ymin = min(np.min(covDict['E_cov']),np.min(xplot),np.min(yplot))
+
+    r.plot(covDict['RadDist'],covDict['E_cov'],xlab="radians",ylab="C",main=str(paramfileINDEX),ylim=(ymin,ymax))    
+    r.lines(xplot,yplot1,col=2)
+    r.lines(xplot,yplot,col=3)
+
+###CHECK TEMPORAL COVARIANCE
+
+if TIME=="True":
+
+    # define basic parameters
+    slices=[slice(None,None,None), slice(None,None,None), slice(TemporalStartMonth,TemporalEndMonth+1,None)]
+
+    slices = tuple(slices)     
+    n_realizations = 1
+    n_rows=len(hr.lat_axis)
+    n_cols=len(hr.lon_axis)
+    N_facs = int(1e5)
+    N_years = (slices[2].stop - slices[2].start)/12.
+
+
+    # Pull out parasite rate chunk (i.e. import n months of block)    
+    slices = tuple(slices)  
+    tot_slice = (slice(Rel,Rel+1,None),) + slices    
+
+    n_months = tot_slice[3].stop - tot_slice[3].start
+    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+    subsetmonth=0 
+
+    for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+        f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        subsetmonth=subsetmonth+1
+    f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+    f_chunk[f_chunk==-9999]=nan
+
+    # calculate and plot empirical temporal covariance
+    gridIN = cp.deepcopy(f_chunk).squeeze()
+
+    if conditioned=="False": meanIN=0
+    if conditioned=="True": meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[TemporalStartMonth:TemporalEndMonth+1:1])
+#    cellWidth=5/6378.137
+
+    covDict = getGridCovarianceInT(gridIN,meanIN)    
+
+    # obtain theoretical covariance function from input MCMC paramater values: pymc method
+    C = hr.group0.C[Rel]
+    xplot = covDict['RadDist']
+    yplot1 = C([[0,0,0]], np.vstack((np.zeros(len(xplot)),xplot,np.zeros(len(xplot)))).T)
+    yplot1 = np.asarray(yplot1).squeeze()
+
+    # obtain theoretical covariance function from input MCMC paramater values: R method
+    Scale=hr.PyMCsamples.col("scale")[Rel]
+    amp=hr.PyMCsamples.col("amp")[Rel]
+    inc=hr.PyMCsamples.col("inc")[Rel]
+    ecc=hr.PyMCsamples.col("ecc")[Rel]
+    t_lim_corr=hr.PyMCsamples.col("t_lim_corr")[Rel]
+    scale_t=hr.PyMCsamples.col("scale_t")[Rel]
+    sin_frac=hr.PyMCsamples.col("sin_frac")[Rel]
+
+    CfromR=temptestcovPY(xplot,np.zeros(len(xplot)),np.zeros(len(xplot)),Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
+    yplot = CfromR[0,:]
+
+    # plot
+
+    ymax = max(np.max(covDict['E_cov']),np.max(xplot),np.max(yplot))
+    ymin = min(np.min(covDict['E_cov']),np.min(xplot),np.min(yplot))
+
+    r.plot(covDict['RadDist'],covDict['E_cov'],xlab="radians",ylab="C",main=str(paramfileINDEX),ylim=(ymin,ymax))    
+    r.lines(xplot,yplot1,col=2)
+    r.lines(xplot,yplot,col=3)
 
 
 
