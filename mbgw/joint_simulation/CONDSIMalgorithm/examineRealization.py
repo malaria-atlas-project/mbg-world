@@ -1,5 +1,5 @@
 # example call
-# run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 0 False TRUE 15 0 11 False True
+# run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 0 True TRUE 15 0 11 True True
 
 # import python libraries
 from rpy import *
@@ -45,6 +45,12 @@ hr = hf.root
 #Rel = 0 
 #filename = "/home/pwg/Realizations/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_6_7.hdf5"
 
+# initialise plot window
+nplots = 0
+if SPACE=="True": nplots=nplots+3
+if TIME=="True": nplots=nplots+1
+r.X11(width=3.3*nplots,height=4)
+r.par(mfrow=(1,nplots))
 
 ###CHECK SPATIAL COVARIANCE AND BASIC FEATURE OF A SINGLE MONTH
 if SPACE=="True":
@@ -78,8 +84,6 @@ if SPACE=="True":
     f_chunk[f_chunk==-9999]=nan
 
     # plot this grid
-    r.X11(width=10,height=4)
-    r.par(mfrow=(1,3))
     plotMapPY(f_chunk.squeeze(),flipVertical=flipVertical)
 
     # compare global variance to parameter draw
@@ -162,15 +166,14 @@ if TIME=="True":
 
     if conditioned=="False": meanIN=0
     if conditioned=="True": meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[TemporalStartMonth:TemporalEndMonth+1:1])
-#    cellWidth=5/6378.137
 
     covDict = getGridCovarianceInT(gridIN,meanIN)    
 
     # obtain theoretical covariance function from input MCMC paramater values: pymc method
     C = hr.group0.C[Rel]
-    xplot = covDict['RadDist']
-    yplot1 = C([[0,0,0]], np.vstack((np.zeros(len(xplot)),xplot,np.zeros(len(xplot)))).T)
-    yplot1 = np.asarray(yplot1).squeeze()
+    xplot = covDict['yearDist']
+    yplot = C([[0,0,0]], np.vstack((np.zeros(len(xplot)),np.zeros(len(xplot)),xplot)).T)
+    yplot = np.asarray(yplot).squeeze()
 
     # obtain theoretical covariance function from input MCMC paramater values: R method
     Scale=hr.PyMCsamples.col("scale")[Rel]
@@ -181,17 +184,17 @@ if TIME=="True":
     scale_t=hr.PyMCsamples.col("scale_t")[Rel]
     sin_frac=hr.PyMCsamples.col("sin_frac")[Rel]
 
-    CfromR=temptestcovPY(xplot,np.zeros(len(xplot)),np.zeros(len(xplot)),Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
-    yplot = CfromR[0,:]
+    CfromR=temptestcovPY(np.zeros(len(xplot)),np.zeros(len(xplot)),xplot,Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
+    yplot2 = CfromR[0,:]
 
     # plot
 
-    ymax = max(np.max(covDict['E_cov']),np.max(xplot),np.max(yplot))
-    ymin = min(np.min(covDict['E_cov']),np.min(xplot),np.min(yplot))
+    ymax = max(np.max(covDict['E_cov']),np.max(yplot),np.max(yplot2))
+    ymin = min(np.min(covDict['E_cov']),np.min(yplot),np.min(yplot2),0)
 
-    r.plot(covDict['RadDist'],covDict['E_cov'],xlab="radians",ylab="C",main=str(paramfileINDEX),ylim=(ymin,ymax))    
-    r.lines(xplot,yplot1,col=2)
-    r.lines(xplot,yplot,col=3)
+    r.plot(covDict['yearDist'],covDict['E_cov'],xlab="lag (years)",ylab="C",main=str(paramfileINDEX),ylim=(ymin,ymax))    
+    r.lines(xplot,yplot,col=2)
+    r.lines(xplot,yplot2,col=3)
 
 
 
