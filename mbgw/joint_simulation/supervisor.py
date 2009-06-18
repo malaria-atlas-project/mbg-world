@@ -31,8 +31,8 @@ os.chdir(curpath)
 import scipy
 from scipy import ndimage, mgrid
 from map_utils import grid_convert
-from map_utils import getEmpiricalCovarianceFunction_STmarginals
-from map_utils import plotEmpiricalCovarianceFunction
+#from map_utils import getEmpiricalCovarianceFunction_STmarginals
+#from map_utils import plotEmpiricalCovarianceFunction
 from IPython.Debugger import Pdb
 
 __all__ = ['create_realization', 'create_many_realizations','reduce_realizations','getThinnedBlockXYTZlists','array3d_2_XYTZlist','gridParams_2_XYTmarginallists','predictPointsFromBlock']
