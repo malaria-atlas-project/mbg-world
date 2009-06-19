@@ -5,7 +5,7 @@ print 'Starting: ECRUNSCRIPT_extractSummaries_PREDOWNLOAD..'
 
 # import libraries
 from map_utils import checkAndBuildPaths
-from  map_utils import boto_PYlib
+from  map_utils import S3
 from extract_params import *
 import sys
 
