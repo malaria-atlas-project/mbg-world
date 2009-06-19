@@ -3,18 +3,18 @@
     TEMPORALUNIT<-12 
 
  ## define search parameters
-    ColDepth<-16   # how many columns of previously simulated data will be used to predict subsequent column
-    MonthDepth<-24 # how many months of previously simulated data will be used to predict subsequent months 
-    THINX<-8
-    THINY<-8
-    THINT<-4
+    ColDepth<-1   # how many columns of previously simulated data will be used to predict subsequent column
+    MonthDepth<-1 # how many months of previously simulated data will be used to predict subsequent months 
+    THINX<-1
+    THINY<-50
+    THINT<-1
     
 
  ## are we going to simulate subsets of each column? non null value specifies length of each subset
-    SUBSETCOL<-100     
+    SUBSETCOL<-50     
 
  ## do we want to print row/col progress, warnings etc
-    VERBOSE<-2 #0 = no messages; 1= some messages; 2=loads of messages
+    VERBOSE<-0 #0 = no messages; 1= some messages; 2=loads of messages
 
  ## define parameter nu (~ matern degree of differentiability) [NB only valid if doing ST]
     nu<-0.5

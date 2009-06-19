@@ -8,6 +8,7 @@ import os
 import numpy as np
 import copy as cp
 import tables as tb
+from extract_PYlib import *
 from rpy import *
 from map_utils import quantile_funs as qs
 from map_utils import getAsciiheaderFromTemplateHDF5
@@ -21,6 +22,37 @@ from extract_params import *
 r.source(utilFolder+'GeneralUtility.R')
 writeTableWithNamesPY = r['writeTableWithNames'] 
 
+#############################################################################################################################################
+def FnamesByVariableAndOrderedByRel(fnames,variableName=None):
+
+    FnamesVariable = []
+    FnamesVariable_StartRel = []
+
+    for fname in fnames:
+        nameparts = deconstructFilename(fname)
+        if variableName is None:
+            FnamesVariable.append(fname)
+            FnamesVariable_StartRel.append(nameparts['startRel'])        
+        
+        if variableName is not None:
+            if nameparts['variable']==variableName:
+                FnamesVariable.append(fname)
+                FnamesVariable_StartRel.append(nameparts['startRel'])
+
+    FnamesVariableOrdered = []
+
+    while len(FnamesVariable_StartRel) >0:
+        
+        # determine position of smallest startRel
+        minelement = np.where(FnamesVariable_StartRel==np.min(FnamesVariable_StartRel))
+        minelement=minelement[0][0]
+        minelement=int(minelement)
+
+        # pop out this element from both lists
+        null = FnamesVariable_StartRel.pop(minelement)
+        FnamesVariableOrdered.append(FnamesVariable.pop(minelement))
+
+    return(FnamesVariableOrdered)
 #############################################################################################################################################
 def deconstructFilename (fname):
     # deconstruct filename to assign variables relating to this file 
@@ -58,7 +90,7 @@ def deconstructFilename (fname):
     return(-9999)
 
 #############################################################################################################################################
-def copySubTableToMain(subfname,maintable,n_per,Nsalb):
+def copySubTableToMain(subfname,maintable,n_per,Nsalb,filledCols):
 
     # read in file
     inputTable = np.loadtxt(exportPathDistributed_country+subfname)
@@ -67,38 +99,56 @@ def copySubTableToMain(subfname,maintable,n_per,Nsalb):
     if len(shape(inputTable)) == 1:
         inputTable = np.atleast_2d(inputTable).T
 
-    # define start and end columns on global array    
+    ## query attributes of input table
     name_parts = deconstructFilename(subfname)    
     startRel = name_parts['startRel']    
     endRel = name_parts['endRel']    
     ncols = inputTable.shape[1]    
     nrel = (endRel-startRel)    
 
-    # check dimensions are as expected    
+    # check attributes are as expected    
     if inputTable.shape[0] != Nsalb:    
         print( "Warning!!! nrows of "+subfname+" is "+str(inputTable.shape[0])+" != expected "+str(Nsalb))    
     if ncols/nrel != n_per:    
         print( "Warning!!! ncols of "+subfname+" is "+str(ncols/nrel)+" != expected "+str(n_per))    
 
     # copy contents of this file to the global array in the relevant position    
-    startCol = startRel*n_per    
-    endCol = startCol + (nrel*n_per)    
+    #startCol = startRel*n_per    
+    #endCol = startCol + (nrel*n_per)
+    startCol = filledCols    
+    endCol = filledCols + (nrel*n_per)
+
+    print str(subfname)
+    print 'startCol: '+str(startCol)
+    print 'endCol: '+str(endCol)
+    print 'filledCols: '+str(filledCols)
+    print '\n'
 
     maintable[:,startCol:endCol:1]=inputTable
+    
+    # increment number of columns now filled on maintable
+    filledCols = endCol
 
-    # return modified main table
-    return maintable
-
+    # return modified main table and number of columns already filled
+    returnDict = {'maintable':maintable,'filledCols':filledCols}
+    return returnDict
 #############################################################################################################################################
 def makeGlobalArray_contVariables(variableName,blankarray,n_per,Nsalb):
 
     globalarray = cp.deepcopy(blankarray)
+    filledCols = 0
 
-    for fname in os.listdir(exportPathDistributed_country):
+    # get sub list of filename in directory ordered by start ralisation, and optionally containng the variable name
+    allfnames = os.listdir(exportPathDistributed_country)
+    fnames = FnamesByVariableAndOrderedByRel(allfnames,variableName)
+
+    for fname in fnames:
         if fname.find(variableName+'_')!=-1:
 
             # copy this array to correct position on global array
-            globalarray = copySubTableToMain(fname,globalarray,n_per,Nsalb)
+            returnDict =  copySubTableToMain(fname,globalarray,n_per,Nsalb,filledCols)
+            globalarray = returnDict['maintable']
+            filledCols = returnDict['filledCols']
 
     np.savetxt(exportPathCombined_country+variableName+".txt",globalarray)
 
@@ -121,7 +171,7 @@ def makeGlobalArray_categoVariables(variableName,blankarray,n_per,Nsalb):
     for ss in xrange(0,Nschemes): 
         scheme=schemeNames[ss]   
         breaknames = breaksDict[scheme]['BREAKNAMES']
-        Nclasses=len(breaknames) 
+        Nclasses=len(breaknames)
 
         # .. for each class within each scheme..
         for cc in xrange(0,Nclasses):
@@ -129,11 +179,20 @@ def makeGlobalArray_categoVariables(variableName,blankarray,n_per,Nsalb):
 
             # loop through all meanPR_* files and add them to global array, then export global array
             globalarray = cp.deepcopy(blankarray)
-            for fname in os.listdir(exportPathDistributed_country):
+
+            # get sub list of filename in directory ordered by start ralisation, and optionally containng the variable name
+            allfnames = os.listdir(exportPathDistributed_country)
+            fnames = FnamesByVariableAndOrderedByRel(allfnames,variableName)
+            print fnames
+            filledCols = 0
+            for fname in fnames:
+                print fname
                 if (fname.find(variableName+'_')!=-1) & (fname.find(scheme)!=-1) & (fname.find(thisbreakname)!=-1) :
 
                     # copy this array to correct position on global array
-                    globalarray = copySubTableToMain(fname,globalarray,n_per,Nsalb)
+                    returnDict =  copySubTableToMain(fname,globalarray,n_per,Nsalb,filledCols)
+                    globalarray = returnDict['maintable']
+                    filledCols = returnDict['filledCols']
 
             np.savetxt(exportPathCombined_country+variableName+'_'+scheme+'_'+thisbreakname+'.txt',globalarray)
 
@@ -147,8 +206,16 @@ def makeGlobalArray_categoVariables(variableName,blankarray,n_per,Nsalb):
 #############################################################################################################################################
 def getSummariesPerCountry(globalarray):
 
-    # read in array of salb IDs
-    uniqueSalb=fromfile(uniqueSalb_path,sep=",")
+    # ..first check that Salb grid has been pre-examined using examineSalb and lists of unique IDs and N pixels exist, if not then re-run examineSalb
+    try:
+        uniqueSalb=fromfile(uniqueSalb_path,sep=",")
+        pixelN=fromfile(pixelN_path,sep=",")
+    except IOError:
+        print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
+        temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
+        uniqueSalb=temp['uniqueSalb']
+        pixelN=temp['count'] 
+
     outTable=atleast_2d(uniqueSalb).T
     colNames = list(['salbID'])
 
@@ -228,7 +295,7 @@ def combineDistribExtractions_country():
     temp=makeGlobalArray_contVariables('meanPR',blankarray,n_per,Nsalb)
 
     # loop through all BURDEN_* files and add them to global array, then export global array, and optionallly accopmanying summary table
-    temp=makeGlobalArray_contVariables('BURDEN',blankarray,n_per,Nsalb)
+    makeGlobalArray_categoVariables('BURDEN',blankarray,n_per,Nsalb)
 
     # loop through all PAR_* files and add them to global arrays, then export global arrays, and optionallly accopmanying summary table
     makeGlobalArray_categoVariables('PAR',blankarray,n_per,Nsalb)

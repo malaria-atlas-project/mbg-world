@@ -3,7 +3,10 @@
 ## License: Creative Commons BY-NC-SA
 ##################################################
 
-CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel){
+
+CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel, paramfileINDEX){
+
+#CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj){
 
     covParamObj <<- as.list(covParamObj)
     gridParamObj <<- as.list(gridParamObj)
@@ -35,7 +38,12 @@ CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel)
     dyn.load("Stein_st_covariance_serial.so")  
   
  ## invoke parameter file
-    source("ParamFile_uncond.R")
+    source(paste("ParamFile_uncond_",paramfileINDEX,".R",sep=""))
+#print(paste("ColDepth=",ColDepth))
+#print(paste("MonthDepth=",MonthDepth))
+#print(paste("THINX=",THINX))
+#print(paste("THINY=",THINY))
+#print(paste("THINT=",THINT))
 
  ## unpack input parameters passed in grids
     source("unpackListedParams.R")
@@ -55,6 +63,7 @@ CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel)
 
  ## populate covariance matrices
     CovMatObj<-PopulateCovarianceMatrices(DistMatObj)
+    rm(DistMatObj)
     
  ## define PtoP covariance matrix (this is constant - prediction set is always a single column - regardless of where we are predicting)   
     cPtoP<-CovMatObj$cPtoP
@@ -93,13 +102,16 @@ CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel)
     OutMATlist<-vector("list",MonthDepth+1)
     OutMATlist<-lapply(OutMATlist,length) #this initialises each element of the list as a number (zero) rather than a NULL element - necessary later
     OutMATlist[[1]]<-matrix(0,nrow=Nrows,ncol=Ncols)
-    # print('On creation:')
-    # print(OutMATlist)
+    #print('On creation:')
+    #print(OutMATlist)
     
  ## bundle up objects to return in series of nested lists
     footprintObj<-list("footprintLUT"=footprintLUT,"footprintXYT"=footprintXYT,"modifiedFootprintTable"=modifiedFootprintTable,"yseq"=yseq,"xseq"=xseq,"tseq"=tseq)
+    rm(footprintLUT); rm(footprintXYT); rm(modifiedFootprintTable)
     KrigMatObj<-list("cPtoP"=cPtoP,"PostMeanInterim.FULLlist"=PostMeanInterim.FULLlist,"PostVar.FULLlist"=PostVar.FULLlist,"PostMeanInterim.LISTS"=PostMeanInterim.LISTS,"PostVar.LISTS"=PostVar.LISTS)
-    preLoopObj<-list("footprintObj"=footprintObj,"KrigMatObj"=KrigMatObj,"OutMATlist"=OutMATlist)    
+    rm(cPtoP);rm(PostMeanInterim.FULLlist);rm(PostVar.FULLlist);rm(PostMeanInterim.LISTS);rm(PostVar.LISTS)
+    preLoopObj<-list("footprintObj"=footprintObj,"KrigMatObj"=KrigMatObj,"OutMATlist"=OutMATlist)
+    rm(footprintObj);rm(KrigMatObj)
     # print('********HERE***************')
     # for (i in length(PostMeanInterim.LISTS[[2]])){
     #     print(class(PostMeanInterim.LISTS[[2]][[i]]))
@@ -108,6 +120,8 @@ CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel)
  ## provide summary of list structure for later checking
     listSummary<-returnListSummary(preLoopObj,paste("listSummary_preLoopObj_original_",startRel,"_",endRel,".txt",sep=""))   
     listSummary<-returnListSummary(OutMATlist,paste("listSummary_OutMATlist_original_",startRel,"_",endRel,".txt",sep=""))      
+
+    print(gc(TRUE))
 
  ## return this list
     return(preLoopObj)

@@ -1,3 +1,5 @@
+print 'Starting ECRUNSCRIPT_CONDSIM....'
+
 import numpy as np
 import pymc as pm
 import mbgw
@@ -6,50 +8,40 @@ from mbgw.joint_simulation import *
 import tables as tb
 import mbgw.master_grid as mg
 import os,sys
-from map_utils import boto_PYlib
+from map_utils import S3
+from CONDSIM_params import *
 
 print 'Imports done'
 
-# Establish blocks based on spatial distance only.
+
+# handle system parameters
 i = int(sys.argv[1])
 iter_per_job = int(sys.argv[2])
 n_jobs = int(sys.argv[3])
-region = sys.argv[4]
-fname = sys.argv[5]
-burn = int(sys.argv[6])
-memmax = float(sys.argv[7])
-thinning = int(sys.argv[8])
+paramfileINDEX = sys.argv[4]
+
+# define some derived parameters
+
+## file paths and grid set up
 grid_lims = getattr(mg, region + '_lims')
+mask_name = lim5kmbnry_path.split('/')[-1].replace('.hdf5','')
+hf = tb.openFile(trace_path)
+infile_base = trace_path.split('/')[-1].replace('.hdf5','')
+outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_name = realizations_path+outfile_base
 
-nmonths = 12
-start_year = 2007
-
-#nmonths = int(sys.argv[9])
-
-mask_name = 'st_mask5km-e_y-x+'
-relp=1e-6
-
-paramfileINDEX = int(sys.argv[9])
-NinThinnedBlock = int(sys.argv[10])
-
-hf = tb.openFile(fname)
+## iterations and indices set up
 n_total = len(hf.root.chain0.PyMCsamples)
 indices = np.array(np.linspace(burn, n_total, n_jobs+1), dtype=int)
 my_start = indices[i]
 my_end = indices[i+1]
 
 
-ofdir = ''
-infile_base = fname.split('/')[-1].replace('.hdf5','')
-#outfile_base = 'nokrige-thick_'+str(paramfileINDEX)+'.hdf5'
-outfile_base = 'test_inAndout_krige_'+str(paramfileINDEX)+'.hdf5'
-outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
 print 'iter_per_job: %i'%iter_per_job
 print 'n_jobs: %i'%n_jobs
 print 'region: %s'%region
-print 'fname: %s'%fname
 print 'burn: %i'%burn
 print 'nmonths: %i'%nmonths
 print 'start_year: %i'%start_year
@@ -64,11 +56,20 @@ print 'Creating realizations'
 t1=time.time()
 create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock)
 
-print 'Total time was '+str(time.time()-t1)
+print 'Total time for realizations was '+str(time.time()-t1)
 
 #from IPython.Debugger import Pdb
 #Pdb(color_scheme='Linux').set_trace()
 
-#print 'Uploading to boto'
-#S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
-#S.uploadFileToBucket(infile_base.lower()+'_trial_two',outfile_name,True,True)
+print 'Uploading output realization :'+str(outfile_name)+' to S3 bucket : '+str(realizations_path.split('/')[2])
+S=S3(keyPath)
+S.uploadFileToBucket(realizations_path.split('/')[2],outfile_name,True,True)
+
+print 'Finished ECRUNSCRIPT_CONDSIM'
+
+
+
+
+
+
+

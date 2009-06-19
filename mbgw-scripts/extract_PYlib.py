@@ -10,6 +10,7 @@ import copy as cp
 import pymc as pm
 import tables as tb
 import mbgw
+from pr_incidence import *
 import time
 import st_cov_fun
 from mbgw.joint_simulation import *
@@ -18,19 +19,13 @@ from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
 
+
 # import R function
 r.source('extract_Rlib.R')
 expandGridResPY=r['expandGridRes']
 
 # import parameters from param file
 from extract_params import *
-
-##############################TEMPPLACEHOLDER
-def PrevPoptoBurden(PRsurface, POPsurface, tyears):
-    burdensurface = POPsurface*PRsurface*tyears
-    return burdensurface
-
-#############################TEMPPLACEHOLDER
  
 #############################################################################################################################################
 def examineSalb (salblim1km,uniqueSalb_path={},pixelN_path={},ignore={}):
@@ -95,7 +90,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     '''
     Takes an hdf block of one or more realisation of f, and calculates mean PR, total burden, and population at risk (PAR) in each
     unique spatial unit (e.g. country) specified in the 1km res salblim1km_path file. Also requires 1km population surface specified by 
-    gr001km_path. Compmlies these extractions as a dictionary, which is passed to outputDistributedExtractions_country for export.
+    grump1km_path. Compmlies these extractions as a dictionary, which is passed to outputDistributedExtractions_country for export.
     
     Params to pass are:
     
@@ -117,7 +112,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
     filename = realisations_path
     filename = filename.replace('FILESTARTREL',str(FileStartRel))
     filename = filename.replace('FILEENDREL',str(FileEndRel))
-    checkAndBuildPaths(filename,VERBOSE=True,BUILD=False)
+    #checkAndBuildPaths(filename,VERBOSE=True,BUILD=False)
     hf = tb.openFile(filename)    
     hr = hf.root
 
@@ -146,13 +141,13 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
     # open link to salb grid (masked to stable areas only) and population grid    
     salblim1km = tb.openFile(salblim1km_path, mode = "r")    
-    gr001km = tb.openFile(gr001km_path, mode = "r")    
+    grump1km = tb.openFile(grump1km_path, mode = "r")    
 
     # perform check that the number of rows and columns is the same in both 1km grids
-    if len(salblim1km.root.lat) != len(gr001km.root.lat):
-        print 'WARNING!! 1km row numbers do not correspond: salblim1km has '+str(len(salblim1km.root.lat))+' and gr001km has '+str(len(gr001km.root.lat))
-    if len(salblim1km.root.long) != len(gr001km.root.long):
-        print 'WARNING!! col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and gr001km has '+str(len(gr001km.root.long))
+    if len(salblim1km.root.lat) != len(grump1km.root.lat):
+        print 'WARNING!! 1km row numbers do not correspond: salblim1km has '+str(len(salblim1km.root.lat))+' and grump1km has '+str(len(grump1km.root.lat))
+    if len(salblim1km.root.long) != len(grump1km.root.long):
+        print 'WARNING!! col numbers do not correspond: salblim1km has '+str(len(salblim1km.root.long))+' and grump1km has '+str(len(grump1km.root.long))
 
     # perform check that the number of rows and columns is in the correct ratio to those of input 5km grid
     if len(salblim1km.root.lat) != HiResLowResRatio*len(hr.lat_axis):
@@ -167,10 +162,12 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         pixelN=fromfile(pixelN_path,sep=",")
     except IOError:
         print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
-        temp=examineSalb (salblim1km_path,uniqueSalb_path,pixelN_path,ignore=np.array([-9999]))
+        temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
+        uniqueSalb=temp['uniqueSalb']
+        pixelN=temp['count'] 
 
-    uniqueSalb=fromfile(uniqueSalb_path,sep=",")     
-    pixelN=fromfile(pixelN_path,sep=",")        
+    #uniqueSalb=fromfile(uniqueSalb_path,sep=",")     
+    #pixelN=fromfile(pixelN_path,sep=",")
     Nsalb=len(uniqueSalb)    
 
     # intialise empty arrays (e.g. 87 countries * N realisations) for mean PR in each country 
@@ -215,6 +212,11 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         BURDENdict[scheme].update(BURDEN)
     #xxx2 = xxx2 + (r.Sys_time() - xxx2a)
 
+     # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
+     #ind1km = np.where(grump1km_ROW!=-99999999)
+     #POPsurfaceVECTOR=grump1km_ROW[ind1km]
+     BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, nyr=N_years, burn=0)
+
     # loop through each realisation
     for ii in xrange(0,n_realizations): #1:500 realisations n_realizations   
     
@@ -240,9 +242,11 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         #set missing vlaues in f block to 0
         #from scipy.io import write_array
         #write_array('/home/pwg/MBGWorld/extraction/temp_PRrel1.txt', f_chunk[0,:,:])
-        print(sum(isnan(f_chunk)))
+        print('NaNs in f_chunk:' +str(sum(isnan(f_chunk))))
+        print('0s in f_chunk:' +str(sum(f_chunk==0)))
         f_chunk[isnan(f_chunk)]=0
-        print(sum(isnan(f_chunk))) 
+        print('NaNs in f_chunk:' +str(sum(isnan(f_chunk))))
+        print('0s in f_chunk:' +str(sum(f_chunk==0)))
         ####################################
         #xxx3 = xxx3 + (r.Sys_time() - xxx3a)
 
@@ -306,15 +310,15 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             #xxx5a = r.Sys_time() 
             # get row of 5km PR surface accross all months in chunk  (assumes f_chunk is correct way up i.e. map view)
             f_chunk_ROW = f_chunk[:,jj,:]
-
+            
             # get corresponding 5 rows of 1km Salb and population surface (assumes they are correct way up i.e. map view)
             startRow1km=jj*HiResLowResRatio
             endRow1km=startRow1km+(HiResLowResRatio)
             salblim1km_ROW = salblim1km.root.data[slice(startRow1km,endRow1km,1),:]
-            gr001km_ROW = gr001km.root.data[slice(startRow1km,endRow1km,1),:]
+            grump1km_ROW = grump1km.root.data[slice(startRow1km,endRow1km,1),:]
             
             # define a blank array of zeroes of same size as 1km chunk - that will be duplicated for various uses later
-            zeroChunk = zeros(product(gr001km_ROW.shape)).reshape(gr001km_ROW.shape)
+            zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
             #xxx5 = xxx5 + (r.Sys_time() - xxx5a) 
 
             #plotMapPY(salblim1km.root.data[:,:],NODATA=-9999)
@@ -372,6 +376,9 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # aggregate through time to obtain spatial-only array for this nugget-realisation
                 #xxx9a = r.Sys_time()
                 chunkTMEAN = atleast_2d(np.mean(chunk,0))
+            
+                # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
+                ind5km = np.where(chunkTMEAN!=-99999999) 
                 #xxx9 = xxx9 + (r.Sys_time() - xxx9a)
 
                 # run check that this time-aggregated chunk has same spatial dimensions as time block
@@ -399,7 +406,13 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                     return(-9999)
 
                 # obtain a burden surface for this chunk as a function of population and PR
-                burdenChunk = PrevPoptoBurden(PRsurface = chunkExp, POPsurface = gr001km_ROW, tyears = N_years)
+                ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
+                #PRsurfaceVECTOR=chunkTMEAN[ind5km]
+                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump1km_ROW,pop_pr_res=HiResLowResRatio)
+                print 'shape(burdenChunk): '+str(shape(burdenChunk))
+                print 'shape(chunkTMEAN): '+str(shape(chunkTMEAN))
+                #burdenChunk =cp.deepcopy(chunkExp) # simply provides a template in correct format (1km) to populate with burdenChunkVECTOR
+                #burdenChunk[ind1km]=burdenChunkVECTOR
                 
                 # create an ID matrix for this chunk for each endemicity class in each scheme                
                 #xxx11a = r.Sys_time()
@@ -465,7 +478,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                             countryClassID = countryID*classID    
                             
                             # calculate sum of population in this class and country and add this sum to the relevant part of PARdict_ChunkRunning
-                            PARtemp=gr001km_ROW * countryClassID
+                            PARtemp=grump1km_ROW * countryClassID
                             PARsum = sum(PARtemp)
                             PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] = PARdict_ChunkRunning[scheme]['PAR'][thisbreakname][thiscountry_salbLUT,kk] + PARsum
 
@@ -553,7 +566,7 @@ def outputDistributedExtractions_country(dict):
     
     Params to pass are:
     
-    dict      : output from outputDistributedExtractions_country
+    dict      : output from outputDistributedExtractions_country 
     '''
 
     # check for error output from extractSummaries_country due to NaNs
@@ -645,7 +658,12 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
     # if we are extracting burden summaries, import 5km population grid
     if BURDEN==True:
-        gr005km = tb.openFile(gr005km_path)
+        grump5km = tb.openFile(grump5km_path)
+        
+        # define a function object for later estimation of burden, basedon this grump1km row (after cnvertig to a vector)
+        #ind = np.where(grump5km.root.data[:,:]!=-99999999)
+        #POPsurfaceVECTOR=grump5km.root.data[:,:][ind]
+        BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, nyr=N_years, burn=0) 
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
@@ -750,7 +768,13 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             # get burden realisation for this PR and increment running burden matrix
             if BURDEN==True:
-                burdenChunk = PrevPoptoBurden(PRsurface = chunkTMEAN, POPsurface = gr005km.root.data[:,:], tyears = N_years)
+
+                ## convert PRsurface to vector before passing, then back=convert afterwards
+                #PRsurfaceVECTOR=chunkTMEAN[ind]
+                burdenChunk = BurdenPredictorObj(pr=chunkTMEAN,pop=grump1km_ROW,pop_pr_res=1)
+                #burdenChunk =cp.deepcopy(chunkTMEAN) # simply provides a template in correct format to populate with burdenChunkVECTOR
+                #burdenChunk[ind]=burdenChunkVECTOR
+
                 meanBUR = meanBUR + (burdenChunk/totalN)
                 meanBUR2 = meanBUR2 + (np.square(burdenChunk)/totalN)
             

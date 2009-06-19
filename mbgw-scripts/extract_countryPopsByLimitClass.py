@@ -5,31 +5,30 @@ from rpy import *
 from extract_PYlib import examineSalb
 
 # import some r functions
-from extract_params import utilFolder
-r.source(utilFolder+'GeneralUtility.R')
+r.source('/home/pwg/map_utils/map_utils/GeneralUtility.R')
 writeTableWithNamesPY = r['writeTableWithNames']
 
 # set some parameters
-salb1km_path = "/home/pwg/mbg-world/datafiles/auxiliary_data/salb1km-e_AF.hdf5"
-gr001km_path= "/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_AF.hdf5"
-lims1km_path= "/home/pwg/mbg-world/datafiles/auxiliary_data/lims1km-e_AF.hdf5"
+salb1km_path = "/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/salb1km-e2_y-x+.hdf5"
+grump1km_path= "/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr071km_y-x+.hdf5"
+lims1km_path= "/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/lims1km-e_y-x+.hdf5"
 outputTable_path = "/home/pwg/mbg-world/extraction/FixedPopulationExtraction.csv"
 
 # check paths
 from map_utils import checkAndBuildPaths
 checkAndBuildPaths(salb1km_path,VERBOSE=True,BUILD=False)
-checkAndBuildPaths(gr001km_path,VERBOSE=True,BUILD=False)
+checkAndBuildPaths(grump1km_path,VERBOSE=True,BUILD=False)
 checkAndBuildPaths(lims1km_path,VERBOSE=True,BUILD=False)
 
 
 # open link to salb grid, 3-level limits grid, and population grid
 salb1km = tb.openFile(salb1km_path, mode = "r")    
-gr001km = tb.openFile(gr001km_path, mode = "r")    
+grump1km = tb.openFile(grump1km_path, mode = "r")    
 lims1km = tb.openFile(lims1km_path, mode = "r") 
 
 # run check that input grids are the same shape
-if(((np.shape(salb1km.root.data)==np.shape(gr001km.root.data)==np.shape(lims1km.root.data))==False)):
-    print "WARNING!! input grids are of uneven shape. salb1km="+str(np.shape(salb1km.root.data))+"; gr001km="+str(np.shape(gr001km.root.data))+"; lims1km="+str(np.shape(lims1km.root.data))
+if(((np.shape(salb1km.root.data)==np.shape(grump1km.root.data)==np.shape(lims1km.root.data))==False)):
+    print "WARNING!! input grids are of uneven shape. salb1km="+str(np.shape(salb1km.root.data))+"; grump1km="+str(np.shape(grump1km.root.data))+"; lims1km="+str(np.shape(lims1km.root.data))
 
 # run extract salb to get list of unique salb IDs and corresponding pixel count
 salbDict = examineSalb (salb1km)
@@ -57,11 +56,11 @@ for jj in xrange(0,n_rows):
 
     # get this row of 1km Salb,population surface,and limits (assumes they are correct way up i.e. map view)  
     salb1km_ROW = salb1km.root.data[jj,:]
-    gr001km_ROW = gr001km.root.data[jj,:]
+    grump1km_ROW = grump1km.root.data[jj,:]
     lims1km_ROW = lims1km.root.data[jj,:]
 
     # define a blank array of zeroes of same size as 1km row - that will be duplicated for various uses later
-    zeroChunk = zeros(product(gr001km_ROW.shape)).reshape(gr001km_ROW.shape)
+    zeroChunk = zeros(product(grump1km_ROW.shape)).reshape(grump1km_ROW.shape)
 
     # define ID matrices for this row for each limits class
     nullriskIDmatrix = cp.deepcopy(zeroChunk)
@@ -99,11 +98,11 @@ for jj in xrange(0,n_rows):
         countSalb_check[whichRow] = countSalb_check[whichRow] + sum(countryIDmatrix)
 
         # calculate sum of population in each limits class for this country/row
-        Pop_all_ROW = sum(countryIDmatrix * gr001km_ROW)
-        Pop_nullrisk_ROW = sum(countryIDmatrix * nullriskIDmatrix * gr001km_ROW)
-        Pop_riskfree_ROW = sum(countryIDmatrix * riskfreeIDmatrix * gr001km_ROW)
-        Pop_unstable_ROW = sum(countryIDmatrix * unstableIDmatrix * gr001km_ROW)
-        Pop_stable_ROW = sum(countryIDmatrix * stableIDmatrix * gr001km_ROW)
+        Pop_all_ROW = sum(countryIDmatrix * grump1km_ROW)
+        Pop_nullrisk_ROW = sum(countryIDmatrix * nullriskIDmatrix * grump1km_ROW)
+        Pop_riskfree_ROW = sum(countryIDmatrix * riskfreeIDmatrix * grump1km_ROW)
+        Pop_unstable_ROW = sum(countryIDmatrix * unstableIDmatrix * grump1km_ROW)
+        Pop_stable_ROW = sum(countryIDmatrix * stableIDmatrix * grump1km_ROW)
 
         # add these sums to global population count vectors for this country:
         Pop_all[whichRow] = Pop_all[whichRow] + Pop_all_ROW
@@ -120,8 +119,8 @@ for jj in xrange(0,n_rows):
 
         # should be no non-zero population pixels in areas of null salb ID
         if (uniqueSalb_ROW[rr] == -9999):
-            if sum(countryIDmatrix * gr001km_ROW) > 0:
-                print "WARNING!! "+str(sum(countryIDmatrix * gr001km_ROW))+" population found in null salb (-9999) area in row "+str(jj)  
+            if sum(countryIDmatrix * grump1km_ROW) > 0:
+                print "WARNING!! "+str(sum(countryIDmatrix * grump1km_ROW))+" population found in null salb (-9999) area in row "+str(jj)  
 
 # run various checks on final output for each country
 for ii in xrange(0,Nsalb):
@@ -132,7 +131,7 @@ for ii in xrange(0,Nsalb):
     # sum of population in each limits class matches total population in each country 
     popsumclasses = Pop_nullrisk[ii] + Pop_riskfree[ii] + Pop_unstable[ii] + Pop_stable[ii]
     popsum = Pop_all[ii]
-    if (popsumclasses!=popsum):
+    if (popsumclasses != popsum):
         print "WARNING!! sum of population accross classes ("+str(popsumclasses)+") != total population ("+str(popsum)+") in country salbID = "+str(uniqueSalb[ii])
 
 # build and export array of country population summaries

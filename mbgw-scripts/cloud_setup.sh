@@ -15,7 +15,17 @@ apt-get install python-boto
 rm -r -f mbg-world
 git clone git://github.com/malaria-atlas-project/mbg-world.git
 cd mbg-world
+git checkout a5cf4606c3066959f953bed98d7e6703d9030540
+git checkout -b master
+git pull origin master
 ln -s ../datafiles datafiles
+python setup.py develop
+cd
+
+rm -r -f generic-mbg
+git clone git://github.com/malaria-atlas-project/generic-mbg.git
+cd generic-mbg 
+ln -s ../datafiles datafiles 
 python setup.py develop
 cd
 
@@ -31,3 +41,12 @@ git clone git://github.com/malaria-atlas-project/map_utils.git
 cd map_utils
 python setup.py install
 cd
+
+rm -r -f pr-incidence
+git clone git://github.com/malaria-atlas-project/pr-incidence.git
+cd pr-incidence
+python setup.py install
+cd
+
+export OMP_NUM_THREADS=1
+

@@ -17,7 +17,7 @@ import auxiliary_data
 import gc
 # from get_covariates import extract_environment_to_hdf5
 from tables import ObjectAtom
-from map_utils import FieldStepper, st_mean_comp
+from generic_mbg import FieldStepper, st_mean_comp
 
 __all__ = ['st_mean_comp', 'create_model']
 
