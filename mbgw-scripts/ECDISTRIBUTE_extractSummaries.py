@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-41422228 extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-930170fa extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -20,7 +20,7 @@ import time
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 3
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
@@ -38,17 +38,17 @@ NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
 
 ####################################TEMP
-#NJOBS = 237
-#NRELS = 180
+NJOBS = 1
+NRELS = 1
 ####################################TEMP
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 100
+NPER  = 1
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
-#NTOTALREL = 2
+NTOTALREL = 1
 ####################################TEMP
 
 # define files to upload to instance (from local machine) before any execution
