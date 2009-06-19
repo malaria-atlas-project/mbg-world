@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-930e7ffa extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-51700138 extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -33,6 +33,8 @@ relPath = localparams.realisations_path.rsplit('/')[-1]
 # call queryRealizationsInBucket to obtain number and start/end realisation numbers of these realisation files
 relDict = S.queryRealizationsInBucket(relBucket,relPath,VERBOSE=True)
 
+print '\nquerying bucket '+str(relBucket)+' : found '+str(relDict['Nrealisations'])+' realisations accross '+str(relDict['Nfiles'])+' files.'
+
 # set realization number parameters
 NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
@@ -58,9 +60,7 @@ UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-wo
 INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
 
 # construct main commands list
-#CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
-
-CMDS=[]
+CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
