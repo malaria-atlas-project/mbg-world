@@ -296,7 +296,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     # Figure out pdata
     pdata = np.empty(tdata.shape)
     for i in xrange(len(where_in)):
-        pdata[where_in[i]] = out_arr[real_index, grid_shape[1]-data_mesh_indices[i,1], data_mesh_indices[i,0], data_mesh_indices[i,2]]
+        pdata[where_in[i]] = out_arr[real_index, grid_shape[1]-1-data_mesh_indices[i,1], data_mesh_indices[i,0], data_mesh_indices[i,2]]
 
     # jointly simulate at data points conditional on block    
 
