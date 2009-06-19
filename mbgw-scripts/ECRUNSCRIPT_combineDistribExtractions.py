@@ -136,14 +136,14 @@ if (PERCOUNTRY==True):
     failCount = 0
     while failCount<=3:
         try:
-            S.uploadDirectoryAsBucket('misc',uniqueSalb_path.rpartition('/')[0],uploadConstituentFiles=True,overwriteContent=True)
+            S.uploadDirectoryAsBucket(examineSalbFolder,uniqueSalb_path.rpartition('/')[0],uploadConstituentFiles=True,overwriteContent=True)
             break
         except RuntimeError:
             failCount+=1 
             if failCount<=3:
-                print '\t\tuploading contents of '+uniqueSalb_path.rpartition('/')[0]+' to S3 bucket misc failed '+str(failCount) +' times: retrying..'
+                print '\t\tuploading contents of '+uniqueSalb_path.rpartition('/')[0]+' to S3 bucket '+str(examineSalbFolder)+' failed '+str(failCount) +' times: retrying..'
             else:
-                print '\t\tuploading contents of '+uniqueSalb_path.rpartition('/')[0]+' to S3 bucket misc failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'
+                print '\t\tuploading contents of '+uniqueSalb_path.rpartition('/')[0]+' to S3 bucket '+str(examineSalbFolder)+' failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'
 
 print "FINISHED: ECRUNSCRIPT_combineDistribExtractions\n"
 
