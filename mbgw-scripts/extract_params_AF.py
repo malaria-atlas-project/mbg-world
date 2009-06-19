@@ -1,4 +1,7 @@
 from numpy import array
+
+# set start and end month slice (python array index of months in block to aggregate over - 0 is earliest month in block)
+MonthsSlice = slice(0,12,None)
  
 # standard path to utility function directory (used to source generic R functions)
 utilFolder = '/root/map_utils/map_utils/'
