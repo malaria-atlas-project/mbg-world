@@ -1,16 +1,17 @@
-# example command line:
-# run ECDISTRIBUTE_combineDistribExtractions r-f76c1d9e extract_params_AF.py
-
-# import libraries
-import sys
-from map_utils import amazon_ec
-import numpy as np
-from map_utils import checkAndBuildPaths
-import time
+## example call:
+# ECDISTRIBUTE_combineDistribExtractions r-f76c1d9e extract_params_AF.py
 
 # deal with system arguments (expects two)
-RESERVATIONID = str(sys.argv[1])  ## defines ID of reservation that contains the instances we will use on EC2
-PARAMFILE = sys.argv[2]           ## defines name (inlduing '.py' extension) of parameter file to use
+## defines ID of reservation that contains the instances we will use on EC2
+import sys
+RESERVATIONID = str(sys.argv[1])
+PARAMFILE = sys.argv[2]
+
+# import libraries
+from map_utils import amazon_ec
+from map_utils import S3
+import numpy as np
+from map_utils import checkAndBuildPaths
 
 # initialise amazon S3 key object 
 #S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
@@ -19,7 +20,7 @@ PARAMFILE = sys.argv[2]           ## defines name (inlduing '.py' extension) of 
 NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 # maximum number of tries before we give up on any individual job
-STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.time())+'/'
+STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # define files to upload to instance before any execution
@@ -32,4 +33,4 @@ INITCMDS=['bash /root/cloud_setup.sh']
 CMDS = ['"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_combineDistribExtractions.py True True True"'] 
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
-returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+returns = map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    

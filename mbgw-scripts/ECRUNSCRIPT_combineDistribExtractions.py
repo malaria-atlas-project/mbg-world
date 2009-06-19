@@ -4,13 +4,11 @@ print "STARTING: ECRUNSCRIPT_combineDistribExtractions..\n"
 from map_utils import checkAndBuildPaths
 from extract_combineExtractions import *
 from map_utils import S3
-import sys
 from extract_params import *
 
-S=S3(keyPath) # initialise key object
+S=S3() # initialise key object
 
 # deal with system arguments
-
 BURDEN = True
 PERPIXEL = True
 PERCOUNTRY = True
