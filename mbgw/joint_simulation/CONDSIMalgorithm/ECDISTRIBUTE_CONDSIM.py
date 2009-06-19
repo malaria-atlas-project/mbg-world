@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_CONDSIM r-436d1b2a CONDSIM_params_AF.py 15
+# run ECDISTRIBUTE_CONDSIM r-935b2dfa CONDSIM_params_AF.py 15
 
 # import libraries
 from map_utils import amazon_ec
@@ -26,7 +26,7 @@ STDOUTPATH = '/home/pwg/mbg-world/stdout_CONDSIM/DistributedOutputSTDOUTERR_'+st
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # set realization number parameters
-n_total = 120 #600
+n_total = 100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 
