@@ -3,12 +3,14 @@ print "STARTING: ECRUNSCRIPT_combineDistribExtractions..\n"
 # import libraries
 from map_utils import checkAndBuildPaths
 from extract_combineExtractions import *
-from boto_PYlib import *
+from map_utils import S3
+import sys
 from extract_params import *
 
-S=S3() # initialise key object
+S=S3(keyPath) # initialise key object
 
 # deal with system arguments
+
 BURDEN = True
 PERPIXEL = True
 PERCOUNTRY = True
@@ -26,7 +28,7 @@ if (PERPIXEL==True):
 
     # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
     print '\n\tDownloading contents of S3 bucket "distributedoutput_perpixel" to local directory '+exportPathDistributed_perpixel
-    S.downloadBucketContents(exportPathDistributed_perpixel.split('/')[-2],exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
+    S.downloadBucketContents('distributedoutput_perpixel',exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
 
     # build path for output to house combined per-pixel output maps
     print '\n\tChecking path for '+exportPathCombined_perpixel
@@ -60,20 +62,20 @@ if (PERPIXEL==True):
     failCount = 0
     while failCount<=3:
         try:
-            S.uploadDirectoryAsBucket(exportPathCombined_perpixel.split('/')[-2],exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
+            S.uploadDirectoryAsBucket('combinedoutput_perpixel',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
             break
         except RuntimeError:
             failCount+=1 
             if failCount<=3:
-                print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket '+exportPathCombined_perpixel.split('/')[-2]+' failed '+str(failCount) +' times: retrying..'
+                print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel failed '+str(failCount) +' times: retrying..'
             else:
-                print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket '+exportPathCombined_perpixel.split('/')[-2]+' failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'
+                print '\t\tuploading contents of exportPathCombined_perpixel to S3 bucket CombinedOutput_perpixel failed '+str(failCount) +' times: GIVING UP - FILE CONTENTS MAY NOT ALL HAVE COPIED!!'
 
 if (PERCOUNTRY==True):
 
     # download from S3 contents of bucket 'distributedoutput_country', will automatically build the local directory if necessary
     print '\n\tDownloading contents of S3 bucket "distributedoutput_country" to local directory '+exportPathDistributed_perpixel
-    S.downloadBucketContents(exportPathDistributed_country.split('/')[-2],exportPathDistributed_country,overwriteContent=False,VERBOSE=True)
+    S.downloadBucketContents('distributedoutput_country',exportPathDistributed_country,overwriteContent=False,VERBOSE=True)
 
     # download from S3 the salblim1km and salb1km file (used for calculating uniqueSalb and Nsalb / NsalbWholeCountries etc with function examineSalb)
     print '\n\tDownloading salblim1km file from S3..'
@@ -136,7 +138,7 @@ if (PERCOUNTRY==True):
     failCount = 0
     while failCount<=3:
         try:
-            S.uploadDirectoryAsBucket(examineSalbFolder,uniqueSalb_path.rpartition('/')[0],uploadConstituentFiles=True,overwriteContent=True)
+            S.uploadDirectoryAsBucket('misc',uniqueSalb_path.rpartition('/')[0],uploadConstituentFiles=True,overwriteContent=True)
             break
         except RuntimeError:
             failCount+=1 
