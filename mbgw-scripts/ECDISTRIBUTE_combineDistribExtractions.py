@@ -1,11 +1,12 @@
 # example command line:
-# run ECDISTRIBUTE_combineDistribExtractions r-095f3f60 extract_params_AF.py
+# run ECDISTRIBUTE_combineDistribExtractions r-f76c1d9e extract_params_AF.py
 
 # import libraries
 import sys
 from map_utils import amazon_ec
 import numpy as np
 from map_utils import checkAndBuildPaths
+import time
 
 # deal with system arguments (expects two)
 RESERVATIONID = str(sys.argv[1])  ## defines ID of reservation that contains the instances we will use on EC2
@@ -18,7 +19,7 @@ PARAMFILE = sys.argv[2]           ## defines name (inlduing '.py' extension) of 
 NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 # maximum number of tries before we give up on any individual job
-STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
+STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.time())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # define files to upload to instance before any execution
