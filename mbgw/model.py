@@ -59,7 +59,11 @@ else:
     disttol = 0./6378.
     ttol = 0.
 
-def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
+def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
+    
+    if np.any(pos+neg==0):
+        where_zero = np.where(pos+neg==0)[0]
+        raise ValueError, 'Pos+neg = 0 in the rows (starting from zero):\n %s'%where_zero
         
     C_time = [0.]
     f_time = [0.]
@@ -126,8 +130,7 @@ def make_model(pos,neg,lon,lat,t,covariate_values,lo_age=None,up_age=None,cpus=1
 
         # Make it easier for inc (psi) to jump across 0: let nonmod_inc roam freely over the reals,
         # and mod it by pi to get the 'inc' parameter.
-        nonmod_inc = pm.Uninformative('nonmod_inc', value=.5)
-        inc = pm.Lambda('inc', lambda nonmod_inc = nonmod_inc: nonmod_inc % np.pi)
+        inc = pm.CircVonMises('inc', 0, 0)
 
         # Use a uniform prior on sqrt ecc (sqrt ???). Using a uniform prior on ecc itself put too little
         # probability mass on appreciable levels of anisotropy.
