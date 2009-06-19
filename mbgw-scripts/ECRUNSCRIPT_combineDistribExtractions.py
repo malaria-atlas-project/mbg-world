@@ -26,7 +26,7 @@ if (PERPIXEL==True):
 
     # download from S3 contents of bucket 'distributedoutput_perpixel', will automatically build the local directory if necessary
     print '\n\tDownloading contents of S3 bucket "distributedoutput_perpixel" to local directory '+exportPathDistributed_perpixel
-    S.downloadBucketContents('distributedoutput_perpixel',exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
+    S.downloadBucketContents('distributedoutput_perpixel_af',exportPathDistributed_perpixel,overwriteContent=False,VERBOSE=True)
 
     # build path for output to house combined per-pixel output maps
     print '\n\tChecking path for '+exportPathCombined_perpixel
@@ -60,7 +60,7 @@ if (PERPIXEL==True):
     failCount = 0
     while failCount<=3:
         try:
-            S.uploadDirectoryAsBucket('combinedoutput_perpixel',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
+            S.uploadDirectoryAsBucket('combinedoutput_perpixel_af',exportPathCombined_perpixel,uploadConstituentFiles=True,overwriteContent=True)
             break
         except RuntimeError:
             failCount+=1 
@@ -73,7 +73,7 @@ if (PERCOUNTRY==True):
 
     # download from S3 contents of bucket 'distributedoutput_country', will automatically build the local directory if necessary
     print '\n\tDownloading contents of S3 bucket "distributedoutput_country" to local directory '+exportPathDistributed_perpixel
-    S.downloadBucketContents('distributedoutput_country',exportPathDistributed_country,overwriteContent=False,VERBOSE=True)
+    S.downloadBucketContents('distributedoutput_country_af',exportPathDistributed_country,overwriteContent=False,VERBOSE=True)
 
     # download from S3 the salblim1km and salb1km file (used for calculating uniqueSalb and Nsalb / NsalbWholeCountries etc with function examineSalb)
     print '\n\tDownloading salblim1km file from S3..'
