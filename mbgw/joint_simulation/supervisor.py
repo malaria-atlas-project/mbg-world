@@ -285,7 +285,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
         os.chdir(curpath)
         OutMATlist= monthObject['OutMATlist']
         MonthGrid = monthObject['MonthGrid']
-        out_arr[real_index,:,:,i] = grid_convert(MonthGrid,'y-x+','x+y+')[:grid_shape[0], :grid_shape[1]]
+        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
     print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
@@ -296,7 +296,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     # Figure out pdata
     pdata = np.empty(tdata.shape)
     for i in xrange(len(where_in)):
-        pdata[where_in[i]] = out_arr[(real_index,) + tuple(data_mesh_indices[i,:])]
+        pdata[where_in[i]] = out_arr[real_index, grid_shape[1]-data_mesh_indices[i,1], data_mesh_indices[i,0], data_mesh_indices[i,2]]
 
     # jointly simulate at data points conditional on block    
 
@@ -384,12 +384,12 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
         
         row += covariate_mesh
         row += M(x)
-        row += out_arr[real_index,:,:,i]
+        row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
  
         # NaN the oceans to save storage
         row[np.where(1-mask)] = missing_val
         
-        out_arr[real_index,:,:,i] = row
+        out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
     print '\t\tDone in %f'%(time.time()-t1)        
         
@@ -557,5 +557,3 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
  
     # return 1d array of simulated values    
     return f(XYT_out)
-
-
