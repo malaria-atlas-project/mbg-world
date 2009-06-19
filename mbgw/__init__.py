@@ -46,7 +46,7 @@ x_name = 'data_mesh'
 diag_safe = True
 non_cov_columns = {'lo_age': 'int', 'up_age': 'int', 'pos': 'float', 'neg': 'float'}
 
-bins = np.array([0,.01,.05,.1,.2,.4,1])
+bins = np.array([0,.001,.01,.05,.1,.2,.4,1])
 
 def binfn(arr, bins=bins):
     out = np.digitize(arr, bins)

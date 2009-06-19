@@ -128,8 +128,6 @@ def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1
             a1 = pm.Uninformative('a1',0,observed=True)
             a2 = pm.Uninformative('a2',0,observed=True)        
 
-        # Make it easier for inc (psi) to jump across 0: let nonmod_inc roam freely over the reals,
-        # and mod it by pi to get the 'inc' parameter.
         inc = pm.CircVonMises('inc', 0, 0)
 
         # Use a uniform prior on sqrt ecc (sqrt ???). Using a uniform prior on ecc itself put too little
@@ -159,7 +157,7 @@ def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1
         vars_to_writeout.extend(['inc','ecc','amp','scale','scale_t','t_lim_corr','sin_frac'])
     
         # Collect stochastic variables with observed=False for the adaptive Metropolis stepper.
-        trial_stochs = [tau, a1, a2, nonmod_inc, sqrt_ecc, log_amp, log_scale, scale_t, t_lim_corr, sin_frac]
+        trial_stochs = [tau, a1, a2, sqrt_ecc, log_amp, log_scale, scale_t, t_lim_corr, sin_frac]
         nondata_stochs = []
         for stoch in trial_stochs:
             if not stoch.observed:
