@@ -32,7 +32,7 @@ if sys.argv[7] == 'False' : BURDEN=False
 if sys.argv[8] == 'False' : PERPIXEL=False
 if sys.argv[9] == 'False' : PERCOUNTRY=False
 
-S=S3() # initialise key object
+S=S3(keyPath) # initialise key object
 
 
 # build realisation block import path

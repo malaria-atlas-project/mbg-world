@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-930170fa extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-bd0677d4 extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -58,11 +58,13 @@ UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-wo
 INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py False True False"']
 
 # construct main commands list
-CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
+#CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
+
+CMDS=[]
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
-returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=True,STDOUTPATH=STDOUTPATH)    
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
 
 print 'total run time for '+str(NJOBS)+' jobs with NPER='+str(NPER)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
