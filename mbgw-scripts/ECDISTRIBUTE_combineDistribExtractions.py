@@ -1,3 +1,6 @@
+## example call:
+# ECDISTRIBUTE_combineDistribExtractions r-f76c1d9e extract_params_AF.py
+
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
 import sys
@@ -5,8 +8,8 @@ RESERVATIONID = str(sys.argv[1])
 PARAMFILE = sys.argv[2]
 
 # import libraries
-from amazon_ec import *
-from boto_PYlib import *
+from map_utils import amazon_ec
+from map_utils import S3
 import numpy as np
 from map_utils import checkAndBuildPaths
 
@@ -17,11 +20,11 @@ from map_utils import checkAndBuildPaths
 NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 # maximum number of tries before we give up on any individual job
-STDOUTPATH = '/home/pwg/mbg-world/extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
+STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # define files to upload to instance before any execution
-UPLOADFILES=['amazon_joint_sim.py','/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
+UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 
 # define any initialisation commands to exctue on instance before main job
 INITCMDS=['bash /root/cloud_setup.sh']

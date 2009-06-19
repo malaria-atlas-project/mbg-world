@@ -3,7 +3,7 @@ print "STARTING: ECRUNSCRIPT_combineDistribExtractions..\n"
 # import libraries
 from map_utils import checkAndBuildPaths
 from extract_combineExtractions import *
-from boto_PYlib import *
+from map_utils import S3
 from extract_params import *
 
 S=S3() # initialise key object
