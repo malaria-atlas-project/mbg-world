@@ -20,7 +20,7 @@ import time
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
-NINSTANCES = 1
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 3
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
@@ -40,17 +40,17 @@ NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
 
 ####################################TEMP
-NJOBS = 1
-NRELS = 1
+#NJOBS = 1
+#NRELS = 1
 ####################################TEMP
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 1
+NPER  = 10
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
-NTOTALREL = 1
+#NTOTALREL = 1
 ####################################TEMP
 
 # define files to upload to instance (from local machine) before any execution
