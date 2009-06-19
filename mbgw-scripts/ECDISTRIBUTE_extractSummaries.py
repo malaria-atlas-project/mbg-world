@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-bd0677d4 extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-1d0c7d74 extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -23,7 +23,7 @@ S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 NINSTANCES = 1
 MAXJOBSPERINSTANCE = 3
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
-STDOUTPATH = '/home/pwg/mbg-world/extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
+STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # set path to realisations on S3 and extract bucket and generic file name
@@ -55,7 +55,7 @@ NTOTALREL = 1
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 
 # define any initialisation commands to exctue on instance before main job
-INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py False True False"']
+INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
 
 # construct main commands list
 #CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
