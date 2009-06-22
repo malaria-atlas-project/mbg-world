@@ -243,12 +243,21 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         #f_chunk = f_chunk[:,:,:,0]                       #f_chunk = [month,col,row]
 
         # because pyTables is not working properly, manually loop through each month we want to extract and make a ST 3d matrix
-        n_months = tot_slice[3].stop - tot_slice[3].start
-        f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
-        for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
-            f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        #n_months = tot_slice[3].stop - tot_slice[3].start
+        #f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+        #for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+        #    f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
         #pdb.set_trace()
-        f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+        #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+
+        n_months = tot_slice[3].stop - tot_slice[3].start
+        f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
+        subsetmonth=0 
+        for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+            f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+            subsetmonth=subsetmonth+1
+        #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]
+        f_chunk = f_chunk.squeeze()
 
         ########TEMP###########
         #set missing vlaues in f block to 0
@@ -393,7 +402,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                 # aggregate through time to obtain spatial-only array for this nugget-realisation
                 #xxx9a = r.Sys_time()
-                chunkTMEAN = atleast_2d(np.mean(chunk,0))
+                chunkTMEAN = atleast_2d(np.mean(chunk,-1))
             
                 # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
                 #ind5km = np.where(chunkTMEAN!=-99999999) 
