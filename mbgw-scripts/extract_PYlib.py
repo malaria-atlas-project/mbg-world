@@ -274,8 +274,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         #xxx4a = r.Sys_time() 
         # run check that there are no missing values in this f chunk
         if sum(isnan(f_chunk))>0:
-            print "WARNING!! found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
-            return(-9999)
+            raise RuntimeError ("Found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!")
 
         ## initialise arrays to house running mean PR whilst we loop through chunks and nugget draws..
         countryMeanPRrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
@@ -336,7 +335,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             #xxx5a = r.Sys_time() 
             # get row of 5km PR surface accross all months in chunk  (assumes f_chunk is correct way up i.e. map view)
             #f_chunk_ROW = f_chunk[:,jj,:]
-            f_chunk_ROW = f_chunk[:,startRow:endRow:1,:]
+            f_chunk_ROW = f_chunk[startRow:endRow:1,:,:]
             
             # get corresponding 5 rows of 1km Salb and population surface (assumes they are correct way up i.e. map view)
             startRow1km=startRow*HiResLowResRatio
