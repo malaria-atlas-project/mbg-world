@@ -430,7 +430,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 testmatrix = cp.deepcopy(chunkExp)
                 testmatrix[salblim1km_ROW == -9999] = 0
                 if (np.sum(testmatrix == -9999) > 0):
-                    raise RuntimeError ("WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!")
+                    raise RuntimeError ("WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj)+ ": EXITING!!")
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
