@@ -787,8 +787,8 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             
             #######################TEMP NO NUGGET
-            #chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
-            chunk = f_chunk+0
+            chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            #chunk = f_chunk+0
             ######################################
             
             
@@ -810,7 +810,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             # increment runing mean PR matrices 
             meanPR = meanPR + (chunkTMEAN/totalN)
             meanPR2 = meanPR2 + (np.square(chunkTMEAN)/totalN)
-            
+
             # get burden realisation for this PR and increment running burden matrix
             if BURDEN==True:
 

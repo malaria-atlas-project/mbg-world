@@ -452,10 +452,10 @@ def combineDistribExtractions_perpixel():
     stdevBUR = np.sqrt(varBUR)
 
     # export mean and SD arrays as asciis
-    exportAscii(meanPR,exportPathCombined_perpixel+"meanPR.asc",hdrDict)#,mask = mask.root.data[:,:])
-    exportAscii(stdevPR,exportPathCombined_perpixel+"stdevPR.asc",hdrDict)#,mask = mask.root.data[:,:])
-    exportAscii(meanBUR,exportPathCombined_perpixel+"meanBUR.asc",hdrDict)#,mask = mask.root.data[:,:])
-    exportAscii(stdevBUR,exportPathCombined_perpixel+"stdevBUR.asc",hdrDict)#,mask = mask.root.data[:,:])
+    exportAscii(meanPR,exportPathCombined_perpixel+"meanPR.asc",hdrDict,mask = mask.root.data[:,:])
+    exportAscii(stdevPR,exportPathCombined_perpixel+"stdevPR.asc",hdrDict,mask = mask.root.data[:,:])
+    exportAscii(meanBUR,exportPathCombined_perpixel+"meanBUR.asc",hdrDict,mask = mask.root.data[:,:])
+    exportAscii(stdevBUR,exportPathCombined_perpixel+"stdevBUR.asc",hdrDict,mask = mask.root.data[:,:])
 
     # for each classification scheme, define an array showing PCM to most likely class (PCMMLC) and what that most likely class is (MLC)
     for ss in xrange(0,Nschemes):             
