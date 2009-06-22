@@ -438,8 +438,8 @@ def reduce_realizations(filename, reduce_fns, slices, a_lo, a_hi, n_per):
 def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock):
 
     # extract grid parameters for ease
-    ncols = grids[0][2]
-    nrows = grids[1][2]
+    ncols = grids[1][2]
+    nrows = grids[0][2]
     nmonths = grids[2][2]
 
     # do dirty calculation to approximately evenly spread sample of size NinThinnedBlock accross ST unconditioned block
@@ -463,8 +463,8 @@ def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock):
     tcoords = coordsDict['tcoords']
 
     ### thinned vectors
-    xcoords = xcoords[slice(0,nrows,XYthinRate)]
-    ycoords = ycoords[slice(0,ncols,XYthinRate)]
+    xcoords = xcoords[slice(0,ncols,XYthinRate)]
+    ycoords = ycoords[slice(0,nrows,XYthinRate)]
     tcoords = tcoords[slice(0,nmonths,Tthinrate)]
 
     ### get XYT and Z lists from this extracted block
