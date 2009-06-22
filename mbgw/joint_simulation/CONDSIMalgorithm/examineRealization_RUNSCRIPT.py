@@ -172,6 +172,6 @@ run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000
 
 
 cd
-cd /home/pwg/Realizations/postmapview
-run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 4 True TRUE 15 0 11 True True
+cd /home/pwg/mbg-world/mbgw-script
+run examineRealization "/home/pwg/Realizations/postmapview/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 4 True FALSE 15 0 11 True True
 

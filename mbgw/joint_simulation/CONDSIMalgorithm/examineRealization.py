@@ -47,7 +47,7 @@ hr = hf.root
 
 # initialise plot window
 nplots = 0
-if SPACE=="True": nplots=nplots+3
+if SPACE=="True": nplots=nplots+5
 if TIME=="True": nplots=nplots+1
 r.X11(width=3.3*nplots,height=4)
 r.par(mfrow=(1,nplots))
@@ -71,7 +71,7 @@ if SPACE=="True":
     tot_slice = (slice(Rel,Rel+1,None),) + slices    
 
     n_months = tot_slice[3].stop - tot_slice[3].start
-    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
     subsetmonth=0 
 
     #print tot_slice
@@ -80,11 +80,23 @@ if SPACE=="True":
     for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
         f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
         subsetmonth=subsetmonth+1
-    f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+    #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0] 
+    f_chunk = f_chunk.squeeze()
     f_chunk[f_chunk==-9999]=nan
 
-    # plot this grid
+    # plot this grid 
     plotMapPY(f_chunk.squeeze(),flipVertical=flipVertical)
+    r.title(main="logit")
+
+    inv_f_chunk=pm.invlogit(f_chunk.squeeze().T)
+    inv_f_chunk=inv_f_chunk.reshape(shape(f_chunk))
+    plotMapPY(inv_f_chunk,flipVertical=flipVertical)
+    r.title(main="inv logit")
+
+
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()   
+
 
     # compare global variance to parameter draw
     observedVar = round(np.var(f_chunk[np.isnan(f_chunk)==False]),3)
@@ -94,8 +106,7 @@ if SPACE=="True":
 
     # plot histogram
     junk=r.hist(f_chunk[np.isnan(f_chunk)==False],main=varString,xlab="",ylab="")
-
-
+    junk=r.hist(pm.invlogit(f_chunk[np.isnan(f_chunk)==False]),xlab="",ylab="", main="")
 
     # calculate and plot empirical covariance function in N-S direction
     gridIN = cp.deepcopy(f_chunk).squeeze()
@@ -152,13 +163,14 @@ if TIME=="True":
     tot_slice = (slice(Rel,Rel+1,None),) + slices    
 
     n_months = tot_slice[3].stop - tot_slice[3].start
-    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
     subsetmonth=0 
 
     for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
         f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
         subsetmonth=subsetmonth+1
-    f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+    #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]
+    f_chunk = f_chunk.squeeze()   
     f_chunk[f_chunk==-9999]=nan
 
     # calculate and plot empirical temporal covariance
