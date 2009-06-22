@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_CONDSIM r-ed7b0884 CONDSIM_params_AF.py 15
+# run ECDISTRIBUTE_CONDSIM r-09621160 CONDSIM_params_AF.py 15
 
 # import libraries
 from map_utils import amazon_ec
@@ -41,7 +41,7 @@ CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python ECRU
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
-returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=True,STDOUTPATH=STDOUTPATH)    
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
 
 print 'total run time for '+str(NJOBS)+' jobs with iter_per_job='+str(iter_per_job)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
