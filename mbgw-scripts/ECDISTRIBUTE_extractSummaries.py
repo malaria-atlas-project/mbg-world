@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-f372039a extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-ab6f1cc2 extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -20,7 +20,7 @@ import time
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 3
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
@@ -46,7 +46,7 @@ NJOBS = relDict['Nfiles']
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 10
+NPER  = 2
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
