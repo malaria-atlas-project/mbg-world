@@ -132,7 +132,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     outfile.createArray('/','t_axis',axes[2],title='Time in years since 2009')        
     outfile.createCArray('/','realizations',
                         tb.Float32Atom(), 
-                        shape=(N,) + grid_shape, 
+                        shape=(N,grid_shape[1],grid_shape[0],grid_shape[2]), 
                         filters=tb.Filters(complevel=1), 
                         chunkshape = (1,grid_shape[0],grid_shape[1],1))
     
