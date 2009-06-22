@@ -783,7 +783,15 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             # add nugget component, apply inverse logit, apply age-correction factor
             #xxx8a = r.Sys_time()
-            chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            
+            
+            
+            #######################TEMP NO NUGGET
+            #chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            ######################################
+            
+            
+            
             chunk = pm.invlogit(chunk.ravel())
             chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
             chunk = chunk.reshape(f_chunk.shape).squeeze()
