@@ -48,5 +48,5 @@ cd pr-incidence
 python setup.py install
 cd
 
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=4
 
