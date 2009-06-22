@@ -788,6 +788,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             #######################TEMP NO NUGGET
             #chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            chunk = f_chunk+0
             ######################################
             
             
