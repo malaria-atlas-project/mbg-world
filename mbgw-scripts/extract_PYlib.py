@@ -424,15 +424,13 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # run check that this expanded block has correct dimensions
                 test=chunkExp.shape==salblim1km_ROW.shape           
                 if test==False:
-                    print("WARNING !!!!: spatial dimensions of expanded 5km 'chunkExp' do not match 1km covariate chunk 'salblim1km_ROW': EXITING!! ")            
-                    return(-9999)
-
+                    raise RuntimeError "WARNING !!!!: spatial dimensions of expanded 5km 'chunkExp' do not match 1km covariate chunk 'salblim1km_ROW': EXITING!! "
+                    
                 # run check that there are no PR==-9999 pixels (assigned to non-stable pixels in CS code) in stable areas on salblim1km
                 testmatrix = cp.deepcopy(chunkExp)
                 testmatrix[salblim1km_ROW == -9999] = 0
                 if (np.sum(testmatrix == -9999) > 0):
-                    print ("WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
-                    return(-9999)
+                    raise RuntimeError "WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
