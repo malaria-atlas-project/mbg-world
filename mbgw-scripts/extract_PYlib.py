@@ -691,7 +691,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
-
+    
     # initialise zero matrices that will house running totals
     meanPR = cp.deepcopy(zeroMap)
     meanPR2 = cp.deepcopy(zeroMap)
@@ -784,7 +784,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             #xxx8 = xxx8 + (r.Sys_time() - xxx8a)
 
             # aggregate through time to obtain spatial-only array for this nugget-realisation
-            chunkTMEAN = np.atleast_2d(np.mean(chunk,0))
+            chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
             #print('sum of chunkTMEAN '+str(sum(sum(chunkTMEAN))))
 
 
