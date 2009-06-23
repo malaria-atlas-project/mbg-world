@@ -1,7 +1,7 @@
 from numpy import array
 
 # set start and end month slice (python array index of months in block to aggregate over - 0 is earliest month in block)
-MonthsSlice = slice(0,2,None)
+MonthsSlice = slice(0,12,None)
  
 # standard path to utility function directory (used to source generic R functions)
 utilFolder = '/root/map_utils/map_utils/'
@@ -10,7 +10,7 @@ utilFolder = '/root/map_utils/map_utils/'
 keyPath = '/root/s3code.txt' 
  
 # main input hdf5  file of simulated realisations of f
-realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_five/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_six/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 #filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
 
 # hdf 5 file containng traces for burden function
