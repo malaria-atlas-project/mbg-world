@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-ab6f1cc2 extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-751d6f1c extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
