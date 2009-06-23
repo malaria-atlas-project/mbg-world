@@ -210,13 +210,13 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     grid_shape = tuple([grid[2] for grid in grids])
 
 
-    r.X11(width=8,height=4)
-    r.par(mfrow=(1,2))
-    r.plot(data_mesh_indices[:,0],data_mesh_indices[:,1],xlab="",ylab="",main="",cex=0.5)
-    r.plot(data_locs[:,0],data_locs[:,1],xlab="",ylab="",main="",cex=0.5)    
+    #r.X11(width=8,height=4)
+    #r.par(mfrow=(1,2))
+    #r.plot(data_mesh_indices[:,0],data_mesh_indices[:,1],xlab="",ylab="",main="",cex=0.5)
+    #r.plot(data_locs[:,0],data_locs[:,1],xlab="",ylab="",main="",cex=0.5)    
  
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
 
 
 
@@ -372,8 +372,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
 
     #########################################CHECK COVARIANCE STRUCTURE
 
-    #from IPython.Debugger import Pdb
-    #Pdb(color_scheme='Linux').set_trace()
+    
 
        
     # assign these values to pdata    
@@ -392,6 +391,10 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
 
+    ###############################~~TEMP
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
+    #####################################
     
     thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'

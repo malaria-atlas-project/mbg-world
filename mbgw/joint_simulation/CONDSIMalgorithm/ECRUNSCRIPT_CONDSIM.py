@@ -29,8 +29,8 @@ hf = tb.openFile(trace_path)
 infile_base = trace_path.split('/')[-1].replace('.hdf5','')
 
 #######################TEMP
-#outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
-outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterationsCOND', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
+#outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterationsCOND', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 #######################TEMP
 outfile_name = realizations_path+outfile_base
 
