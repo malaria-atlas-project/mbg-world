@@ -3,7 +3,8 @@ print "from RUNSCRIPT_extractSummaries:\n"
 # import libraries
 from map_utils import checkAndBuildPaths
 from extract_PYlib import *
-from boto_PYlib import *
+#from boto_PYlib import *
+from map_utils import S3
 import os
 from extract_params import *
 import sys
@@ -31,14 +32,7 @@ if sys.argv[7] == 'False' : BURDEN=False
 if sys.argv[8] == 'False' : PERPIXEL=False
 if sys.argv[9] == 'False' : PERCOUNTRY=False
 
-# import libraries
-from map_utils import checkAndBuildPaths
-from extract_PYlib import *
-from boto_PYlib import *
-import os
-from extract_params import *
-
-S=S3() # initialise key object
+S=S3(keyPath) # initialise key object
 
 
 # build realisation block import path
@@ -53,8 +47,8 @@ print "totalN: "+str(totalN)
 print "startRel: "+str(startRel)
 print "endRel: "+str(endRel)
 print "BURDEN: "+str(BURDEN) 
-print "PERPIXEL: "+str(BURDEN) 
-print "PERCOUNTRY: "+str(BURDEN) 
+print "PERPIXEL: "+str(PERPIXEL) 
+print "PERCOUNTRY: "+str(PERCOUNTRY) 
 
 # download this realisation file from S3 storage
 print '\nDownloading realisation from S3..'
@@ -74,7 +68,7 @@ if PERPIXEL==True:
 
     # now call extractSummaries_perpixel substituting in the formatted sys args 
     print '\nrunning extractSummaries_perpixel..'
-    extractSummaries_perpixel ([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,n_per,FileStartRel,FileEndRel,totalN,startRel,endRel,BURDEN)
+    extractSummaries_perpixel ([slice(None,None,None), slice(None,None,None), MonthsSlice],2,10,n_per,FileStartRel,FileEndRel,totalN,startRel,endRel,BURDEN)
 
     # now upload the output back to the S3 storage
     #S.uploadDirectoryAsBucket('distributedoutput_perpixel',exportPathDistributed_perpixel,uploadConstituentFiles=True,overwriteContent=True)
@@ -109,8 +103,9 @@ if PERCOUNTRY==True:
 
     # now call extractSummaries_country substituting in the formatted sys args 
     print '\nrunning extractSummaries_country..'
-    extractSummaries_country([slice(None,None,None), slice(None,None,None), slice(0,12,None)],2,10,n_per,FileStartRel,FileEndRel,startRel,endRel)
-    
+    #extractSummaries_country([slice(None,None,None), slice(None,None,None), slice(252,264,None)],2,10,n_per,FileStartRel,FileEndRel,startRel,endRel)
+    extractSummaries_country([slice(None,None,None), slice(None,None,None), MonthsSlice],2,10,n_per,FileStartRel,FileEndRel,startRel,endRel)
+
     ## loop through all files in local export storage
     for fname in os.listdir(exportPathDistributed_country):
 

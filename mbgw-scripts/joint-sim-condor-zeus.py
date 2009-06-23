@@ -1,12 +1,11 @@
 import numpy as np
 import pymc as pm
 import mbgw
-import time
 from mbgw.joint_simulation import *
 import tables as tb
 import mbgw.master_grid as mg
 import os,sys
-from map_utils import boto_PYlib
+from boto_PYlib import *
 
 print 'Imports done'
 
@@ -20,17 +19,10 @@ burn = int(sys.argv[6])
 memmax = float(sys.argv[7])
 thinning = int(sys.argv[8])
 grid_lims = getattr(mg, region + '_lims')
-
-nmonths = 12
-start_year = 2007
-
-#nmonths = int(sys.argv[9])
-
+nmonths = 288 
+start_year = 1985
 mask_name = 'st_mask5km-e_y-x+'
-relp=1e-6
-
-paramfileINDEX = int(sys.argv[9])
-NinThinnedBlock = int(sys.argv[10])
+relp=1e-3
 
 hf = tb.openFile(fname)
 n_total = len(hf.root.chain0.PyMCsamples)
@@ -39,10 +31,9 @@ my_start = indices[i]
 my_end = indices[i+1]
 
 
-ofdir = ''
+ofdir = '/share/scratch/malaria-atlas-project/MAP-outputs/'
 infile_base = fname.split('/')[-1].replace('.hdf5','')
-#outfile_base = 'nokrige-thick_'+str(paramfileINDEX)+'.hdf5'
-outfile_base = 'test_inAndout_krige_'+str(paramfileINDEX)+'.hdf5'
+outfile_base = 'realizations_mem_%i_%s.hdf5'%(memmax,'_'.join([infile_base, 'iterations', str(i*iter_per_job), str((i+1)*iter_per_job)]))
 outfile_name = ofdir+outfile_base
  
 print 'i: %i'%i
@@ -60,15 +51,13 @@ print 'memmax: %i'%memmax
 print 'Thinning: %i'%thinning
 
 print 'Creating realizations'
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning)
+print 'Done'
 
-t1=time.time()
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock)
-
-print 'Total time was '+str(time.time()-t1)
-
-#from IPython.Debugger import Pdb
-#Pdb(color_scheme='Linux').set_trace()
-
-#print 'Uploading to boto'
-#S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
-#S.uploadFileToBucket(infile_base.lower()+'_trial_two',outfile_name,True,True)
+print 'Uploading to boto'
+S=S3('/home/oxg028/mbg-world/datafiles/s3code.txt')
+S.uploadFileToBucket(infile_base.lower()+'_trial_two',outfile_name,True,True)
+print 'Done'
+print 'Removing hdf5 archive locally'
+os.remove(outfile_name)
+print 'Done'
