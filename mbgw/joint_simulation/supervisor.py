@@ -31,8 +31,12 @@ os.chdir(curpath)
 import scipy
 from scipy import ndimage, mgrid
 from map_utils import grid_convert
+
+#####################TEMP
 #from map_utils import getEmpiricalCovarianceFunction_STmarginals
 #from map_utils import plotEmpiricalCovarianceFunction
+#####################TEMP
+
 from IPython.Debugger import Pdb
 
 __all__ = ['create_realization', 'create_many_realizations','reduce_realizations','getThinnedBlockXYTZlists','array3d_2_XYTZlist','gridParams_2_XYTmarginallists','predictPointsFromBlock']
@@ -205,6 +209,17 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     """
     grid_shape = tuple([grid[2] for grid in grids])
 
+
+    r.X11(width=8,height=4)
+    r.par(mfrow=(1,2))
+    r.plot(data_mesh_indices[:,0],data_mesh_indices[:,1],xlab="",ylab="",main="",cex=0.5)
+    r.plot(data_locs[:,0],data_locs[:,1],xlab="",ylab="",main="",cex=0.5)    
+ 
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
+
+
+
     thin_grids = tuple([grid[:2]+(grid[2]/thinning,) for grid in grids])    
     thin_grid_shape = tuple([thin_grid[2] for thin_grid in thin_grids])
     thin_axes = tuple([np.linspace(*thin_grid) for thin_grid in thin_grids])
@@ -298,6 +313,9 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     for i in xrange(len(where_in)):
         pdata[where_in[i]] = out_arr[real_index, grid_shape[1]-1-data_mesh_indices[i,1], data_mesh_indices[i,0], data_mesh_indices[i,2]]
 
+
+
+
     # jointly simulate at data points conditional on block    
 
     ## first get XYZT list of locations of a regular thinned sample from block
@@ -360,6 +378,11 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
        
     # assign these values to pdata    
     pdata[where_out] = z_out
+
+    ###############################~~TEMP     
+    #return()
+    #####################################
+    
     
     # Bring in data.
     print '\tKriging to bring in data.'    
