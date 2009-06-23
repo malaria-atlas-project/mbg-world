@@ -11,7 +11,8 @@
     
 
  ## are we going to simulate subsets of each column? non null value specifies length of each subset
-    SUBSETCOL<-50     
+    #SUBSETCOL<-50     
+    SUBSETCOL<-c()
 
  ## do we want to print row/col progress, warnings etc
     VERBOSE<-0 #0 = no messages; 1= some messages; 2=loads of messages
