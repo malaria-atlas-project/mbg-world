@@ -15,7 +15,7 @@
     SUBSETCOL<-c()
 
  ## do we want to print row/col progress, warnings etc
-    VERBOSE<-0 #0 = no messages; 1= some messages; 2=loads of messages
+    VERBOSE<-1 #0 = no messages; 1= some messages; 2=loads of messages
 
  ## define parameter nu (~ matern degree of differentiability) [NB only valid if doing ST]
     nu<-0.5

@@ -5,7 +5,8 @@
 cd /usr/lib/python2.5/site-packages/
 rm -r -f pymc*
 cd
-svn checkout http://pymc.googlecode.com/svn/trunk/ pymc
+#svn checkout http://pymc.googlecode.com/svn/trunk/ pymc
+git clone git://github.com/pymc-devs/pymc.git
 cd pymc
 python setupegg.py install
 cd 
