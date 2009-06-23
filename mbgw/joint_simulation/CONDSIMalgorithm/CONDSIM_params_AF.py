@@ -4,7 +4,7 @@ from numpy import array
 region = "AF"
 
 # what year are starting at (the january) and how many months are we predicting?
-nmonths = 2
+nmonths = 12
 start_year = 2007
  
 # standard path to utility function directory (used to source generic R functions)
@@ -26,7 +26,7 @@ periurb5km_path="/root/mbg-world/datafiles/auxiliary_data/periurb5km-e_y-x+.hdf5
 trace_path="/mnt/auxiliary_data/QRYPFPR010708_Africa_Run_9.10.2008.hdf5"
 
 # location of folder to house realization to be generated
-realizations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_four/'
+realizations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_six/'
 
 # how many points will we take from the block to condition the unconditioned field at the outside data locations?
 NinThinnedBlock =10000
