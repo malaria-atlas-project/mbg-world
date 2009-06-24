@@ -530,6 +530,9 @@ def array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube=None, as4dcoordblock=False
     t_cube = np.ones(np.product((len(ycoords),len(xcoords),len(tcoords)))).reshape((len(ycoords),len(xcoords),len(tcoords)))
     t_cube = t_cube*tcoords
 
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
+
     # if what we ant is a 4-d block containing coordinates (a3d block where every node is a 3-element array containg x,y,z):
     if as4dcoordblock is True:
         xyt_cube = np.dstack((x_cube,y_cube,t_cube))
@@ -628,7 +631,7 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
     f = pm.gp.Realization(M,C)
 
     # realise at specified locations (return same shape as sd coordinate block - should be 3d)
-    simVector = f(XYT)
+    simVector = f(xyt_cube)
  
     from IPython.Debugger import Pdb
     Pdb(color_scheme='Linux').set_trace()
