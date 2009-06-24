@@ -1,5 +1,5 @@
 ## example call:
-# run ECDISTRIBUTE_combineDistribExtractions r-7d552614 extract_params_AF.py
+# run ECDISTRIBUTE_combineDistribExtractions r-4f3d4026 extract_params_AF.py
 
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
