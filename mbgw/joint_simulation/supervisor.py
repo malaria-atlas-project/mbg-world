@@ -535,7 +535,11 @@ def array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube=None, as4dcoordblock=False
 
     # if what we ant is a 4-d block containing coordinates (a3d block where every node is a 3-element array containg x,y,z):
     if as4dcoordblock is True:
-        xyt_cube = np.dstack((x_cube,y_cube,t_cube))
+        cubeshape = [t_cube.shape[0],t_cube.shape[1],t_cube.shape[2]]
+        x_cube.resize(cubeshape+[1])
+        y_cube.resize(cubeshape+[1])
+        t_cube.resize(cubeshape+[1])
+        xyt_cube = np.concatenate((x_cube,y_cube,t_cube),axis=3)
         return({"xyt_cube":xyt_cube})     
     
     ### check shapes of x,y,t,and z cubes are identical (if we passed a z cube)
