@@ -26,7 +26,7 @@ flipVerticalPY=r['flipVertical']
 r.source('temptestcov.R')
 temptestcovPY=r['testRcov']
 
-def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,TemporalEndMonth,conditioned=False,flipVertical=False,SPACE=TRUE,TIME=TRUE):
+def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,TemporalEndMonth,conditioned=False,flipVertical=False,SPACE=True,TIME=True):
 
     # deal with system arguments
     #filename = sys.argv[1]
