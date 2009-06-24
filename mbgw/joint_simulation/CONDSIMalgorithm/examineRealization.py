@@ -54,7 +54,7 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,Tem
         
     # define path to R param file
     mbgw_root = __root__ = mbgw.__path__[0]
-    r_paramfile_path= mbgw_root+'/mbgw/joint_simulation/CONDSIMalgorithm/ParamFile_uncond_'+str(paramfileINDEX)+'.R'
+    r_paramfile_path= mbgw_root+'/joint_simulation/CONDSIMalgorithm/ParamFile_uncond_'+str(paramfileINDEX)+'.R'
 
     # initialise plot window
     nplots = 0
