@@ -21,6 +21,7 @@ import mbgw
 mbgw_root = __root__ = mbgw.__path__[0]
 r_path = mbgw_root+'/joint_simulation/CONDSIMalgorithm'
 os.chdir(r_path)
+from examineRealization import *
 from rpy import r
 r.source("CONDSIMpreloop.R")
 r.source("CONDSIMmonthloop.R")
@@ -193,7 +194,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         #create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices)
 
         data_vals = trace.PyMCsamples[i]['f'][:]
-        create_realization(outfile.root.realizations, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock)
+        create_realization(outfile.root, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock)
         outfile.flush()
     outfile.close()
 
@@ -202,7 +203,11 @@ def normalize_for_mapcoords(arr, max):
     arr *= max
 
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
-def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
+def create_realization(outfile.root,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
+
+    # define only realizations chunk of hdf5 realization file
+    out_arr = outfile.root.realizations
+
 
     """
     Creates a single realization from the predictive distribution over specified space-time mesh.
@@ -310,10 +315,8 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
     getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+    examineRealization(outfile.root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
     ################################~TEMP
-
-
-
 
     
     # Figure out pdata
@@ -425,6 +428,11 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
         
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
+        ####################################TEMP
+        examineRealization(outfile.root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
+        ########################################
+        
+            
     print '\t\tDone in %f'%(time.time()-t1)        
         
 
