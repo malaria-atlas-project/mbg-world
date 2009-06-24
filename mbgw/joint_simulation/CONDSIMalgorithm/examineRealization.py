@@ -17,6 +17,8 @@ from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
 from map_utils import exportAscii
 
+
+
 from getGridCovarianceInY import * 
 from getGridCovarianceInT import *
 # import R function
@@ -25,6 +27,8 @@ plotMapPY=r['plotMap']
 flipVerticalPY=r['flipVertical']
 r.source('temptestcov.R')
 temptestcovPY=r['testRcov']
+
+
 
 def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,TemporalEndMonth,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True):
 
@@ -47,10 +51,10 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,Tem
         
     if type(filename) is not str:    
         hr = filename
-
-    # set input params
-    #Rel = 0 
-    #filename = "/home/pwg/Realizations/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_6_7.hdf5"
+        
+    # define path to R param file
+    mbgw_root = __root__ = mbgw.__path__[0]
+    r_paramfile_path= mbgw_root+'/mbgw/joint_simulation/CONDSIMalgorithm/ParamFile_uncond_'+str(paramfileINDEX)+'.R'
 
     # initialise plot window
     nplots = 0
@@ -138,7 +142,7 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,Tem
         scale_t=hr.PyMCsamples.col("scale_t")[Rel]
         sin_frac=hr.PyMCsamples.col("sin_frac")[Rel]
 
-        CfromR=temptestcovPY(xplot,np.zeros(len(xplot)),np.zeros(len(xplot)),Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
+        CfromR=temptestcovPY(xplot,np.zeros(len(xplot)),np.zeros(len(xplot)),Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,r_paramfile_path)
         yplot = CfromR[0,:]
 
         # plot
@@ -203,7 +207,7 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,Tem
         scale_t=hr.PyMCsamples.col("scale_t")[Rel]
         sin_frac=hr.PyMCsamples.col("sin_frac")[Rel]
 
-        CfromR=temptestcovPY(np.zeros(len(xplot)),np.zeros(len(xplot)),xplot,Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,paramfileINDEX)
+        CfromR=temptestcovPY(np.zeros(len(xplot)),np.zeros(len(xplot)),xplot,Scale,amp,inc,ecc,t_lim_corr,scale_t,sin_frac,r_paramfile_path)
         yplot2 = CfromR[0,:]
 
         # plot

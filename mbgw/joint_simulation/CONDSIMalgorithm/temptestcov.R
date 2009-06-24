@@ -1,5 +1,5 @@
 
-testRcov<-function(xd,yd,td,Scale,amp,inc,ecc,t.lim.corr,scale.t,sin.frac,paramfileINDEX){
+testRcov<-function(xd,yd,td,Scale,amp,inc,ecc,t.lim.corr,scale.t,sin.frac,r_paramfile_path){
 
 #Scale=0.0800292937636586
 #amp=3.28920723639468
@@ -39,7 +39,9 @@ testRcov<-function(xd,yd,td,Scale,amp,inc,ecc,t.lim.corr,scale.t,sin.frac,paramf
 ndata<-length(xd)
 
 #source("ParamFile_uncond.R")
-source(paste("/home/pwg/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/ParamFile_uncond_",paramfileINDEX,".R",sep=""))
+
+
+source(r_paramfile_path)
 
  ## source fortran functions
     temp<-system("R CMD SHLIB geographic.f",intern=T)
