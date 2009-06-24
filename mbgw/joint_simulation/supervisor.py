@@ -309,10 +309,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
     ################################~TEMP
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
-
-    temp=getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
-
-
+    getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
     ################################~TEMP
 
 
@@ -636,12 +633,15 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
 
     # realise at specified locations (return same shape as sd coordinate block - should be 3d)
     simVector = f(xyt_cube)
+    
+    # insert these values into this realisation of the main output array
+    relblock4d[real_index,:,:,:]=simVector[:,:,:]
  
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
  
     # return 3d array of simulated values    
-    return simVector
+    #return simVector
 
     
     
