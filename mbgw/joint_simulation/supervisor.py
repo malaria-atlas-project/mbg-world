@@ -489,7 +489,7 @@ def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock=None):
 
     # if not thinning just define a null slice that will include everything
     if NinThinnedBlock is None:    
-    data_footprint=(slice(real_index,real_index+1,1),slice(None,None,None),slice(None,None,None),slice(None,None,None))
+        data_footprint=(slice(real_index,real_index+1,1),slice(None,None,None),slice(None,None,None),slice(None,None,None))
 
     # extract unconditoned values from block at these locations and convert to 3d matrix (remove realisation dimension)
     z_cube = np.squeeze(relblock4d[data_footprint])
