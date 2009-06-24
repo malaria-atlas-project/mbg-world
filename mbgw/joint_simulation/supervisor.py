@@ -267,46 +267,57 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
                     'NCOLS':grid_shape[0]}
     monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
     
-    # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
-    t1 = time.time()
-    os.chdir(r_path)
-    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
-    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
-
-    #preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,paramfileINDEX)
-    #tree_reader = reader(file('listSummary_preLoopObj_original.txt'),delimiter=' ')
-
-    preLoopClassTree, junk = parse_tree(tree_reader)
-    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
     
-    OutMATlist = preLoopObj['OutMATlist']
-    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
-    OutMATClassTree, junk = parse_tree(tree_reader)
-    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-    os.chdir(curpath)
-    preLoop_time = time.time()-t1
-    print "preLoop_time :"+str(preLoop_time)
+    ################################~TEMP
+    # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
+    #t1 = time.time()
+    #os.chdir(r_path)
+    #preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
+    #tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+
+    #preLoopClassTree, junk = parse_tree(tree_reader)
+    #preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    
+    #OutMATlist = preLoopObj['OutMATlist']
+    #tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    #OutMATClassTree, junk = parse_tree(tree_reader)
+    #OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    #os.chdir(curpath)
+    #preLoop_time = time.time()-t1
+    #print "preLoop_time :"+str(preLoop_time)
         
-    # Create and store unconditional realizations
-    print '\tGenerating unconditional realizations.'
-    t1 = time.time()
-    for i in xrange(grid_shape[2]):
-        print 'On month :'+str(i)
-        #print 'OutMATlist:'
-        #print OutMATlist
-        os.chdir(r_path)
-        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
-        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
-        os.chdir(curpath)
-        OutMATlist= monthObject['OutMATlist']
-        MonthGrid = monthObject['MonthGrid']
-        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
-    t2 = time.time()
-    print '\t\tDone in %f'%(t2-t1)
-    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
+    ## Create and store unconditional realizations
+    #print '\tGenerating unconditional realizations.'
+    #t1 = time.time()
+    #for i in xrange(grid_shape[2]):
+    #    print 'On month :'+str(i)
+    #    #print 'OutMATlist:'
+    #    #print OutMATlist
+    #    os.chdir(r_path)
+    #    monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
+    #    #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
+    #    os.chdir(curpath)
+    #    OutMATlist= monthObject['OutMATlist']
+    #    MonthGrid = monthObject['MonthGrid']
+    #    out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
+    #t2 = time.time()
+    #print '\t\tDone in %f'%(t2-t1)
+    #print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
     
     # delete unneeded R products
-    del OutMATlist, preLoopObj, MonthGrid, monthObject
+    #del OutMATlist, preLoopObj, MonthGrid, monthObject
+    ################################~TEMP
+
+    ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
+
+    temp=getUnconditionedBlock(out_arr,real_index,xyt_in,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+
+
+    ################################~TEMP
+
+
+
+
     
     # Figure out pdata
     pdata = np.empty(tdata.shape)
@@ -461,19 +472,24 @@ def reduce_realizations(filename, reduce_fns, slices, a_lo, a_hi, n_per):
     
     return products
     
-def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock):
+def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock=None):
 
     # extract grid parameters for ease
     ncols = grids[1][2]
     nrows = grids[0][2]
     nmonths = grids[2][2]
 
-    # do dirty calculation to approximately evenly spread sample of size NinThinnedBlock accross ST unconditioned block
-    Nmonthstosample = int(np.ceil((nmonths/12.)*6))
-    Tthinrate=nmonths/Nmonthstosample
-    Npermonth = NinThinnedBlock/Nmonthstosample
-    XYthinRate = int(np.ceil(np.sqrt(nrows*ncols)/np.sqrt(Npermonth)))
-    data_footprint=(slice(real_index,real_index+1,1),slice(0,nrows,XYthinRate),slice(0,ncols,XYthinRate),slice(0,nmonths,Tthinrate))
+    # if thinning, do dirty calculation to approximately evenly spread sample of size NinThinnedBlock accross ST unconditioned block
+    if NinThinnedBlock is not None:
+        Nmonthstosample = int(np.ceil((nmonths/12.)*6))
+        Tthinrate=nmonths/Nmonthstosample
+        Npermonth = NinThinnedBlock/Nmonthstosample
+        XYthinRate = int(np.ceil(np.sqrt(nrows*ncols)/np.sqrt(Npermonth)))
+        data_footprint=(slice(real_index,real_index+1,1),slice(0,nrows,XYthinRate),slice(0,ncols,XYthinRate),slice(0,nmonths,Tthinrate))
+
+    # if not thinning just define a null slice that will include everything
+    if NinThinnedBlock is None:    
+    data_footprint=(slice(real_index,real_index+1,1),slice(None,None,None),slice(None,None,None),slice(None,None,None))
 
     # extract unconditoned values from block at these locations and convert to 3d matrix (remove realisation dimension)
     z_cube = np.squeeze(relblock4d[data_footprint])
@@ -494,11 +510,11 @@ def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock):
     tcoords = tcoords[slice(0,nmonths,Tthinrate)]
 
     ### get XYT and Z lists from this extracted block
-    XYTZdict = array3d_2_XYTZlist(z_cube,xcoords,ycoords,tcoords)
+    XYTZdict = array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube)
     
     return(XYTZdict)
 
-def array3d_2_XYTZlist(z_cube,xcoords,ycoords,tcoords):
+def array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube=None, as4dcoordblock=False):
 
     '''
     array as a 3d numpy array
@@ -514,19 +530,26 @@ def array3d_2_XYTZlist(z_cube,xcoords,ycoords,tcoords):
     t_cube = np.ones(np.product((len(ycoords),len(xcoords),len(tcoords)))).reshape((len(ycoords),len(xcoords),len(tcoords)))
     t_cube = t_cube*tcoords
 
-    ### check shapes of x,y,t,and z cubes are identical
-    if (np.shape(x_cube)!=np.shape(z_cube)): raise ValueError, 'shape of x_cube ('+str(np.shape(x_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
-    if (np.shape(y_cube)!=np.shape(z_cube)): raise ValueError, 'shape of y_cube ('+str(np.shape(y_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
-    if (np.shape(t_cube)!=np.shape(z_cube)): raise ValueError, 'shape of t_cube ('+str(np.shape(t_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
+    # if what we ant is a 4-d block containing coordinates (a3d block where every node is a 3-element array containg x,y,z):
+    if as4dcoordblock is True:
+        xyt_cube = np.dstack((x_cube,y_cube,t_cube))
+        return({"xyt_cube":xyt_cube})     
+    
+    ### check shapes of x,y,t,and z cubes are identical (if we passed a z cube)
+    if z_cube is not None:
+        if (np.shape(x_cube)!=np.shape(z_cube)): raise ValueError, 'shape of x_cube ('+str(np.shape(x_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
+        if (np.shape(y_cube)!=np.shape(z_cube)): raise ValueError, 'shape of y_cube ('+str(np.shape(y_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
+        if (np.shape(t_cube)!=np.shape(z_cube)): raise ValueError, 'shape of t_cube ('+str(np.shape(t_cube))+') does not match shape of z_cube ('+str(np.shape(z_cube))+')'
 
     # collapse x,y,t,and z cubes to 1d arrays  
-    z_in = np.ravel(z_cube)
+    if z_cube is not None: z_in = np.ravel(z_cube)
     x_in = np.ravel(x_cube)
     y_in = np.ravel(y_cube)
     t_in = np.ravel(t_cube)
     xyt_in  = np.vstack((y_in,x_in,t_in)).T
     
-    return({"xyt_in":xyt_in,"z_in":z_in})
+    if z_cube is not None: return({"xyt_in":xyt_in,"z_in":z_in})
+    if z_cube is None: return({"xyt_in":xyt_in})
 
 def gridParams_2_XYTmarginallists(grids):
 
@@ -583,3 +606,36 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
  
     # return 1d array of simulated values    
     return f(XYT_out)
+    
+def getUnconditionedBlock(relblock4d,real_index,XYT,grids,C,NinThinnedBlock=None,relp=None,FULLRANK=False):
+
+    # get grid's marginal coordinates
+    coordsDict = gridParams_2_XYTmarginallists(grids)
+    xcoords = coordsDict['xcoords']
+    ycoords = coordsDict['ycoords']
+    tcoords = coordsDict['tcoords']
+
+    # convert coordinates to 3d blocks  
+    XYTdict =array3d_2_XYTZlist(xcoords,ycoords,tcoords, as4dcoordblock=True)
+    xyt_cube=XYTdict['xyt_cube']
+
+    # define latent mean function and optionally covert covariance function to sub full rank
+    M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
+    if FULLRANK is True:
+        C = pm.gp.NearlyFullRankCovariance(C.eval_fun, relative_precision=relp, **C.params)
+
+    # define function for realisation
+    f = pm.gp.Realization(M,C)
+
+    # realise at specified locations (return same shape as sd coordinate block - should be 3d)
+    simVector = f(XYT)
+ 
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
+ 
+    # return 3d array of simulated values    
+    return simVector
+
+    
+    
+    
