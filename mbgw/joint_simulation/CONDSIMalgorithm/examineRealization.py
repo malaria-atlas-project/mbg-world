@@ -26,7 +26,7 @@ flipVerticalPY=r['flipVertical']
 r.source('temptestcov.R')
 temptestcovPY=r['testRcov']
 
-def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,TemporalEndMonth,conditioned=False,flipVertical=False,SPACE=True,TIME=True):
+def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,TemporalEndMonth,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True):
 
     # deal with system arguments
     #filename = sys.argv[1]
@@ -51,13 +51,13 @@ def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,Tem
 
     # initialise plot window
     nplots = 0
-    if SPACE=="True": nplots=nplots+5
-    if TIME=="True": nplots=nplots+1
+    if SPACE is True: nplots=nplots+5
+    if TIME is =True: nplots=nplots+1
     r.X11(width=3.3*nplots,height=4)
     r.par(mfrow=(1,nplots))
 
     ###CHECK SPATIAL COVARIANCE AND BASIC FEATURE OF A SINGLE MONTH
-    if SPACE=="True":
+    if SPACE is True:
 
         # define basic parameters
         slices=[slice(None,None,None), slice(None,None,None), slice(Month,Month+1,None)]
@@ -115,8 +115,8 @@ def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,Tem
         # calculate and plot empirical covariance function in N-S direction
         gridIN = cp.deepcopy(f_chunk).squeeze()
 
-        if conditioned=="False": meanIN=0
-        if conditioned=="True": meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[Month])
+        if conditioned is False: meanIN=0
+        if conditioned is True: meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[Month])
         cellWidth=5/6378.137
         covDict = getGridCovarianceInY(gridIN,meanIN,cellWidth)    
 
@@ -149,7 +149,7 @@ def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,Tem
 
     ###CHECK TEMPORAL COVARIANCE
 
-    if TIME=="True":
+    if TIME is True:
 
         # define basic parameters
         slices=[slice(None,None,None), slice(None,None,None), slice(TemporalStartMonth,TemporalEndMonth+1,None)]
@@ -180,8 +180,8 @@ def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,Tem
         # calculate and plot empirical temporal covariance
         gridIN = cp.deepcopy(f_chunk).squeeze()
 
-        if conditioned=="False": meanIN=0
-        if conditioned=="True": meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[TemporalStartMonth:TemporalEndMonth+1:1])
+        if conditioned is False: meanIN=0
+        if conditioned is True: meanIN = hr.PyMCsamples.col("m_const")[Rel] + (hr.PyMCsamples.col("t_coef")[Rel]*hr.t_axis[TemporalStartMonth:TemporalEndMonth+1:1])
 
         covDict = getGridCovarianceInT(gridIN,meanIN)    
 
