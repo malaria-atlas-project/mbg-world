@@ -310,7 +310,7 @@ def create_realization(out_arr,real_index, C,C_straighfromtrace, mean_ondata, M,
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
 
-    temp=getUnconditionedBlock(out_arr,real_index,xyt_in,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+    temp=getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
 
 
     ################################~TEMP
@@ -607,7 +607,7 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
     # return 1d array of simulated values    
     return f(XYT_out)
     
-def getUnconditionedBlock(relblock4d,real_index,XYT,grids,C,NinThinnedBlock=None,relp=None,FULLRANK=False):
+def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,relp=None,FULLRANK=False):
 
     # get grid's marginal coordinates
     coordsDict = gridParams_2_XYTmarginallists(grids)
