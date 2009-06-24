@@ -44,6 +44,9 @@ def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,Tem
     if type(filename) is str:
         hf = tb.openFile(filename)    
         hr = hf.root
+        
+    if type(filename) is not str:    
+        hr = filename
 
     # set input params
     #Rel = 0 
