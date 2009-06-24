@@ -14,15 +14,15 @@ AM_lims = {'topRow': 1890,
 'leftCol': 2038,
 'rightCol': 3401}
 
-AF_lims = {'topRow': 1393,
-'bottomRow': 2745,
-'leftCol': 3879,
-'rightCol': 5628}
+#AF_lims = {'topRow': 1393,
+#'bottomRow': 2745,
+#'leftCol': 3879,
+#'rightCol': 5628}
 
-#AF_lims = {'topRow': 1700,
-#'bottomRow': 2400,
-#'leftCol': 4300,
-#'rightCol': 5000}
+AF_lims = {'topRow': 2410,
+'bottomRow': 2421,
+'leftCol': 5065,
+'rightCol': 5183}
 
 #AF_lims = {'topRow': 1536,
 #'bottomRow': 1776,
