@@ -203,10 +203,10 @@ def normalize_for_mapcoords(arr, max):
     arr *= max
 
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
-def create_realization(outfile.root,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
+def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
 
     # define only realizations chunk of hdf5 realization file
-    out_arr = outfile.root.realizations
+    out_arr = outfile_root.realizations
 
 
     """
@@ -315,7 +315,7 @@ def create_realization(outfile.root,real_index, C,C_straighfromtrace, mean_ondat
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
     getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
-    examineRealization(outfile.root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
+    examineRealization(outfile_root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
     ################################~TEMP
 
     
@@ -429,7 +429,7 @@ def create_realization(outfile.root,real_index, C,C_straighfromtrace, mean_ondat
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
         ####################################TEMP
-        examineRealization(outfile.root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
+        examineRealization(outfile_root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
         ########################################
         
             
