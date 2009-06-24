@@ -52,7 +52,7 @@ def examineRealization (filename,Rel,Month,paramfileIndex,TemporalStartMonth,Tem
     # initialise plot window
     nplots = 0
     if SPACE is True: nplots=nplots+5
-    if TIME is =True: nplots=nplots+1
+    if TIME is True: nplots=nplots+1
     r.X11(width=3.3*nplots,height=4)
     r.par(mfrow=(1,nplots))
 
