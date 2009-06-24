@@ -315,7 +315,7 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
     getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
-    examineRealization(outfile_root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
+    examineRealization(outfile_root,0,0,15,0,2,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
     ################################~TEMP
 
     
