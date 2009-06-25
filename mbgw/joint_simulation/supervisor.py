@@ -417,8 +417,8 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     
     C1 = pm.gp.NearlyFullRankCovariance(C_straightfromtrace.eval_fun, **C_straightfromtrace.params)
     C2 = pm.gp.NearlyFullRankCovariance(C_straightfromtrace.eval_fun, **C_straightfromtrace.params)
-    M1 = pm.gp.Mean(lambda x: no.zeros(x.shape[:-1]))
-    M2 = pm.gp.Mean(lambda x: no.zeros(x.shape[:-1]))
+    M1 = pm.gp.Mean(lambda x: np.zeros(x.shape[:-1]))
+    M2 = pm.gp.Mean(lambda x: np.zeros(x.shape[:-1]))
     
     cholfac = C1.cholesky(data_locs, apply_pivot=False)
     U = cholfac['U']
