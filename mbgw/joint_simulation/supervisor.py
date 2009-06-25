@@ -325,7 +325,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     ################################~TEMP
     
     
-    ABOVE CALL IS HARD-WIRED TO REALIZATION 0
+   
 
     
     # Figure out pdata
