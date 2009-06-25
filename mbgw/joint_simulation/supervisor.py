@@ -428,16 +428,19 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     w = np.linalg.solve(U[:m,:m],np.linalg.solve(U[:m,:m].T,(tdata-mean_ondata)[piv[:m]]))
     pm.gp.observe(M2,C2,data_locs,pdata)
     
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+
     
     
     for i in xrange(grid_shape[2]-1,-1,-1):
 #        thin_row.fill(0.)
 #        
 ##        thin_x[:,:,2] = axes[2][i]
-#        x[:,:,2] = axes[2][i]
-
+        x[:,:,2] = axes[2][i]
+        simkrige = M1(x)
+        dkrige = covariate_mesh + M(x) + np.linalg.dot(C1(x,data_mesh[piv[:m]]).view(ndarray), w).ravel()
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()
+        
 #        
 #        
 #        
