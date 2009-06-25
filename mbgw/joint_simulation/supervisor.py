@@ -420,7 +420,10 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     M1 = pm.gp.Mean(lambda x: no.zeros(x.shape[:-1]))
     M2 = pm.gp.Mean(lambda x: no.zeros(x.shape[:-1]))
     
-    U,m,piv = C1.cholesky(data_locs, apply_pivot=False)
+    cholfac = C1.cholesky(data_locs, apply_pivot=False)
+    U = cholfac['U']
+    piv = cholfac['pivots']
+    m = U.shape[0]
     
     w = np.linalg.solve(U[:m,:m],np.linalg.solve(U[:m,:m].T,(tdata-mean_ondata)[piv[:m]]))
     pm.gp.observe(M2,C2,data_locs,pdata)
