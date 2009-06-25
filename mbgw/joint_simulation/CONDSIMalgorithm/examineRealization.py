@@ -30,7 +30,7 @@ temptestcovPY=r['testRcov']
 
 
 
-def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,TemporalEndMonth,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True):
+def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth=None,TemporalEndMonth=None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True):
 
     # deal with system arguments
     #filename = sys.argv[1]
@@ -158,8 +158,12 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth,Tem
 
     if TIME is True:
 
+        # check start and end month paramters are sensible, if not then default to None (so no slicing through time will occur)
+        if ((TemporalEndMonth is not None)&(TemporalEndMonth>=hr.realizations.shape[3])): TemporalEndMonth=None
+        if ((TemporalStartMonth is not None)&(TemporalStartMonth>=(hr.realizations.shape[3]-1))): TemporalStartMonth=None
+
         # define basic parameters
-        slices=[slice(None,None,None), slice(None,None,None), slice(TemporalStartMonth,TemporalEndMonth+1,None)]
+        slices=[slice(None,None,None), slice(None,None,None), slice(TemporalStartMonth,TemporalEndMonth,None)]
 
         slices = tuple(slices)     
         n_realizations = 1
