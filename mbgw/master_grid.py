@@ -19,10 +19,18 @@ AM_lims = {'topRow': 1890,
 #'leftCol': 3879,
 #'rightCol': 5628}
 
-AF_lims = {'topRow': 2410,
-'bottomRow': 2421,
-'leftCol': 5065,
-'rightCol': 5183}
+#zimbabwe transect low to high
+#AF_lims = {'topRow': 2410,
+#'bottomRow': 2421,
+#'leftCol': 5065,
+#'rightCol': 5183}
+
+#zimabwe sqaure - all low - qith some 2001 very low surveys in
+AF_lims = {'topRow': 2489,
+'bottomRow': 2498,
+'leftCol': 5079,
+'rightCol': 5088}
+
 
 #AF_lims = {'topRow': 1536,
 #'bottomRow': 1776,
