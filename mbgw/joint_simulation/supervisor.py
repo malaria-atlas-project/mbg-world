@@ -315,6 +315,7 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
     getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+    print 'variance of unconditioned block = '+str(round(np.var(out_arr[np.isnan(out_arr)==False]),10))
     examineRealization(outfile_root,0,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
     ################################~TEMP
 
@@ -429,6 +430,7 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
     ####################################TEMP
+    print 'variance of conditioned block = '+str(round(np.var(out_arr[np.isnan(out_arr)==False]),10))
     examineRealization(outfile_root,0,6,15,None,None,conditioned=True,flipVertical="FALSE",SPACE=True,TIME=True)
     ########################################
         

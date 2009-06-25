@@ -108,7 +108,7 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth=Non
 
 
         # compare global variance to parameter draw
-        observedVar = round(np.var(f_chunk[np.isnan(f_chunk)==False]),3)
+        observedVar = round(np.var(f_chunk[np.isnan(f_chunk)==False]),10)
         theoreticalVar = ((hr.PyMCsamples.col('amp')[Rel])**2)
         varString = 'observedVar = :'+str(observedVar)+';  amp^2 =: '+str(theoreticalVar)
         print varString
