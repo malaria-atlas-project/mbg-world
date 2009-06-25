@@ -35,7 +35,7 @@ def getGridCovarianceInT(cubeIN,meanIN,THINNING=20,VERBOSE=False,NaNvalue="nan")
         
         # if we are dealing with a conditoined block, subtract from mean constant for this month
         #print 'len(meanIN): '+str(len(meanIN))
-        if len(meanIN)>1: monthExtraction=monthExtraction-meanIN[i]       
+        if len(shape(meanIN))>=1: monthExtraction=monthExtraction-meanIN[i]       
         
         # bind to running matrix 
         if i ==0: monthMat=monthExtraction
