@@ -156,9 +156,11 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth=Non
 
     if TIME is True:
 
-        # check start and end month paramters are sensible, if not then default to None (so no slicing through time will occur)
-        if ((TemporalEndMonth is not None)&(TemporalEndMonth>=hr.realizations.shape[3])): TemporalEndMonth=None
-        if ((TemporalStartMonth is not None)&(TemporalStartMonth>=(hr.realizations.shape[3]-1))): TemporalStartMonth=None
+        # if start and months are None, or if they are non-valid, rest to maximum temporal extents
+        if ((TemporalEndMonth is None) | (TemporalEndMonth>=hr.realizations.shape[3])): TemporalEndMonth=hr.realizations.shape[3]
+        if ((TemporalStartMonth is None) | (TemporalStartMonth>=(hr.realizations.shape[3]-1))): TemporalStartMonth=0
+
+
 
         # define basic parameters
         slices=[slice(None,None,None), slice(None,None,None), slice(TemporalStartMonth,TemporalEndMonth,None)]
