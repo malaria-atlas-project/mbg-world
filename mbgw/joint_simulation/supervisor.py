@@ -203,7 +203,7 @@ def normalize_for_mapcoords(arr, max):
     arr *= max
 
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
-def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
+def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
 
     # define only realizations chunk of hdf5 realization file
     out_arr = outfile_root.realizations
@@ -314,7 +314,7 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
     ################################~TEMP
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
-    getUnconditionedBlock(out_arr,real_index,grids,C_straighfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
     print 'variance of unconditioned block = '+str(round(np.var(out_arr),10))
     print 'variance of unconditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
     examineRealization(outfile_root,0,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
@@ -361,7 +361,7 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
 
     print '\tsimulating over '+str(len(xyt_out[:,0]))+' locations outside block using thinned block sample of '+str(len(z_in))+' points'
     t1=time.time()
-    z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straighfromtrace,relp)
+    z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straightfromtrace,relp)
     print '\ttime for simulation: '+str(time.time()-t1)
 
     #########################################CHECK COVARIANCE STRUCTURE
@@ -370,18 +370,18 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
 
     # test marginal space and time covariance structures of points outside block
     #cfdict_out = getEmpiricalCovarianceFunction_STmarginals(xyt_out,z_out,mu=0,margTol_S=0.05,margTol_T=0.9/12,nbins=20, cutoff = 0.8)
-    #plotEmpiricalCovarianceFunction(cfdict_out['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points outside (S) "+str(paramfileINDEX))
-    #plotEmpiricalCovarianceFunction(cfdict_out['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points outside (T)"+str(paramfileINDEX))
+    #plotEmpiricalCovarianceFunction(cfdict_out['space'],CovModelObj=C_straightfromtrace,spaceORtime="space", cutoff = 0.8, title="Points outside (S) "+str(paramfileINDEX))
+    #plotEmpiricalCovarianceFunction(cfdict_out['time'],CovModelObj=C_straightfromtrace,spaceORtime="time", cutoff = 0.8, title="Points outside (T)"+str(paramfileINDEX))
 
     # test marginal space and time covariance structures of points inside block
     #cfdict_in = getEmpiricalCovarianceFunction_STmarginals(xyt_in,z_in,mu=0,margTol_S=0.05,margTol_T=0.9/12,nbins=20, cutoff = 0.8)
-    #plotEmpiricalCovarianceFunction(cfdict_in['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)"+str(paramfileINDEX))
-    #plotEmpiricalCovarianceFunction(cfdict_in['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
+    #plotEmpiricalCovarianceFunction(cfdict_in['space'],CovModelObj=C_straightfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)"+str(paramfileINDEX))
+    #plotEmpiricalCovarianceFunction(cfdict_in['time'],CovModelObj=C_straightfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
 
     # test marginal space and time covariance structures of points inside and outside block
     #cfdict_inout = getEmpiricalCovarianceFunction_STmarginals(np.vstack((xyt_in,xyt_out)),np.hstack((z_in,z_out)),mu=0,margTol_S=0.05,margTol_T=0.9/12,nbins=20, cutoff = 0.8)
-    #plotEmpiricalCovarianceFunction(cfdict_inout['space'],CovModelObj=C_straighfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)"+str(paramfileINDEX))
-    #plotEmpiricalCovarianceFunction(cfdict_inout['time'],CovModelObj=C_straighfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
+    #plotEmpiricalCovarianceFunction(cfdict_inout['space'],CovModelObj=C_straightfromtrace,spaceORtime="space", cutoff = 0.8, title="Points inside (S)"+str(paramfileINDEX))
+    #plotEmpiricalCovarianceFunction(cfdict_inout['time'],CovModelObj=C_straightfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
 
     #########################################CHECK COVARIANCE STRUCTURE
 
