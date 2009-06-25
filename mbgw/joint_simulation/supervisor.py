@@ -436,8 +436,25 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
 #        
 ##        thin_x[:,:,2] = axes[2][i]
         x[:,:,2] = axes[2][i]
-        simkrige = M1(x)
-        dkrige = covariate_mesh + M(x) + np.dot(C1(x,data_mesh[piv[:m]]).view(ndarray), w).ravel()
+        simkrige = M2(x)
+        dkrige = covariate_mesh + M(x) + np.dot(C1(x,data_locs[piv[:m]]).view(ndarray), w).reshape(x.shape[:-1])
+        
+        import pylab as pl
+        pl.imshow(grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+'))
+        pl.colorbar()
+        pl.title('Simulated')
+        
+        pl.figure()
+        pl.imshow(simkrige)
+        pl.colorbar()
+        pl.title('Sim krige')
+        
+        pl.figure()
+        pl.imshow(dkrige)
+        pl.colorbar()
+        pl.title('Data krige')
+
+        
         from IPython.Debugger import Pdb
         Pdb(color_scheme='Linux').set_trace()
         
