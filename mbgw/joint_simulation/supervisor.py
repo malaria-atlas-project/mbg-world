@@ -321,8 +321,11 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
     print 'variance of unconditioned block = '+str(round(np.var(out_arr),10))
     print 'variance of unconditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
-    examineRealization(outfile_root,0,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
+    examineRealization(outfile_root,real_index,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
     ################################~TEMP
+    
+    
+    ABOVE CALL IS HARD-WIRED TO REALIZATION 0
 
     
     # Figure out pdata
@@ -435,7 +438,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     ####################################TEMP
     print 'variance of conditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
     print 'variance of conditioned block = '+str(round(np.var(out_arr),10))
-    examineRealization(outfile_root,0,6,15,None,None,conditioned=True,flipVertical="FALSE",SPACE=True,TIME=True)
+    examineRealization(outfile_root,real_index,6,15,None,None,conditioned=True,flipVertical="FALSE",SPACE=True,TIME=True)
     ########################################
         
             
