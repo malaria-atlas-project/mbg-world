@@ -411,7 +411,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
 
 
     
-#    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
+    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
     t1 = time.time()
     
@@ -432,9 +432,9 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     
     
     for i in xrange(grid_shape[2]-1,-1,-1):
-#        thin_row.fill(0.)
-#        
-##        thin_x[:,:,2] = axes[2][i]
+        thin_row.fill(0.)
+        
+        thin_x[:,:,2] = axes[2][i]
         x[:,:,2] = axes[2][i]
         simkrige = M2(x)
         dkrige = covariate_mesh + M(x) + np.dot(C1(x,data_locs[piv[:m]]).view(ndarray), w).reshape(x.shape[:-1])
