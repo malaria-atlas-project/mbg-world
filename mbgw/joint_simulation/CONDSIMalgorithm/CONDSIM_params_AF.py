@@ -5,7 +5,7 @@ region = "AF"
 
 # what year are starting at (the january) and how many months are we predicting?
 nmonths = 12
-start_year = 2001
+start_year = 2007
  
 # standard path to utility function directory (used to source generic R functions)
 utilFolder = '/root/map_utils/map_utils/'
@@ -34,6 +34,6 @@ NinThinnedBlock =10000
 # set some other memory and kriging parameters
 burn = 2000
 memmax = 1.e8
-thinning = 10
+thinning = 1
 relp=1e-6
 
