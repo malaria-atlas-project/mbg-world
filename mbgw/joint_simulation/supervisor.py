@@ -429,7 +429,7 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
         ####################################TEMP
-        examineRealization(outfile_root,0,0,15,0,2,conditioned=False,flipVertical=FALSE,SPACE=True,TIME=True)
+        examineRealization(outfile_root,0,0,15,0,2,conditioned=True,flipVertical="FALSE",SPACE=True,TIME=True)
         ########################################
         
             
