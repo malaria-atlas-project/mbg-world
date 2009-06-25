@@ -396,37 +396,57 @@ def create_realization(outfile_root,real_index, C,C_straighfromtrace, mean_ondat
     #####################################
     
     
-    # Bring in data.
-    print '\tKriging to bring in data.'    
-    print '\tPreprocessing.'
-    t1 = time.time()    
-    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)
-    t2 = time.time()
-    print '\t\tDone in %f'%(t2-t1)
+#    # Bring in data.
+#    print '\tKriging to bring in data.'    
+#    print '\tPreprocessing.'
+#    t1 = time.time()    
+#    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)
+#    t2 = time.time()
+#    print '\t\tDone in %f'%(t2-t1)
 
     ###############################~~TEMP
     #from IPython.Debugger import Pdb
     #Pdb(color_scheme='Linux').set_trace()
     #####################################
+
+
     
-    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
+#    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
     t1 = time.time()
+    
+    C1 = pm.gp.NearlyFullRankCovariance(C_straightfromtrace.eval_fun, **C_straightfromtrace.params)
+    C2 = pm.gp.NearlyFullRankCovariance(C_straightfromtrace.eval_fun, **C_straightfromtrace.params)
+    M1 = pm.gp.Mean(lambda x: no.zeros(x.shape[:-1]))
+    M2 = pm.gp.Mean(lambda x: no.zeros(x.shape[:-1]))
+    
+    U,m,piv = C1.cholesky(data_locs, apply_pivot=False)
+    
+    w = np.linalg.solve(U[:m,:m],np.linalg.solve(U[:m,:m].T,(tdata-mean_ondata)[piv[:m]]))
+    pm.gp.observe(M2,C2,data_locs,pdata)
+    
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
+    
+    
     for i in xrange(grid_shape[2]-1,-1,-1):
-        thin_row.fill(0.)
-        
-        thin_x[:,:,2] = axes[2][i]
-        x[:,:,2] = axes[2][i]
-        
-        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
-        row = ndimage.map_coordinates(thin_row, mapgrid)
-        
-        row += covariate_mesh
-        row += M(x)
-        row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
- 
-        # NaN the oceans to save storage
-        row[np.where(1-mask)] = missing_val
+#        thin_row.fill(0.)
+#        
+##        thin_x[:,:,2] = axes[2][i]
+#        x[:,:,2] = axes[2][i]
+
+#        
+#        
+#        
+##        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
+##        row = ndimage.map_coordinates(thin_row, mapgrid)
+##        
+##        row += covariate_mesh
+##        row += M(x)
+##        row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
+# 
+#        # NaN the oceans to save storage
+#        row[np.where(1-mask)] = missing_val
         
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
