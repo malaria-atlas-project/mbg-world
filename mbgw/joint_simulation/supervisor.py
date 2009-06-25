@@ -205,6 +205,10 @@ def normalize_for_mapcoords(arr, max):
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
 def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
 
+
+    print '\nON REALIZATION '+str(real_index)+'\n'
+
+
     # define only realizations chunk of hdf5 realization file
     out_arr = outfile_root.realizations
 
