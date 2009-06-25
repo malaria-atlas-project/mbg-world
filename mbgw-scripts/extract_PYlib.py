@@ -243,12 +243,21 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         #f_chunk = f_chunk[:,:,:,0]                       #f_chunk = [month,col,row]
 
         # because pyTables is not working properly, manually loop through each month we want to extract and make a ST 3d matrix
-        n_months = tot_slice[3].stop - tot_slice[3].start
-        f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
-        for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
-            f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        #n_months = tot_slice[3].stop - tot_slice[3].start
+        #f_chunk = zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+        #for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+        #    f_chunk[:,:,:,mm] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
         #pdb.set_trace()
-        f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+        #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+
+        n_months = tot_slice[3].stop - tot_slice[3].start
+        f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
+        subsetmonth=0 
+        for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
+            f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+            subsetmonth=subsetmonth+1
+        #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]
+        f_chunk = f_chunk.squeeze()
 
         ########TEMP###########
         #set missing vlaues in f block to 0
@@ -265,8 +274,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
         #xxx4a = r.Sys_time() 
         # run check that there are no missing values in this f chunk
         if sum(isnan(f_chunk))>0:
-            print "WARNING!! found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!"
-            return(-9999)
+            raise RuntimeError ("Found "+str(sum(isnan(f_chunk)))+" NaN's in realisation "+str(MCMCrel)+" EXITING!!!")
 
         ## initialise arrays to house running mean PR whilst we loop through chunks and nugget draws..
         countryMeanPRrel_ChunkRunning = repeat(0.,n_per*Nsalb).reshape(Nsalb,n_per)
@@ -327,7 +335,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             #xxx5a = r.Sys_time() 
             # get row of 5km PR surface accross all months in chunk  (assumes f_chunk is correct way up i.e. map view)
             #f_chunk_ROW = f_chunk[:,jj,:]
-            f_chunk_ROW = f_chunk[:,startRow:endRow:1,:]
+            f_chunk_ROW = f_chunk[startRow:endRow:1,:,:]
             
             # get corresponding 5 rows of 1km Salb and population surface (assumes they are correct way up i.e. map view)
             startRow1km=startRow*HiResLowResRatio
@@ -393,7 +401,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
 
                 # aggregate through time to obtain spatial-only array for this nugget-realisation
                 #xxx9a = r.Sys_time()
-                chunkTMEAN = atleast_2d(np.mean(chunk,0))
+                chunkTMEAN = atleast_2d(np.mean(chunk,-1))
             
                 # make a mappng vector for later conversion of arays of this dimension to a vector, and back again
                 #ind5km = np.where(chunkTMEAN!=-99999999) 
@@ -415,15 +423,13 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 # run check that this expanded block has correct dimensions
                 test=chunkExp.shape==salblim1km_ROW.shape           
                 if test==False:
-                    print("WARNING !!!!: spatial dimensions of expanded 5km 'chunkExp' do not match 1km covariate chunk 'salblim1km_ROW': EXITING!! ")            
-                    return(-9999)
-
+                    raise RuntimeError ("WARNING !!!!: spatial dimensions of expanded 5km 'chunkExp' do not match 1km covariate chunk 'salblim1km_ROW': EXITING!! ")
+                    
                 # run check that there are no PR==-9999 pixels (assigned to non-stable pixels in CS code) in stable areas on salblim1km
                 testmatrix = cp.deepcopy(chunkExp)
                 testmatrix[salblim1km_ROW == -9999] = 0
                 if (np.sum(testmatrix == -9999) > 0):
-                    print ("WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj) )+ ": EXITING!!"
-                    return(-9999)
+                    raise RuntimeError ("WARNING!!: ("+str(np.sum(testmatrix== -9999))+") null PR pixels (-9999) found in stable areas in rel "+str(ii)+" , row "+str(jj)+ ": EXITING!!")
 
                 # obtain a burden surface for this chunk as a function of population and PR
                 ## convert PRsurface and POPsurface to vectors before passing, then back=convert afterwards
@@ -691,7 +697,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
     # define a blank array of zeroes of same size as a single monthly map - that will be duplicated for various uses later
     zeroMap = np.zeros(n_rows*n_cols).reshape(n_rows,n_cols)
-
+    
     # initialise zero matrices that will house running totals
     meanPR = cp.deepcopy(zeroMap)
     meanPR2 = cp.deepcopy(zeroMap)
@@ -744,12 +750,13 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 
         # because pyTables is not working properly, manually loop through each month we want to extract and make a ST 3d matrix
         n_months = tot_slice[3].stop - tot_slice[3].start
-        f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_cols,n_rows,n_months)
+        f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
         subsetmonth=0 
         for mm in xrange(tot_slice[3].start,tot_slice[3].stop):
             f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
             subsetmonth=subsetmonth+1
-        f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]   
+        #f_chunk = f_chunk[::-1,:,::-1,:].T[:,:,:,0]
+        f_chunk = f_chunk.squeeze()
 
         ########TEMP###########
         #set missing vlaues in f block to 0
@@ -776,14 +783,23 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             # add nugget component, apply inverse logit, apply age-correction factor
             #xxx8a = r.Sys_time()
+            
+            
+            
+            #######################TEMP NO NUGGET
             chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            #chunk = f_chunk+0
+            ######################################
+            
+            
+            
             chunk = pm.invlogit(chunk.ravel())
             chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
             chunk = chunk.reshape(f_chunk.shape).squeeze()
             #xxx8 = xxx8 + (r.Sys_time() - xxx8a)
 
             # aggregate through time to obtain spatial-only array for this nugget-realisation
-            chunkTMEAN = np.atleast_2d(np.mean(chunk,0))
+            chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
             #print('sum of chunkTMEAN '+str(sum(sum(chunkTMEAN))))
 
 
@@ -794,7 +810,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             # increment runing mean PR matrices 
             meanPR = meanPR + (chunkTMEAN/totalN)
             meanPR2 = meanPR2 + (np.square(chunkTMEAN)/totalN)
-            
+
             # get burden realisation for this PR and increment running burden matrix
             if BURDEN==True:
 

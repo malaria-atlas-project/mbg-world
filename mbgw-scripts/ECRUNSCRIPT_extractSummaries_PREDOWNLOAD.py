@@ -5,11 +5,11 @@ print 'Starting: ECRUNSCRIPT_extractSummaries_PREDOWNLOAD..'
 
 # import libraries
 from map_utils import checkAndBuildPaths
-from boto_PYlib import *
+from  map_utils import S3
 from extract_params import *
 import sys
 
-S=S3() # initialise key object
+S=S3(keyPath) # initialise key object
 
 # deal with system arguments
 BURDEN = True
