@@ -74,8 +74,6 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth=Non
         n_rows=len(hr.lat_axis)
         n_cols=len(hr.lon_axis)
         N_facs = int(1e5)
-        N_years = (slices[2].stop - slices[2].start)/12.
-
 
         # Pull out parasite rate chunk (i.e. import n months of block)    
         slices = tuple(slices)  
@@ -170,7 +168,6 @@ def examineRealization (filename,Rel,Month,paramfileINDEX,TemporalStartMonth=Non
         n_rows=len(hr.lat_axis)
         n_cols=len(hr.lon_axis)
         N_facs = int(1e5)
-        N_years = (slices[2].stop - slices[2].start)/12.
 
 
         # Pull out parasite rate chunk (i.e. import n months of block)    
