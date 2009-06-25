@@ -439,8 +439,10 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         simkrige = M2(x)
         dkrige = covariate_mesh + M(x) + np.dot(C1(x,data_locs[piv[:m]]).view(ndarray), w).reshape(x.shape[:-1])
         
+        simsurf = grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
+        
         import pylab as pl
-        pl.imshow(grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+'))
+        pl.imshow(simsurf)
         pl.colorbar()
         pl.title('Simulated')
         
@@ -450,9 +452,19 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         pl.title('Sim krige')
         
         pl.figure()
+        pl.imshow(simsurf-simkrige)
+        pl.colorbar()
+        pl.title('Adjusted sim')
+        
+        pl.figure()
         pl.imshow(dkrige)
         pl.colorbar()
         pl.title('Data krige')
+        
+        pl.figure()
+        pl.imshow(simsurf-simkrige+dkrige)
+        pl.colorbar()
+        pl.title('Kriged sim')
 
         
         from IPython.Debugger import Pdb
