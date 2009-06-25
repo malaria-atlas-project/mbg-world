@@ -437,7 +437,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
 ##        thin_x[:,:,2] = axes[2][i]
         x[:,:,2] = axes[2][i]
         simkrige = M1(x)
-        dkrige = covariate_mesh + M(x) + np.linalg.dot(C1(x,data_mesh[piv[:m]]).view(ndarray), w).ravel()
+        dkrige = covariate_mesh + M(x) + np.dot(C1(x,data_mesh[piv[:m]]).view(ndarray), w).ravel()
         from IPython.Debugger import Pdb
         Pdb(color_scheme='Linux').set_trace()
         
