@@ -74,6 +74,9 @@ for ii in xrange(0,n_realizations):
         chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
         subsetmonth=subsetmonth+1
     chunk = chunk.squeeze()
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace() 
     
     # optionally, add nugget, inverse logit, and age correct
     if ADDNUGGET is True: chunk = chunk + np.random.normal(loc=0, scale=np.sqrt(V[ii]), size=chunk.shape)
@@ -117,5 +120,4 @@ if PLOTTING is True:
     pl.show()
 
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace() 
+
