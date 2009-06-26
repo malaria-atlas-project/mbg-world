@@ -81,7 +81,7 @@ for ii in xrange(0,n_realizations):
     holdshape = chunk.shape
     
     # optionally, add nugget, inverse logit, and age correct
-    if ADDNUGGET is True: chunk = chunk + np.random.normal(loc=0, scale=np.sqrt(V[ii]), size=chunk.shape)
+    if ADDNUGGET is True: chunk = chunk + np.random.normal(loc=0, scale=np.sqrt(V[ii]), size=np.prod(chunk.shape))
     if BACKTRANSFORM is True: chunk = pm.invlogit(chunk.ravel())
     if AGECORRECT is True: chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
 
