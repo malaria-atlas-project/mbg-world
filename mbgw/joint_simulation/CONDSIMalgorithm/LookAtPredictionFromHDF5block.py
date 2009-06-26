@@ -77,13 +77,15 @@ for ii in xrange(0,n_realizations):
 
     from IPython.Debugger import Pdb
     Pdb(color_scheme='Linux').set_trace() 
+
+    holdshape = chunk.shape
     
     # optionally, add nugget, inverse logit, and age correct
     if ADDNUGGET is True: chunk = chunk + np.random.normal(loc=0, scale=np.sqrt(V[ii]), size=chunk.shape)
     if BACKTRANSFORM is True: chunk = pm.invlogit(chunk.ravel())
     if AGECORRECT is True: chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
 
-    chunk = chunk.reshape(chunk.shape).squeeze()
+    chunk = chunk.reshape(holdshape).squeeze()
    
     # aggregate through time
     chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
