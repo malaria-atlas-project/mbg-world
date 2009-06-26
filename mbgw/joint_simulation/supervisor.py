@@ -156,10 +156,6 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     outfile.root._v_attrs.orig_filename = trace._v_file.filename
 
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()   
-    
-
     # Total number of pixels in month.
     npix = grid_shape[0]*grid_shape[1]/thinning**2
     # Maximum number of pixels in tile.
@@ -221,6 +217,11 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     Creates a single realization from the predictive distribution over specified space-time mesh.
     """
     grid_shape = tuple([grid[2] for grid in grids])
+
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()   
+
 
 
     #r.X11(width=8,height=4)
