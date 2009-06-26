@@ -154,6 +154,10 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         new_node = outfile.createVLArray('/group0',node.name,tb.ObjectAtom())
         [new_node.append(node[index]) for index in indices]
     outfile.root._v_attrs.orig_filename = trace._v_file.filename
+
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()   
     
 
     # Total number of pixels in month.
