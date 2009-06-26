@@ -12,7 +12,7 @@ from mbgw import correction_factors
 # set some parameters
 N_facs = int(1e5)
 a_lo = 2
-h_hi  = 10
+a_hi  = 10
 
 # deal with system arguments
 startRel = None
