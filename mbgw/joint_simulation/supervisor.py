@@ -324,10 +324,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     #examineRealization(outfile_root,real_index,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
     ################################~TEMP
     
-    
-   
-
-    
     # Figure out pdata
     pdata = np.empty(tdata.shape)
     for i in xrange(len(where_in)):
@@ -389,9 +385,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     #plotEmpiricalCovarianceFunction(cfdict_inout['time'],CovModelObj=C_straightfromtrace,spaceORtime="time", cutoff = 0.8, title="Points inside (T)"+str(paramfileINDEX))
 
     #########################################CHECK COVARIANCE STRUCTURE
-
-    
-
        
     # assign these values to pdata    
     pdata[where_out] = z_out

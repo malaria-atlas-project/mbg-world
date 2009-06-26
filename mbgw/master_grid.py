@@ -26,11 +26,16 @@ AM_lims = {'topRow': 1890,
 #'rightCol': 5183}
 
 #zimabwe sqaure - all low - qith some 2001 very low surveys in
-AF_lims = {'topRow': 2489,
-'bottomRow': 2498,
-'leftCol': 5079,
-'rightCol': 5088}
+#AF_lims = {'topRow': 2489,
+#'bottomRow': 2498,
+#'leftCol': 5079,
+#'rightCol': 5088}
 
+# somlaia test
+AF_lims = {'topRow': 1941,
+'bottomRow': 1972,
+'leftCol': 5309,
+'rightCol': 5397}
 
 #AF_lims = {'topRow': 1536,
 #'bottomRow': 1776,
