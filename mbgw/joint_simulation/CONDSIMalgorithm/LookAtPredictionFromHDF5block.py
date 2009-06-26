@@ -66,6 +66,7 @@ for ii in xrange(0,n_realizations):
     
     # aggregate throgh time
     chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
+    print(chunkTMEAN)
     
     # add this realisation to output block
     annualmean_block[:,:,ii]=chunkTMEAN
