@@ -15,12 +15,12 @@ startMonth = None
 endMonth = None
 PLOTTING = False
 
-if sys.argv[0]!='None': startRel = int(sys.argv[0])
-if sys.argv[1]!='None': endRel = int(sys.argv[1])
-if sys.argv[2]!='None': startMonth = int(sys.argv[2])
-if sys.argv[3]!='None': endMonth = int(sys.argv[3])
-filename = sys.argv[4]
-if sys.argv[5] == 'True': PLOTTING=True
+if sys.argv[1]!='None': startRel = int(sys.argv[1])
+if sys.argv[2]!='None': endRel = int(sys.argv[2])
+if sys.argv[3]!='None': startMonth = int(sys.argv[3])
+if sys.argv[4]!='None': endMonth = int(sys.argv[4])
+filename = sys.argv[5]
+if sys.argv[6] == 'True': PLOTTING=True
 
 
 # get realization block
