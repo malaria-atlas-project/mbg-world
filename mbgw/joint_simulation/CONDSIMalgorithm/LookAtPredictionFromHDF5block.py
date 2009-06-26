@@ -1,5 +1,5 @@
 # example call
-# run LookAtPredictionFromHDF5block None 30 None None "/mnt/qrypfpr010708_africa_run_9.10.2008_trial_six/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_50.hdf5" True
+# run LookAtPredictionFromHDF5block None 30 None None "/mnt/qrypfpr010708_africa_run_9.10.2008_trial_six/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_50.hdf5" True True False True
 
 # import libraries
 import numpy as np
@@ -7,12 +7,21 @@ import tables as tb
 import pylab as pl
 import pymc as pm
 import sys
+import mbgw
+
+# set some parameters
+N_facs = int(1e5)
+a_lo = 2
+h_hi  = 10
 
 # deal with system arguments
 startRel = None
 endRel = None
 startMonth = None
 endMonth = None
+BACKTRANSFORM = False
+AGECORRECT = False
+ADDNUGGET = False
 PLOTTING = False
 
 if sys.argv[1]!='None': startRel = int(sys.argv[1])
@@ -20,7 +29,10 @@ if sys.argv[2]!='None': endRel = int(sys.argv[2])
 if sys.argv[3]!='None': startMonth = int(sys.argv[3])
 if sys.argv[4]!='None': endMonth = int(sys.argv[4])
 filename = sys.argv[5]
-if sys.argv[6] == 'True': PLOTTING=True
+if sys.argv[6] == 'True': BACKTRANSFORM=True
+if sys.argv[7] == 'True': AGECORRECT=True
+if sys.argv[8] == 'True': ADDNUGGET=True
+if sys.argv[9] == 'True': PLOTTING=True
 
 
 # get realization block
@@ -45,29 +57,34 @@ n_months = (endMonth-startMonth)-1
 # initialise empty block to house realisatoins of back-transformed time-aggregated PR predictions
 annualmean_block = np.empty(n_rows*n_cols*n_realizations).reshape(n_rows,n_cols,n_realizations)
 
+# optionally get nugget variance and age-correction factors    
+if ADDNUGGET is True: V = hr.PyMCsamples.col('V')[:]    
+if AGECORRECT is True: facs = mbgw.correction_factors.age_corr_factors_from_limits(a_lo, a_hi, N_facs)    
+
 # loop through each realisation
 for ii in xrange(0,n_realizations):
 
-    print ii
+    #print ii
 
     # Pull out relevent section of hdf5 f block
     tot_slice = (slice(ii,ii+1,None),slice(None,None,None),slice(None,None,None),slice(startMonth,endMonth,None))  
-    f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
+    chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
     subsetmonth=0 
     for mm in xrange(n_months):
-        f_chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
+        chunk[:,:,:,subsetmonth] = hr.realizations[tot_slice[0],tot_slice[1],tot_slice[2],mm]
         subsetmonth=subsetmonth+1
-    f_chunk = f_chunk.squeeze()
+    chunk = chunk.squeeze()
     
-    # inverse logit and age-correct
-    chunk = pm.invlogit(f_chunk.ravel())
-    #chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
-    chunk = chunk.reshape(f_chunk.shape).squeeze()
-    
-    # aggregate throgh time
+    # optionally, add nugget, inverse logit, and age correct
+    if ADDNUGGET is True: chunk = chunk + np.random.normal(loc=0, scale=np.sqrt(V[ii]), size=chunk.shape)
+    if BACKTRANSFORM is True: chunk = pm.invlogit(chunk.ravel())
+    if AGECORRECT is True: chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
+
+    chunk = chunk.reshape(chunk.shape).squeeze()
+   
+    # aggregate through time
     chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
-    print(chunkTMEAN)
-    
+        
     # add this realisation to output block
     annualmean_block[:,:,ii]=chunkTMEAN
 
