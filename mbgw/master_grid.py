@@ -31,11 +31,11 @@ AM_lims = {'topRow': 1890,
 #'leftCol': 5079,
 #'rightCol': 5088}
 
-# somlaia test
-AF_lims = {'topRow': 1941,
-'bottomRow': 1972,
-'leftCol': 5309,
-'rightCol': 5397}
+# another test
+AF_lims = {'topRow': 2387,
+'bottomRow': 2412,
+'leftCol': 5147,
+'rightCol': 5164}
 
 #AF_lims = {'topRow': 1536,
 #'bottomRow': 1776,
