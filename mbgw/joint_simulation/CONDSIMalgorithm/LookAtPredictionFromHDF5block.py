@@ -76,10 +76,11 @@ for ii in xrange(0,n_realizations):
     chunk = chunk.squeeze()
 
     holdshape = chunk.shape
+    chunk = chunk.ravel()
     
     # optionally, add nugget, inverse logit, and age correct
     if ADDNUGGET is True: chunk = chunk + np.random.normal(loc=0, scale=np.sqrt(V[ii]), size=np.prod(chunk.shape))
-    if BACKTRANSFORM is True: chunk = pm.invlogit(chunk.ravel())
+    if BACKTRANSFORM is True: chunk = pm.invlogit(chunk)
     if AGECORRECT is True: chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
 
     chunk = chunk.reshape(holdshape).squeeze()
