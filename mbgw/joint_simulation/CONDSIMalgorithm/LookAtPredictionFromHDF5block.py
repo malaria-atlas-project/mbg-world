@@ -7,7 +7,7 @@ import tables as tb
 import pylab as pl
 import pymc as pm
 import sys
-import mbgw
+from mbgw import correction_factors
 
 # set some parameters
 N_facs = int(1e5)
