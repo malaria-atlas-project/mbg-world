@@ -59,7 +59,7 @@ annualmean_block = np.empty(n_rows*n_cols*n_realizations).reshape(n_rows,n_cols,
 
 # optionally get nugget variance and age-correction factors    
 if ADDNUGGET is True: V = hr.PyMCsamples.col('V')[:]    
-if AGECORRECT is True: facs = mbgw.correction_factors.age_corr_factors_from_limits(a_lo, a_hi, N_facs)    
+if AGECORRECT is True: facs = correction_factors.age_corr_factors_from_limits(a_lo, a_hi, N_facs)    
 
 # loop through each realisation
 for ii in xrange(0,n_realizations):
