@@ -90,9 +90,6 @@ for ii in xrange(0,n_realizations):
     # add this realisation to output block
     annualmean_block[:,:,ii]=chunkTMEAN
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
-
 # get posterior mean and std of predicted maps
 annualmean_mean = np.atleast_2d(np.mean(annualmean_block,-1))
 annualmean_std = np.atleast_2d(np.std(annualmean_block,-1))
@@ -121,5 +118,6 @@ if PLOTTING is True:
    
     pl.show()
 
-
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
 
