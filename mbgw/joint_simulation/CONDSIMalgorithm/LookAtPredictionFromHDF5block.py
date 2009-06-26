@@ -6,6 +6,7 @@ import numpy as np
 import tables as tb
 import pylab as pl
 import pymc as pm
+import sys
 
 # deal with system arguments
 startRel = None
