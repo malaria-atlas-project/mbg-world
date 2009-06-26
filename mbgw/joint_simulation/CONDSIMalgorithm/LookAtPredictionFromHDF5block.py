@@ -91,5 +91,11 @@ if PLOTTING is True:
     pl.colorbar()
     pl.title('PR (posterior std)')
     pl.axis('image')
-
+    
+    pl.figure(3)
+    pl.clf()
+    pl.hist(annualmean_block,bins=25)
+    pl.title('time-aggregated PR per-pixel (all realizations)\nmean = '+str(np.mean(annualmean_block)))
+   
+    pl.show()
 
