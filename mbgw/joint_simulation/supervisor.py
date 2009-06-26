@@ -218,12 +218,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     """
     grid_shape = tuple([grid[2] for grid in grids])
 
-
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()   
-
-
-
     #r.X11(width=8,height=4)
     #r.par(mfrow=(1,2))
     #r.plot(data_mesh_indices[:,0],data_mesh_indices[:,1],xlab="",ylab="",main="",cex=0.5)
@@ -231,8 +225,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
  
     #from IPython.Debugger import Pdb
     #Pdb(color_scheme='Linux').set_trace()
-
-
 
     thin_grids = tuple([grid[:2]+(grid[2]/thinning,) for grid in grids])    
     thin_grid_shape = tuple([thin_grid[2] for thin_grid in thin_grids])
@@ -637,6 +629,9 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
     # convert coordinates to 3d blocks  
     XYTdict =array3d_2_XYTZlist(xcoords,ycoords,tcoords, as4dcoordblock=True)
     xyt_cube=XYTdict['xyt_cube']
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()   
 
     # define latent mean function and optionally covert covariance function to sub full rank
     M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
