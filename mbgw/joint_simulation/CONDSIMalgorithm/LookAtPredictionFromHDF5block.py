@@ -48,6 +48,8 @@ annualmean_block = np.empty(n_rows*n_cols*n_realizations).reshape(n_rows,n_cols,
 # loop through each realisation
 for ii in xrange(0,n_realizations):
 
+    print ii
+
     # Pull out relevent section of hdf5 f block
     tot_slice = (slice(ii,ii+1,None),slice(None,None,None),slice(None,None,None),slice(startMonth,endMonth,None))  
     f_chunk = np.zeros(1*n_cols*n_rows*n_months).reshape(1,n_rows,n_cols,n_months)
