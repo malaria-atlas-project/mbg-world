@@ -116,3 +116,6 @@ if PLOTTING is True:
    
     pl.show()
 
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace() 
