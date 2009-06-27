@@ -400,10 +400,8 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     t2 = time.time()
     print '\t\tDone in %f'%(t2-t1)
 
-    ###############################~~TEMP
     #from IPython.Debugger import Pdb
     #Pdb(color_scheme='Linux').set_trace()
-    #####################################
     
     thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'

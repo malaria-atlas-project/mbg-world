@@ -69,6 +69,9 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     # Backsolve data-data covariance against dev
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='N', inplace=True)
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
     
     return dev_posdef, xbi, ybi, dl_posdef
         
