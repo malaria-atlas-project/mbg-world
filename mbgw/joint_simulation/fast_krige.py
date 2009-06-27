@@ -70,9 +70,6 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='N', inplace=True)
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
-    
     return dev_posdef, xbi, ybi, dl_posdef
         
 
@@ -96,3 +93,6 @@ def krige_month(C, i, dl_posdef, grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, x
                 this_mask = mask[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]]             
 
                 row[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]] = scipy.linalg.blas.fblas.sgemv(1., this_C_V.T, dev_posdef).reshape((x_block_size, y_block_size))
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
