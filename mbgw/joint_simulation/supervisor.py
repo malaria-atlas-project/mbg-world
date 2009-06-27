@@ -561,10 +561,10 @@ def array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube=None, as4dcoordblock=False
     x_in = np.ravel(x_cube)
     y_in = np.ravel(y_cube)
     t_in = np.ravel(t_cube)
-    xyt_in  = np.vstack((y_in,x_in,t_in)).T
+    xyt_in  = np.vstack((x_in,y_in,t_in)).T
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
 
     
     if z_cube is not None: return({"xyt_in":xyt_in,"z_in":z_in})
