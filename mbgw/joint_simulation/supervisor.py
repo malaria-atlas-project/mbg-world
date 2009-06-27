@@ -562,6 +562,10 @@ def array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube=None, as4dcoordblock=False
     y_in = np.ravel(y_cube)
     t_in = np.ravel(t_cube)
     xyt_in  = np.vstack((y_in,x_in,t_in)).T
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
+
     
     if z_cube is not None: return({"xyt_in":xyt_in,"z_in":z_in})
     if z_cube is None: return({"xyt_in":xyt_in})
@@ -616,8 +620,8 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
     pm.gp.observe(M,C,obs_mesh=XYT_in,obs_vals=z_in)
     f = pm.gp.Realization(M,C)
  
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
  
     # return 1d array of simulated values    
     return f(XYT_out)
