@@ -480,8 +480,8 @@ def reduce_realizations(filename, reduce_fns, slices, a_lo, a_hi, n_per):
 def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock=None):
 
     # extract grid parameters for ease
-    ncols = grids[1][2]
-    nrows = grids[0][2]
+    ncols = grids[0][2]
+    nrows = grids[1][2]
     nmonths = grids[2][2]
 
     # if thinning, do dirty calculation to approximately evenly spread sample of size NinThinnedBlock accross ST unconditioned block
@@ -517,8 +517,8 @@ def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock=None):
     ### get XYT and Z lists from this extracted block
     XYTZdict = array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube)
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
     
     return(XYTZdict)
 
@@ -616,8 +616,8 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
     pm.gp.observe(M,C,obs_mesh=XYT_in,obs_vals=z_in)
     f = pm.gp.Realization(M,C)
  
-    #from IPython.Debugger import Pdb
-    #Pdb(color_scheme='Linux').set_trace()
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
  
     # return 1d array of simulated values    
     return f(XYT_out)
