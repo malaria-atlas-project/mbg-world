@@ -327,8 +327,8 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         index = where_in[i]
         pdata[index] = out_arr[real_index, grid_shape[1]-1-data_mesh_indices[index,1], data_mesh_indices[index,0], data_mesh_indices[index,2]]
 
-    #from IPython.Debugger import Pdb
-    #Pdb(color_scheme='Linux').set_trace()
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
 
     # jointly simulate at data points conditional on block    
 
@@ -633,8 +633,8 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
     XYTdict =array3d_2_XYTZlist(xcoords,ycoords,tcoords, as4dcoordblock=True)
     xyt_cube=XYTdict['xyt_cube']
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()   
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()   
 
     # define latent mean function and optionally covert covariance function to sub full rank
     M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
