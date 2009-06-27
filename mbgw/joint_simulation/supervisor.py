@@ -327,8 +327,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         index = where_in[i]
         pdata[index] = out_arr[real_index, grid_shape[1]-1-data_mesh_indices[index,1], data_mesh_indices[index,0], data_mesh_indices[index,2]]
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
 
     # jointly simulate at data points conditional on block    
 
@@ -518,6 +516,9 @@ def getThinnedBlockXYTZlists(relblock4d,real_index,grids,NinThinnedBlock=None):
 
     ### get XYT and Z lists from this extracted block
     XYTZdict = array3d_2_XYTZlist(xcoords,ycoords,tcoords,z_cube)
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
     
     return(XYTZdict)
 
