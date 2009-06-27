@@ -633,8 +633,8 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
     XYTdict =array3d_2_XYTZlist(xcoords,ycoords,tcoords, as4dcoordblock=True)
     xyt_cube=XYTdict['xyt_cube']
 
-    #from IPython.Debugger import Pdb
-    #Pdb(color_scheme='Linux').set_trace()   
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()   
 
     # define latent mean function and optionally covert covariance function to sub full rank
     M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
