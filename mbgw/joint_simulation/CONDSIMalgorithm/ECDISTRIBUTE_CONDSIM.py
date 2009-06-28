@@ -29,7 +29,7 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 n_total = 500#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
-STOPJOB = 95
+STOPJOB = 95 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 
 #############TEMP
