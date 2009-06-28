@@ -100,14 +100,14 @@ if PLOTTING is True:
 
     pl.figure(1)
     pl.clf()
-    pl.imshow(annualmean_mean,interpolation='nearest',origin='lower')
+    pl.imshow(annualmean_mean,interpolation='nearest')
     pl.colorbar()
     pl.title('PR (posterior mean)')
     pl.axis('image')
 
     pl.figure(2)
     pl.clf()
-    pl.imshow(annualmean_std,interpolation='nearest',origin='lower')
+    pl.imshow(annualmean_std,interpolation='nearest')
     pl.colorbar()
     pl.title('PR (posterior std)')
     pl.axis('image')
@@ -116,6 +116,16 @@ if PLOTTING is True:
     pl.clf()
     pl.hist(annualmean_block,bins=25)
     pl.title('time-aggregated PR per-pixel (all realizations)\nmean = '+str(np.mean(annualmean_block)))
+
+    aa = np.zeros(12).reshape(2,6)
+    aa[0,1] = 1
+
+    pl.figure(4)
+    pl.clf()
+    pl.imshow(aa,interpolation='nearest')
+    pl.colorbar()
+    pl.title('dot at top row, 2nd column ??')
+    pl.axis('image')
    
     pl.show()
 
