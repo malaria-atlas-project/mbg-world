@@ -1,4 +1,4 @@
-# Author: Anand Patil
+# Author: Anand Patil and Pete Gething
 # Date: 6 Feb 2009
 # License: Creative Commons BY-NC-SA
 ####################################

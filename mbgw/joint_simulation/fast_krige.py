@@ -94,5 +94,5 @@ def krige_month(C, i, dl_posdef, grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, x
 
                 row[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]] = scipy.linalg.blas.fblas.sgemv(1., this_C_V.T, dev_posdef).reshape((x_block_size, y_block_size))
 
-    from IPython.Debugger import Pdb
-    Pdb(color_scheme='Linux').set_trace()
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
