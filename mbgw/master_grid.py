@@ -19,39 +19,29 @@ AM_lims = {'topRow': 1890,
 #'leftCol': 3879,
 #'rightCol': 5628}
 
-#zimbabwe transect low to high
-#AF_lims = {'topRow': 2410,
-#'bottomRow': 2421,
-#'leftCol': 5065,
-#'rightCol': 5183}
+# Test square in S malawi - includes a high and low focus and an urban area
+#AF_lims = {'topRow': 2387,
+#'bottomRow': 2412,
+#'leftCol': 5147,
+#'rightCol': 5164}
 
-#zimabwe sqaure - all low - qith some 2001 very low surveys in
-#AF_lims = {'topRow': 2489,
-#'bottomRow': 2498,
-#'leftCol': 5079,
-#'rightCol': 5088}
 
-# another test
-AF_lims = {'topRow': 2387,
-'bottomRow': 2412,
-'leftCol': 5147,
-'rightCol': 5164}
-
-#AF_lims = {'topRow': 1536,
-#'bottomRow': 1776,
-#'leftCol': 5000,
-#'rightCol': 5250}
+# TEMP - kenya lims as Af for testing
+AF_lims = {'topRow' : 1901,
+'bottomRow' : 2132,
+'leftCol' : 5135,
+'rightCol' : 5325}
 
 AS_lims = {'topRow': 1018,
 'bottomRow': 2512,
 'leftCol': 5241,
 'rightCol': 8423}
 
-# FIXME: Replace with real Kenya limits.
-KE_lims = {'topRow' : 789,
-'bottomRow' : 1021,
-'leftCol' : 2999,
-'rightCol' : 3203}
+# Kenya limits.
+KE_lims = {'topRow' : 1901,
+'bottomRow' : 2132,
+'leftCol' : 5135,
+'rightCol' : 5325}
 
 
 rad_to_km = 6378.1

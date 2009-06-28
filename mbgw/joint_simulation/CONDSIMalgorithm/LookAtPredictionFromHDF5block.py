@@ -117,15 +117,14 @@ if PLOTTING is True:
     pl.hist(annualmean_block,bins=25)
     pl.title('time-aggregated PR per-pixel (all realizations)\nmean = '+str(np.mean(annualmean_block)))
 
-    aa = np.zeros(12).reshape(2,6)
-    aa[0,1] = 1
-
-    pl.figure(4)
-    pl.clf()
-    pl.imshow(aa,interpolation='nearest')
-    pl.colorbar()
-    pl.title('dot at top row, 2nd column ??')
-    pl.axis('image')
+    #aa = np.zeros(12).reshape(2,6)
+    #aa[0,1] = 1
+    #pl.figure(4)
+    #pl.clf()
+    #pl.imshow(aa,interpolation='nearest')
+    #pl.colorbar()
+    #pl.title('dot at top row, 2nd column ??')
+    #pl.axis('image')
    
     pl.show()
 

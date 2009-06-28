@@ -274,48 +274,47 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     monthParamObj = {'Nmonths':grid_shape[2],'StartMonth':grids[2][0]}
     
     
-    ################################~TEMP
     # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
-    #t1 = time.time()
-    #os.chdir(r_path)
-    #preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
-    #tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    t1 = time.time()
+    os.chdir(r_path)
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
+    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
 
-    #preLoopClassTree, junk = parse_tree(tree_reader)
-    #preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    preLoopClassTree, junk = parse_tree(tree_reader)
+    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
     
-    #OutMATlist = preLoopObj['OutMATlist']
-    #tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
-    #OutMATClassTree, junk = parse_tree(tree_reader)
-    #OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-    #os.chdir(curpath)
-    #preLoop_time = time.time()-t1
-    #print "preLoop_time :"+str(preLoop_time)
+    OutMATlist = preLoopObj['OutMATlist']
+    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    OutMATClassTree, junk = parse_tree(tree_reader)
+    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    os.chdir(curpath)
+    preLoop_time = time.time()-t1
+    print "preLoop_time :"+str(preLoop_time)
         
     ## Create and store unconditional realizations
-    #print '\tGenerating unconditional realizations.'
-    #t1 = time.time()
-    #for i in xrange(grid_shape[2]):
-    #    print 'On month :'+str(i)
-    #    #print 'OutMATlist:'
-    #    #print OutMATlist
-    #    os.chdir(r_path)
-    #    monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
-    #    #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
-    #    os.chdir(curpath)
-    #    OutMATlist= monthObject['OutMATlist']
-    #    MonthGrid = monthObject['MonthGrid']
-    #    out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
-    #t2 = time.time()
-    #print '\t\tDone in %f'%(t2-t1)
-    #print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
+    print '\tGenerating unconditional realizations.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]):
+        print 'On month :'+str(i)
+        #print 'OutMATlist:'
+        #print OutMATlist
+        os.chdir(r_path)
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
+        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
+        os.chdir(curpath)
+        OutMATlist= monthObject['OutMATlist']
+        MonthGrid = monthObject['MonthGrid']
+        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
+    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
     
     # delete unneeded R products
-    #del OutMATlist, preLoopObj, MonthGrid, monthObject
+    del OutMATlist, preLoopObj, MonthGrid, monthObject
     ################################~TEMP
 
     ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
-    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+    #getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
     #print 'variance of unconditioned block = '+str(round(np.var(out_arr),10))
     #print 'variance of unconditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
     #examineRealization(outfile_root,real_index,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
