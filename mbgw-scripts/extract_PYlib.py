@@ -13,7 +13,7 @@ import mbgw
 from pr_incidence import *
 import time
 import st_cov_fun
-from mbgw.joint_simulation import *
+#from mbgw.joint_simulation import *
 from math import sqrt
 from mbgw import correction_factors
 from map_utils import getAsciiheaderFromTemplateHDF5
