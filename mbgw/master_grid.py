@@ -14,10 +14,10 @@ AM_lims = {'topRow': 1890,
 'leftCol': 2038,
 'rightCol': 3401}
 
-AF_lims = {'topRow': 1393,
-'bottomRow': 2745,
-'leftCol': 3879,
-'rightCol': 5628}
+#AF_lims = {'topRow': 1393,
+#'bottomRow': 2745,
+#'leftCol': 3879,
+#'rightCol': 5628}
 
 # Test square in S malawi - includes a high and low focus and an urban area
 #AF_lims = {'topRow': 2387,
@@ -26,10 +26,10 @@ AF_lims = {'topRow': 1393,
 #'rightCol': 5164}
 
 # TEMP - kenya lims as Af for testing
-#AF_lims = {'topRow' : 1901,
-#'bottomRow' : 2132,
-#'leftCol' : 5135,
-#'rightCol' : 5325}
+AF_lims = {'topRow' : 1901,
+'bottomRow' : 2132,
+'leftCol' : 5135,
+'rightCol' : 5325}
 
 AS_lims = {'topRow': 1018,
 'bottomRow': 2512,
@@ -37,10 +37,10 @@ AS_lims = {'topRow': 1018,
 'rightCol': 8423}
 
 # Kenya limits.
-KE_lims = {'topRow' : 1901,
-'bottomRow' : 2132,
-'leftCol' : 5135,
-'rightCol' : 5325}
+#KE_lims = {'topRow' : 1901,
+#'bottomRow' : 2132,
+#'leftCol' : 5135,
+#'rightCol' : 5325}
 
 
 rad_to_km = 6378.1

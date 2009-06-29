@@ -34,6 +34,6 @@ NinThinnedBlock =10000
 # set some other memory and kriging parameters
 burn = 2000
 memmax = 1.e8
-thinning = 10
+thinning = 2
 relp=1e-6
 

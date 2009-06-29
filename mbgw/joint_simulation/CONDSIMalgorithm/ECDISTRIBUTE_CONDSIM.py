@@ -1,5 +1,6 @@
 # example command line:
-# run ECDISTRIBUTE_CONDSIM r-e57c028c CONDSIM_params_AF.py 15
+# run ECDISTRIBUTE_CONDSIM r-933841fa CONDSIM_params_AF_eight.py 15
+# run ECDISTRIBUTE_CONDSIM r-6f3b4206 CONDSIM_params_AF_nine.py 16
 
 # import libraries
 from map_utils import amazon_ec
@@ -19,17 +20,17 @@ PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal par
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
-NINSTANCES = 19
+NINSTANCES = 10
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/stdout_CONDSIM/DistributedOutputSTDOUTERR_'+str(PARAMFILE_PY.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # set realization number parameters
-n_total = 500#100 #600
+n_total = 80#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
-STOPJOB = 95 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STOPJOB = 10 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 
 #############TEMP
