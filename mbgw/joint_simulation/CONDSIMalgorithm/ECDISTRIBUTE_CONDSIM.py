@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_CONDSIM r-717e0018 CONDSIM_params_AF.py 15
+# run ECDISTRIBUTE_CONDSIM r-e57c028c CONDSIM_params_AF.py 15
 
 # import libraries
 from map_utils import amazon_ec

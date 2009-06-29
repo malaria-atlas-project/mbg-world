@@ -1,5 +1,5 @@
 # example command line:
-# run ECDISTRIBUTE_extractSummaries r-555b293c extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-e57c028c extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -46,7 +46,7 @@ NJOBS = relDict['Nfiles']
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 2
+NPER  = 1
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
