@@ -22,7 +22,7 @@ from map_utils import exportAscii
 from getGridCovarianceInY import * 
 from getGridCovarianceInT import *
 # import R function
-r.source('mbg-world/mbgw-scripts/extract_Rlib.R')
+r.source('~/mbg-world/mbgw-scripts/extract_Rlib.R')
 plotMapPY=r['plotMap']
 flipVerticalPY=r['flipVertical']
 r.source('temptestcov.R')
