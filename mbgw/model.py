@@ -59,8 +59,8 @@ else:
     disttol = 0./6378.
     ttol = 0.
 
-def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
-    
+def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
+
     if np.any(pos+neg==0):
         where_zero = np.where(pos+neg==0)[0]
         raise ValueError, 'Pos+neg = 0 in the rows (starting from zero):\n %s'%where_zero
