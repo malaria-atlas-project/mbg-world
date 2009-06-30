@@ -1,7 +1,7 @@
 # example command line:
 # run ECDISTRIBUTE_extractSummaries r-e57c028c extract_params_AF.py
-# run ECDISTRIBUTE_extractSummaries r-ff8af396 extract_params_AF_eight.py
-# run ECDISTRIBUTE_extractSummaries r-cf8af3a6 extract_params_AF_nine.py
+# run ECDISTRIBUTE_extractSummaries r-ff8af396 extract_params_KE_eight.py
+# run ECDISTRIBUTE_extractSummaries r-cf8af3a6 extract_params_KE_nine.py
 
 # deal with system arguments (expects two)
 import sys
@@ -59,7 +59,12 @@ NTOTALREL = NRELS*NPER
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 
 # define any initialisation commands to exctue on instance before main job
-INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
+#INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
+
+####temp
+INITCMDS=['"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
+####temp
+
 
 # construct main commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
