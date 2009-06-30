@@ -580,7 +580,7 @@ def gridParams_2_XYTmarginallists(grids):
     nmonths = grids[2][2]
     
     cellsize=((grids[0][1]-grids[0][0])/(grids[0][2]-1))
-    tsize=1/12
+    tsize=1/12.
     xmin_centroid = grids[0][0]
     ymax_centroid = grids[1][1]
     tmin_centroid = grids[2][0]
