@@ -4,7 +4,7 @@ from numpy import array
 region = "AF"
 
 # what year are starting at (the january) and how many months are we predicting?
-nmonths = 1
+nmonths = 2
 start_year = 2007.5
  
 # standard path to utility function directory (used to source generic R functions)
