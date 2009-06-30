@@ -1,6 +1,9 @@
 # example command line:
 # run ECDISTRIBUTE_CONDSIM r-933841fa CONDSIM_params_AF_eight.py 15
 # run ECDISTRIBUTE_CONDSIM r-6f3b4206 CONDSIM_params_AF_nine.py 16
+# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_ten.py 16
+# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_eleven.py
+
 
 # import libraries
 from map_utils import amazon_ec
@@ -31,8 +34,8 @@ n_total = 80#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 
-STARTJOB = 30
-STOPJOB = 50 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STARTJOB = 0
+STOPJOB = 10 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 
 #############TEMP
@@ -43,12 +46,12 @@ STOPJOB = 50 # this can be set to equal NJOBS, or a smaller number if we don;t w
 
 
 # define files to upload to instance (from local machine) before any execution
-#UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
-UPLOADFILES=[]
+UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
+#UPLOADFILES=[]
 
 # define any initialisation commands to exctue on instance before main job
-#INITCMDS=['bash /root/cloud_setup.sh','"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python CONDSIM_defineParameterFile.py '+str(PARAMFILE_PY)+';python ECRUNSCRIPT_CONDSIM_PREDOWNLOAD.py"']
-INITCMDS=[]
+INITCMDS=['bash /root/cloud_setup.sh','"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python CONDSIM_defineParameterFile.py '+str(PARAMFILE_PY)+';python ECRUNSCRIPT_CONDSIM_PREDOWNLOAD.py"']
+#INITCMDS=[]
 
 # construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]
