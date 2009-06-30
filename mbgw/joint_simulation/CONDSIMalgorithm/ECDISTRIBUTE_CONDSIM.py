@@ -2,7 +2,7 @@
 # run ECDISTRIBUTE_CONDSIM r-933841fa CONDSIM_params_AF_eight.py 15
 # run ECDISTRIBUTE_CONDSIM r-6f3b4206 CONDSIM_params_AF_nine.py 16
 # run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_ten.py 16
-# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_eleven.py
+# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_eleven.py 16
 
 
 # import libraries
@@ -31,11 +31,11 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # set realization number parameters
 n_total = 80#100 #600
-iter_per_job = 1
+iter_per_job = 8
 NJOBS = n_total / iter_per_job
 
 STARTJOB = 0
-STOPJOB = 10 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STOPJOB = NJOBS # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 
 #############TEMP
