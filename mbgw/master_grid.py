@@ -37,10 +37,10 @@ AS_lims = {'topRow': 1018,
 'rightCol': 8423}
 
 # Kenya limits.
-#KE_lims = {'topRow' : 1901,
-#'bottomRow' : 2132,
-#'leftCol' : 5135,
-#'rightCol' : 5325}
+KE_lims = {'topRow' : 1901,
+'bottomRow' : 2132,
+'leftCol' : 5135,
+'rightCol' : 5325}
 
 
 rad_to_km = 6378.1
