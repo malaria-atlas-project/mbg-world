@@ -77,7 +77,8 @@ if PERPIXEL==True:
     for fname in os.listdir(exportPathDistributed_perpixel):
 
         # if file contains string indicating an outcome from this realisation set, then upload to S3 (try a few times before failing this section)
-        if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.gz')>0):
+        #if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.gz')>0):
+        if True:
             filepath = exportPathDistributed_perpixel+fname
             print 'uploading '+filepath+' to S3 bucket '+ exportPathDistributed_perpixel.split('/')[-2].lower()
             failCount = 0
@@ -110,7 +111,8 @@ if PERCOUNTRY==True:
     for fname in os.listdir(exportPathDistributed_country):
 
         # if file contains string indicating an outcome from this realisation set, then upload to S3 (try a few times before failing this section)
-        if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.txt')>0):
+        #if (fname.find('r'+str(FileStartRel)+'to'+str(FileEndRel)+'.txt')>0):
+        if True:
             filepath = exportPathDistributed_country+fname
             print 'uploading '+filepath+' to S3 bucket '+ exportPathDistributed_country.split('/')[-2].lower()
             failCount = 0

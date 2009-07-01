@@ -71,8 +71,8 @@ INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extrac
 # construct main commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
-from IPython.Debugger import Pdb
-Pdb(color_scheme='Linux').set_trace()   
+#from IPython.Debugger import Pdb
+#Pdb(color_scheme='Linux').set_trace()   
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()

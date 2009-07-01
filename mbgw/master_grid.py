@@ -20,16 +20,16 @@ AM_lims = {'topRow': 1890,
 #'rightCol': 5628}
 
 # Test square in S malawi - includes a high and low focus and an urban area
-#AF_lims = {'topRow': 2387,
-#'bottomRow': 2412,
-#'leftCol': 5147,
-#'rightCol': 5164}
+S1_lims = {'topRow': 2387,
+'bottomRow': 2412,
+'leftCol': 5147,
+'rightCol': 5164}
 
 # TEMP - kenya lims as Af for testing
-AF_lims = {'topRow' : 1901,
-'bottomRow' : 2132,
-'leftCol' : 5135,
-'rightCol' : 5325}
+#AF_lims = {'topRow' : 1901,
+#'bottomRow' : 2132,
+#'leftCol' : 5135,
+#'rightCol' : 5325}
 
 AS_lims = {'topRow': 1018,
 'bottomRow': 2512,
