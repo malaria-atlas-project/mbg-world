@@ -17,33 +17,33 @@ realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_thirteen/real
 burdentrace_path='/mnt/burdentraces/Africa+_scale_0.6_model_exp.hdf5'
  
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/mnt/distributedoutput_country_ke13/'
-exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_ke13/'
+exportPathDistributed_country = '/mnt/distributedoutput_country_s213/'
+exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_s213/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/mnt/combinedoutput_country_ke13/'
-exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_ke13/'
+exportPathCombined_country = '/mnt/combinedoutput_country_s213/'
+exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_s213/'
  
 # input 1km salb raster of unique spatial IDs
-salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_KE.hdf5"
-salb1km_path="/mnt/auxiliary_data/salb1km-e2_y-x+_KE.hdf5"
+salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_S2.hdf5"
+salb1km_path="/mnt/auxiliary_data/salb1km-e2_y-x+_S2.hdf5"
 #salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
  
 # input 1km and 5km raster of population per cell
-grump1km_path="/mnt/auxiliary_data/gr071km_y-x+_KE.hdf5" 
-grump5km_path="/mnt/auxiliary_data/gr075km_y-x+_KE.hdf5"
+grump1km_path="/mnt/auxiliary_data/gr071km_y-x+_S2.hdf5" 
+grump5km_path="/mnt/auxiliary_data/gr075km_y-x+_S2.hdf5"
 #gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_ken.hdf5"
  
 # location of 5km hdf5  limits mask
-lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+_KE.hdf5"
+lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+_S2.hdf5"
 #lim5kmbnry_path="/home/pwg/mbg-world/datafiles/auxiliary_data/lim5kmbnry-e_y-x+_ken.hdf5"
  
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
 examineSalbFolder='examinesalb'
-uniqueSalb_path='/mnt/examineSalb/uniqueSalb_ke.txt'
-uniqueSalbwholecountries_path='/mnt/examineSalb/uniqueSalbwholecountries_ke.txt'
-pixelN_path='/mnt/examineSalb/pixelN_ke.txt'
-pixelNwholecountries_path='/mnt/examineSalb/pixelNwholecountries_ke.txt'
+uniqueSalb_path='/mnt/examineSalb/uniqueSalb_s2.txt'
+uniqueSalbwholecountries_path='/mnt/examineSalb/uniqueSalbwholecountries_s2.txt'
+pixelN_path='/mnt/examineSalb/pixelN_s2.txt'
+pixelNwholecountries_path='/mnt/examineSalb/pixelNwholecountries_s2.txt'
  
 # class definition dictionaries
 breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}

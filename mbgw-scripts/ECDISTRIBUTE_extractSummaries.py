@@ -4,7 +4,7 @@
 # run ECDISTRIBUTE_extractSummaries r-cf8af3a6 extract_params_KE_nine.py
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_ten.py
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_eleven.py
-# run ECDISTRIBUTE_extractSummaries r-a9354ec0 extract_params_KE_twelve.py
+# run ECDISTRIBUTE_extractSummaries r-a9354ec0 extract_params_S1_twelve.py
 
 # deal with system arguments (expects two)
 import sys
@@ -110,7 +110,7 @@ endTime = time.time()-startTime
 print '\n*******************************'
 print 'FINISHED MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-print 'total run time for '+str(NJOBS)+' jobs with iter_per_job='+str(iter_per_job)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
+print 'total run time for '+str(NJOBS)+' jobs on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
 
 
 
