@@ -42,6 +42,12 @@ KE_lims = {'topRow' : 1901,
 'leftCol' : 5135,
 'rightCol' : 5325}
 
+# very small test case
+VS_lims = {'topRow' : 1901,
+'bottomRow' : 1908,
+'leftCol' : 5135,
+'rightCol' : 5141}
+
 
 rad_to_km = 6378.1
 km_to_rad = 1./rad_to_km

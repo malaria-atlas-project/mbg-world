@@ -1,8 +1,8 @@
 # example command line:
 # run ECDISTRIBUTE_CONDSIM r-933841fa CONDSIM_params_AF_eight.py 15
 # run ECDISTRIBUTE_CONDSIM r-6f3b4206 CONDSIM_params_AF_nine.py 16
-# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_ten.py 16
-# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_KE_eleven.py 16
+# run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_AF_ten.py 16
+# run ECDISTRIBUTE_CONDSIM r-6bcbb202 CONDSIM_params_AF_eleven.py 16
 
 
 # import libraries
@@ -34,7 +34,7 @@ n_total = 80#100 #600
 iter_per_job = 8
 NJOBS = n_total / iter_per_job
 
-STARTJOB = 0
+STARTJOB = 1
 STOPJOB = NJOBS # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 

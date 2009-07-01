@@ -3,10 +3,10 @@
     TEMPORALUNIT<-12 
 
  ## define search parameters
-    ColDepth<-1   # how many columns of previously simulated data will be used to predict subsequent column
-    MonthDepth<-1 # how many months of previously simulated data will be used to predict subsequent months 
+    ColDepth<-3   # how many columns of previously simulated data will be used to predict subsequent column
+    MonthDepth<-2 # how many months of previously simulated data will be used to predict subsequent months 
     THINX<-1
-    THINY<-50
+    THINY<-1
     THINT<-1
     
 

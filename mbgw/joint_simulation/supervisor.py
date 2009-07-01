@@ -290,6 +290,9 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     os.chdir(curpath)
     preLoop_time = time.time()-t1
     print "preLoop_time :"+str(preLoop_time)
+
+    from IPython.Debugger import Pdb
+    Pdb(color_scheme='Linux').set_trace()
         
     ## Create and store unconditional realizations
     print '\tGenerating unconditional realizations.'
