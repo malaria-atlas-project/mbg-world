@@ -4,6 +4,7 @@
 # run ECDISTRIBUTE_extractSummaries r-cf8af3a6 extract_params_KE_nine.py
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_ten.py
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_eleven.py
+# run ECDISTRIBUTE_extractSummaries r-a9354ec0 extract_params_KE_twelve.py
 
 # deal with system arguments (expects two)
 import sys
@@ -23,10 +24,6 @@ import time
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
-# set job distribution parameters
-NINSTANCES = 1
-MAXJOBSPERINSTANCE = 3
-MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/DistributedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.ctime())+'/'
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
@@ -57,27 +54,67 @@ NTOTALREL = NRELS*NPER
 #NTOTALREL = 1
 ####################################TEMP
 
-# define files to upload to instance (from local machine) before any execution
+
+
+# upload files
+print '\n*******************************'
+print 'STARTING UPLOADING FILES TO INSTANCES..'
+print '*******************************\n'
+NINSTANCES = 10
+MAXJOBSPERINSTANCE = 1
+MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
+INITCMDS=[]
+CMDS=[]
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+print '\n*******************************'
+print 'FINISHED UPLOADING FILES TO INSTANCES..'
+print '*******************************\n'
 
-# define any initialisation commands to exctue on instance before main job
-INITCMDS=['bash /root/cloud_setup.sh','"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
 
-####temp
-#INITCMDS=['"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"']
-####temp
+# initialisation commands
+print '\n*******************************'
+print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
+print '*******************************\n'
+NINSTANCES = 10
+MAXJOBSPERINSTANCE = 1
+MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+UPLOADFILES=[]
+INITCMDS=[]
+CMDS = ['bash /root/cloud_setup.sh',]*NINSTANCES
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)
+CMDS = ['"cd mbg-world/mbgw-scripts/;python extract_defineParameterFile.py '+str(PARAMFILE)+';python ECRUNSCRIPT_extractSummaries_PREDOWNLOAD.py True True True"',]*NINSTANCES
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)  
+print '\n*******************************'
+print 'FINISHED EXECUTING INITILISATION COMMANDS ON INSTANCES..'
+print '*******************************\n'
 
 
-# construct main commands list
+# main jobs
+print '\n*******************************'
+print 'STARTING MAIN JOBS ON INSTANCES..'
+print '*******************************\n'
+NINSTANCES = 10
+MAXJOBSPERINSTANCE = 3
+MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+UPLOADFILES=[]
+INITCMDS=[]
+
+## construct main commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
-
-#from IPython.Debugger import Pdb
-#Pdb(color_scheme='Linux').set_trace()   
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
 returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
+print '\n*******************************'
+print 'FINISHED MAIN JOBS ON INSTANCES..'
+print '*******************************\n'
+print 'total run time for '+str(NJOBS)+' jobs with iter_per_job='+str(iter_per_job)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
 
-print 'total run time for '+str(NJOBS)+' jobs with NPER='+str(NPER)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
+
+
+
+
+
 
