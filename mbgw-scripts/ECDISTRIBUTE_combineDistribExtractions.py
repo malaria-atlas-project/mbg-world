@@ -3,7 +3,7 @@
 # run ECDISTRIBUTE_combineDistribExtractions r-ff8af396 extract_params_KE_eight.py
 # run ECDISTRIBUTE_combineDistribExtractions r-cf8af3a6 extract_params_KE_nine.py
 # run ECDISTRIBUTE_combineDistribExtractions r-75f28b1c extract_params_KE_ten.py
-# run ECDISTRIBUTE_combineDistribExtractions r-6bcbb202 extract_params_KE_eleven.py
+# run ECDISTRIBUTE_combineDistribExtractions r-75f28b1c extract_params_KE_eleven.py
 
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
@@ -22,7 +22,7 @@ import time
 #S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
 
 # set job distribution parameters
-NINSTANCES = 10
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 # maximum number of tries before we give up on any individual job
 STDOUTPATH = '/home/pwg/mbg-world/stdout_extraction/CombinedOutputSTDOUTERR_'+str(PARAMFILE.partition('.')[0])+'_'+str(time.time())+'/'
