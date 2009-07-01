@@ -46,7 +46,7 @@ CMDS=[]
 returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
 print '\n*******************************'
 print 'FINISHED UPLOADING FILES TO INSTANCES..'
-print '*******************************\n
+print '*******************************\n'
 
 
 # initialisation commands
