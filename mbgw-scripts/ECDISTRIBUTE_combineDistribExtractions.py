@@ -4,6 +4,7 @@
 # run ECDISTRIBUTE_combineDistribExtractions r-cf8af3a6 extract_params_KE_nine.py
 # run ECDISTRIBUTE_combineDistribExtractions r-75f28b1c extract_params_KE_ten.py
 # run ECDISTRIBUTE_combineDistribExtractions r-75f28b1c extract_params_KE_eleven.py
+# run ECDISTRIBUTE_combineDistribExtractions r-ff1c6796 extract_params_S1_twelve.py
 
 # deal with system arguments (expects two)
 ## defines ID of reservation that contains the instances we will use on EC2
