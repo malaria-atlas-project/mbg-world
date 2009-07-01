@@ -3,7 +3,7 @@
 # run ECDISTRIBUTE_extractSummaries r-ff8af396 extract_params_KE_eight.py
 # run ECDISTRIBUTE_extractSummaries r-cf8af3a6 extract_params_KE_nine.py
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_ten.py
-# run ECDISTRIBUTE_extractSummaries r-cf8af3a6 extract_params_KE_eleven.py
+# run ECDISTRIBUTE_extractSummaries r-6bcbb202 extract_params_KE_eleven.py
 
 # deal with system arguments (expects two)
 import sys
@@ -50,7 +50,7 @@ NJOBS = relDict['Nfiles']
 
 FileStartRels = relDict['StartRelList']
 FileEndRels = relDict['EndRelList']
-NPER  = 1
+NPER  = 10
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
