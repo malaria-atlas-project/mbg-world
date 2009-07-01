@@ -19,11 +19,16 @@ AM_lims = {'topRow': 1890,
 #'leftCol': 3879,
 #'rightCol': 5628}
 
-# Test square in S malawi - includes a high and low focus and an urban area
+# Two test squares (S1 fits indside S2) in S malawi - includes a high and low focus and an urban area
 S1_lims = {'topRow': 2387,
 'bottomRow': 2412,
 'leftCol': 5147,
 'rightCol': 5164}
+
+S2_lims = {'topRow': 2373,
+'bottomRow': 2426,
+'leftCol': 5120,
+'rightCol': 5197}
 
 # TEMP - kenya lims as Af for testing
 #AF_lims = {'topRow' : 1901,

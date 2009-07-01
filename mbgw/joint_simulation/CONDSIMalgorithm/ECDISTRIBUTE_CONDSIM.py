@@ -3,7 +3,8 @@
 # run ECDISTRIBUTE_CONDSIM r-6f3b4206 CONDSIM_params_AF_nine.py 16
 # run ECDISTRIBUTE_CONDSIM r-75f28b1c CONDSIM_params_AF_ten.py 16
 # run ECDISTRIBUTE_CONDSIM r-6bcbb202 CONDSIM_params_AF_eleven.py 16
-# run ECDISTRIBUTE_CONDSIM r-efc7bf86 CONDSIM_params_S1_twelve.py 16
+# run ECDISTRIBUTE_CONDSIM r-a9354ec0 CONDSIM_params_S1_twelve.py 16
+# run ECDISTRIBUTE_CONDSIM r-9b2952f2 CONDSIM_params_S2_thirteen.py 16
 
 
 ############TEMP
@@ -33,6 +34,9 @@ STDOUTPATH = '/home/pwg/mbg-world/stdout_CONDSIM/DistributedOutputSTDOUTERR_'+st
 checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
 # upload files
+print '\n*******************************'
+print 'STARTING UPLOADING FILES TO INSTANCES..'
+print '*******************************\n'
 NINSTANCES = 10
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
@@ -40,8 +44,15 @@ UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-wo
 INITCMDS=[]
 CMDS=[]
 returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+print '\n*******************************'
+print 'FINISHED UPLOADING FILES TO INSTANCES..'
+print '*******************************\n
+
 
 # initialisation commands
+print '\n*******************************'
+print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
+print '*******************************\n'
 NINSTANCES = 10
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
@@ -51,9 +62,15 @@ CMDS = ['bash /root/cloud_setup.sh',]*NINSTANCES
 returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;python CONDSIM_defineParameterFile.py '+str(PARAMFILE_PY)+';python ECRUNSCRIPT_CONDSIM_PREDOWNLOAD.py"',]*NINSTANCES
 returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)  
+print '\n*******************************'
+print 'FINISHED EXECUTING INITILISATION COMMANDS ON INSTANCES..'
+print '*******************************\n'
 
 
 # main jobs
+print '\n*******************************'
+print 'STARTING MAIN JOBS ON INSTANCES..'
+print '*******************************\n'
 NINSTANCES = 10
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
@@ -74,6 +91,8 @@ CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20
 startTime = time.time()
 returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
-
+print '\n*******************************'
+print 'FINISHED MAIN JOBS ON INSTANCES..'
+print '*******************************\n'
 print 'total run time for '+str(NJOBS)+' jobs with iter_per_job='+str(iter_per_job)+' on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
 
