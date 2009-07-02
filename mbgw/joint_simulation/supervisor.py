@@ -430,9 +430,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         ##################################################
         row = ndimage.map_coordinates(thin_row, mapgrid)
         
-        from IPython.Debugger import Pdb
-        Pdb(color_scheme='Linux').set_trace()   
-        
         row += covariate_mesh
         row += M(x)
         row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
