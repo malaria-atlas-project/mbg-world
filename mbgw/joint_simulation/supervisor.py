@@ -432,6 +432,15 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         
         row += covariate_mesh
         row += M(x)
+        # 
+        # import pylab as pl
+        # pl.imshow(pm.invlogit(row.ravel()).reshape(row.shape))
+        # pl.colorbar()
+        # pl.figure(1)
+        # 
+        # from IPython.Debugger import Pdb
+        # Pdb(color_scheme='Linux').set_trace()   
+        
         row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
         
 
