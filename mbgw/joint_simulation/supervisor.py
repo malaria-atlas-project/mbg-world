@@ -363,9 +363,11 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     print '\tsimulating over '+str(len(xyt_out[:,0]))+' locations outside block using thinned block sample of '+str(len(z_in))+' points'
     t1=time.time()
     #z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straightfromtrace,relp)
+
     ################## TEMP
     z_out = np.zeros(xyt_out.shape[0])
     ###################
+
     print '\ttime for simulation: '+str(time.time()-t1)
 
     #########################################CHECK COVARIANCE STRUCTURE
@@ -411,6 +413,9 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
     t1 = time.time()
+    ##################### TEMP observe C
+    C.observe(data_locs, obs_V=np.zeros(data_locs.shape[0]))
+    #####################
     for i in xrange(grid_shape[2]-1,-1,-1):
         thin_row.fill(0.)
         
@@ -419,8 +424,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         
         krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
         ################################################## TEMP Get the kriging variance too, and add.
-        C_straightfromtrace.observe(data_locs, obs_V=np.zeros(data_locs.shape[0]))
-        thin_krige_sd = np.sqrt(C_straightfromtrace(thin_x))
+        thin_krige_sd = np.sqrt(C(thin_x))
         thin_row += np.random.normal()*thin_krige_sd
         ##################################################
         row = ndimage.map_coordinates(thin_row, mapgrid)
