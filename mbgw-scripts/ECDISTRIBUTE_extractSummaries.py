@@ -5,6 +5,8 @@
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_ten.py
 # run ECDISTRIBUTE_extractSummaries r-75f28b1c extract_params_KE_eleven.py
 # run ECDISTRIBUTE_extractSummaries r-a9354ec0 extract_params_S1_twelve.py
+# run ECDISTRIBUTE_extractSummaries r-9b2952f2 extract_params_S2_thirteen.py
+# run ECDISTRIBUTE_extractSummaries r-c3176caa extract_params_S1_fourteen.py
 
 # deal with system arguments (expects two)
 import sys
