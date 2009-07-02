@@ -414,7 +414,8 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     print '\tKriging.'
     t1 = time.time()
     ##################### TEMP observe C
-    C.observe(data_locs, obs_V=np.zeros(data_locs.shape[0]))
+    C_obs = pm.gp.FullRankCovariance(C.eval_fun, **C.params)
+    C_obs.observe(data_locs, obs_V=np.zeros(data_locs.shape[0]))
     #####################
     for i in xrange(grid_shape[2]-1,-1,-1):
         thin_row.fill(0.)
@@ -424,10 +425,13 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         
         krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
         ################################################## TEMP Get the kriging variance too, and add.
-        thin_krige_sd = np.sqrt(C(thin_x))
+        thin_krige_sd = np.sqrt(C_obs(thin_x))
         thin_row += np.random.normal()*thin_krige_sd
         ##################################################
         row = ndimage.map_coordinates(thin_row, mapgrid)
+        
+        from IPython.Debugger import Pdb
+        Pdb(color_scheme='Linux').set_trace()   
         
         row += covariate_mesh
         row += M(x)
