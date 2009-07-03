@@ -276,45 +276,45 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     
     # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
     t1 = time.time()
-#    os.chdir(r_path)
-#    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
-#    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    os.chdir(r_path)
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
+    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
 
-#    preLoopClassTree, junk = parse_tree(tree_reader)
-#    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
-#    
-#    OutMATlist = preLoopObj['OutMATlist']
-#    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
-#    OutMATClassTree, junk = parse_tree(tree_reader)
-#    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-#    os.chdir(curpath)
-#    preLoop_time = time.time()-t1
-#    print "preLoop_time :"+str(preLoop_time)
+    preLoopClassTree, junk = parse_tree(tree_reader)
+    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    
+    OutMATlist = preLoopObj['OutMATlist']
+    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    OutMATClassTree, junk = parse_tree(tree_reader)
+    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    os.chdir(curpath)
+    preLoop_time = time.time()-t1
+    print "preLoop_time :"+str(preLoop_time)
 
-#    #from IPython.Debugger import Pdb
-#    #Pdb(color_scheme='Linux').set_trace()
-#        
-#    ## Create and store unconditional realizations
-#    print '\tGenerating unconditional realizations.'
-#    t1 = time.time()
-#    for i in xrange(grid_shape[2]):
-#        print 'On month :'+str(i)
-#        #print 'OutMATlist:'
-#        #print OutMATlist
-#        os.chdir(r_path)
-#        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
-#        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
-#        os.chdir(curpath)
-#        OutMATlist= monthObject['OutMATlist']
-#        MonthGrid = monthObject['MonthGrid']
-#        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
-#    t2 = time.time()
-#    print '\t\tDone in %f'%(t2-t1)
-#    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
-#    
-#    # delete unneeded R products
-#    del OutMATlist, preLoopObj, MonthGrid, monthObject
-    ###############################~TEMP
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
+        
+    ## Create and store unconditional realizations
+    print '\tGenerating unconditional realizations.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]):
+        print 'On month :'+str(i)
+        #print 'OutMATlist:'
+        #print OutMATlist
+        os.chdir(r_path)
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
+        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
+        os.chdir(curpath)
+        OutMATlist= monthObject['OutMATlist']
+        MonthGrid = monthObject['MonthGrid']
+        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
+    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
+    
+    # delete unneeded R products
+    del OutMATlist, preLoopObj, MonthGrid, monthObject
+    ##############################~TEMP
 
 #    ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
 #    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
@@ -339,21 +339,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     xyt_in = ThinnedBlockXYTZlists['xyt_in']
     z_in = ThinnedBlockXYTZlists['z_in']
 
-    ## get locations of data outside block (referenced by grid location)
-    #XYT_out_gridlocs = data_mesh_indices[where_out]
-    # 
-    ### convert these grid lcoations into actual position in radians and months
-    #coordsDict = gridParams_2_XYTmarginallists(grids)
-    #xcoords = coordsDict['xcoords']
-    #ycoords = coordsDict['ycoords']
-    #tcoords = coordsDict['tcoords']
-    #
-    #x_out = xcoords[XYT_out_gridlocs[:,0]]
-    #y_out = ycoords[XYT_out_gridlocs[:,1]]
-    #t_out = tcoords[XYT_out_gridlocs[:,2]]
-    #   
-    #xyt_out = np.vstack((x_out,y_out,t_out)).T
-    
     # get locations of data outside block 
     xyt_out = data_locs[where_out]
 
@@ -362,12 +347,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
 
     print '\tsimulating over '+str(len(xyt_out[:,0]))+' locations outside block using thinned block sample of '+str(len(z_in))+' points'
     t1=time.time()
-    #z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straightfromtrace,relp)
-
-    ################## TEMP
-    z_out = np.zeros(xyt_out.shape[0])
-    ###################
-
+    z_out = predictPointsFromBlock(xyt_in,z_in, xyt_out,C_straightfromtrace,relp)
     print '\ttime for simulation: '+str(time.time()-t1)
 
     #########################################CHECK COVARIANCE STRUCTURE
@@ -413,10 +393,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
     print '\tKriging.'
     t1 = time.time()
-    ##################### TEMP observe C
-    C_obs = pm.gp.FullRankCovariance(C.eval_fun, **C.params)
-    C_obs.observe(data_locs, obs_V=np.zeros(data_locs.shape[0]))
-    #####################
     for i in xrange(grid_shape[2]-1,-1,-1):
         thin_row.fill(0.)
         
@@ -424,22 +400,10 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         x[:,:,2] = axes[2][i]
         
         krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
-        ################################################## TEMP Get the kriging variance too, and add.
-        thin_krige_sd = np.sqrt(C_obs(thin_x))
-        thin_row += np.random.normal()*thin_krige_sd
-        ##################################################
         row = ndimage.map_coordinates(thin_row, mapgrid)
         
         row += covariate_mesh
-        row += M(x)
-        # 
-        # import pylab as pl
-        # pl.imshow(pm.invlogit(row.ravel()).reshape(row.shape))
-        # pl.colorbar()
-        # pl.figure(1)
-        # 
-        # from IPython.Debugger import Pdb
-        # Pdb(color_scheme='Linux').set_trace()   
+        row += M(x)   
         
         row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
         
