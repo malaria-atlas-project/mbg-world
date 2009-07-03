@@ -7,6 +7,7 @@
 # run ECDISTRIBUTE_CONDSIM r-9b2952f2 CONDSIM_params_S2_thirteen.py 16
 # run ECDISTRIBUTE_CONDSIM r-c3176caa CONDSIM_params_S1_fourteen.py 16
 # run ECDISTRIBUTE_CONDSIM r-dbd9a2b2 CONDSIM_params_S1_fifteen.py 16
+# run ECDISTRIBUTE_CONDSIM r-8df68ce4 CONDSIM_params_AF_sixteen.py 16
 
 
 ############TEMP
@@ -39,7 +40,7 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -55,7 +56,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -73,14 +74,14 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
 INITCMDS=[]
 
 ## set realization number parameters
-n_total = 80#100 #600
+n_total = 1#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 STARTJOB = 0
