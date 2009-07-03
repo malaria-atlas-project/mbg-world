@@ -89,10 +89,14 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         raise ValueError, 'You screwed up the shapes.'
 
     # Check that all data are in bounds
-    data_locs = meta.data_mesh[:]    
+    data_locs = meta.data_mesh[:]
+    ui = meta.ui[:]    
     in_mesh = np.ones(data_locs.shape[0],dtype=bool)
     for i in xrange(len(data_locs)):
         l = data_locs[i]
+        if i not in ui:
+            in_mesh[i] = False
+            continue
         for j in xrange(3):
             if l[j] <= grids[j][0] or l[j] >= grids[j][1]:
                 in_mesh[i]=False
@@ -323,7 +327,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
 #    ################################~TEMP
     
     # Figure out pdata
-    pdata = np.empty(tdata.shape)
+    pdata = np.empty(data_locs.shape[0])
     for i in xrange(len(where_in)):
         index = where_in[i]
         pdata[index] = out_arr[real_index, grid_shape[1]-1-data_mesh_indices[index,1], data_mesh_indices[index,0], data_mesh_indices[index,2]]
