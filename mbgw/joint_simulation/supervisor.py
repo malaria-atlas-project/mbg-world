@@ -181,7 +181,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
             except KeyError:
                 print 'Warning, no column named %s'%key+'_coef'
                 continue
-            mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
+            mean_ondata += getattr(meta, key)[:] * this_coef
             this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
             covariate_mesh += this_pred_covariate        
 
