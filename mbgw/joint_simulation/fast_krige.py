@@ -13,7 +13,7 @@ import scipy
 
 pm.__PyMCThreadPool__.setNumWorkers(0)
 
-__all__ = ['preprocess', 'krige_month', 'ndmeshgrid']
+__all__ = ['ndmeshgrid']
 
 def ndmeshgrid(grids, hnode=None):
     """

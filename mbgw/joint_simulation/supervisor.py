@@ -8,7 +8,6 @@ import pymc as pm
 import mbgw
 from mbgw.joint_simulation import *
 import tables as tb
-from fast_krige import *
 import st_cov_fun
 from parse_and_check import *
 import time
