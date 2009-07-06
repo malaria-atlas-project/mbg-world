@@ -14,10 +14,10 @@ AM_lims = {'topRow': 1890,
 'leftCol': 2038,
 'rightCol': 3401}
 
-#AF_lims = {'topRow': 1393,
-#'bottomRow': 2745,
-#'leftCol': 3879,
-#'rightCol': 5628}
+AF_lims = {'topRow': 1393,
+'bottomRow': 2745,
+'leftCol': 3879,
+'rightCol': 5628}
 
 # Two test squares (S1 fits indside S2) in S malawi - includes a high and low focus and an urban area
 S1_lims = {'topRow': 2387,

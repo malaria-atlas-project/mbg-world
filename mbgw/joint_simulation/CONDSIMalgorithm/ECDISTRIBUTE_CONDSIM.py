@@ -8,6 +8,7 @@
 # run ECDISTRIBUTE_CONDSIM r-c3176caa CONDSIM_params_S1_fourteen.py 16
 # run ECDISTRIBUTE_CONDSIM r-dbd9a2b2 CONDSIM_params_S1_fifteen.py 16
 # run ECDISTRIBUTE_CONDSIM r-77d3971e CONDSIM_params_S1_seventeen.py 16
+# run ECDISTRIBUTE_CONDSIM r-81f4b0e8 CONDSIM_params_AF_eighteen.py 15
 
 
 ############TEMP
@@ -40,7 +41,7 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -56,7 +57,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -74,18 +75,18 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
 INITCMDS=[]
 
 ## set realization number parameters
-n_total = 80#100 #600
+n_total = 500#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 STARTJOB = 0
-STOPJOB = NJOBS # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STOPJOB = 100 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 ## construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]
