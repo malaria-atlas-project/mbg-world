@@ -8,6 +8,7 @@
 # run ECDISTRIBUTE_extractSummaries r-9b2952f2 extract_params_S2_thirteen.py
 # run ECDISTRIBUTE_extractSummaries r-c3176caa extract_params_S1_fourteen.py
 # run ECDISTRIBUTE_extractSummaries r-d1b6ccb8 extract_params_S1_fifteen.py
+# run ECDISTRIBUTE_extractSummaries r-77d3971e extract_params_S1_seventeen.py
 
 # deal with system arguments (expects two)
 import sys
@@ -63,7 +64,7 @@ NTOTALREL = NRELS*NPER
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 5
+NINSTANCES = 10
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -79,7 +80,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 5
+NINSTANCES = 10
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -97,7 +98,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 5
+NINSTANCES = 10
 MAXJOBSPERINSTANCE = 4
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
