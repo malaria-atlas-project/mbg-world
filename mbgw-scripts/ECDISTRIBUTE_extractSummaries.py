@@ -9,7 +9,7 @@
 # run ECDISTRIBUTE_extractSummaries r-c3176caa extract_params_S1_fourteen.py
 # run ECDISTRIBUTE_extractSummaries r-d1b6ccb8 extract_params_S1_fifteen.py
 # run ECDISTRIBUTE_extractSummaries r-77d3971e extract_params_S1_seventeen.py
-# run ECDISTRIBUTE_extractSummaries r-99e8aff0 extract_params_AF.py
+# run ECDISTRIBUTE_extractSummaries r-f5f4b39c extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
