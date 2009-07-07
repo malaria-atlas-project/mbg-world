@@ -10,8 +10,7 @@ utilFolder = '/root/map_utils/map_utils/'
 keyPath = '/root/s3code.txt' 
  
 # main input hdf5  file of simulated realisations of f
-realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_seven/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
-#filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
+realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 
 # hdf 5 file containng traces for burden function
 burdentrace_path='/mnt/burdentraces/Africa+_scale_0.6_model_exp.hdf5'

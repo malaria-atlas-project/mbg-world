@@ -9,6 +9,7 @@
 # run ECDISTRIBUTE_extractSummaries r-c3176caa extract_params_S1_fourteen.py
 # run ECDISTRIBUTE_extractSummaries r-d1b6ccb8 extract_params_S1_fifteen.py
 # run ECDISTRIBUTE_extractSummaries r-77d3971e extract_params_S1_seventeen.py
+# run ECDISTRIBUTE_extractSummaries r-81f4b0e8 extract_params_AF.py
 
 # deal with system arguments (expects two)
 import sys
@@ -64,7 +65,7 @@ NTOTALREL = NRELS*NPER
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -80,7 +81,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -98,7 +99,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 4
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -109,7 +110,7 @@ CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %
 
 # finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
-returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=True,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
 print '\n*******************************'
 print 'FINISHED MAIN JOBS ON INSTANCES..'

@@ -30,16 +30,21 @@ S2_lims = {'topRow': 2373,
 'leftCol': 5120,
 'rightCol': 5197}
 
-# TEMP - kenya lims as Af for testing
-#AF_lims = {'topRow' : 1901,
-#'bottomRow' : 2132,
-#'leftCol' : 5135,
-#'rightCol' : 5325}
+#AS_lims = {'topRow': 1018,
+#'bottomRow': 2512,
+#'leftCol': 5241,
+#'rightCol': 8423}
 
-AS_lims = {'topRow': 1018,
-'bottomRow': 2512,
-'leftCol': 5241,
-'rightCol': 8423}
+
+AS1_lims = {'topRow': 1109,
+'bottomRow': 1886,
+'leftCol': 5795,
+'rightCol': 7366}
+
+AS2_lims = {'topRow': 1838,
+'bottomRow': 2506,
+'leftCol': 6599,
+'rightCol': 8400}
 
 # Kenya limits.
 KE_lims = {'topRow' : 1901,
