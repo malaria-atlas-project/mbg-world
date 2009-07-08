@@ -1,10 +1,10 @@
 from numpy import array
 
 # define region code, used to bring in grid paramaters from appropriate lines of grid_lims.py
-region = "AF"
+region = "AM"
 
-# what year are starting at (the january) and how many months are we predicting?
-nmonths = 1
+# what year are we starting at (the january) and how many months are we predicting?
+nmonths = 12
 start_year = 2007
  
 # standard path to utility function directory (used to source generic R functions)
@@ -23,10 +23,10 @@ urb5km_path="/root/mbg-world/datafiles/auxiliary_data/urb5km-e_y-x+.hdf5"
 periurb5km_path="/root/mbg-world/datafiles/auxiliary_data/periurb5km-e_y-x+.hdf5"
 
 # location and name of trace file 
-trace_path="/mnt/auxiliary_data/QRYPFPR010708_Africa_Run_9.10.2008.hdf5"
+trace_path="/mnt/auxiliary_data/QRYPFPR220708_Americas_Run_1.9.2008.hdf5"
 
 # location of folder to house realization to be generated
-realizations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_ten/'
+realizations_path = '/mnt/qrypfpr220708_americas_run_1.9.2008/'
 
 # how many points will we take from the block to condition the unconditioned field at the outside data locations?
 NinThinnedBlock =10000
@@ -34,6 +34,6 @@ NinThinnedBlock =10000
 # set some other memory and kriging parameters
 burn = 2000
 memmax = 1.e8
-thinning = 2
+thinning = 4
 relp=1e-6
 

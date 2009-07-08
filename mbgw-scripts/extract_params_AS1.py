@@ -10,40 +10,39 @@ utilFolder = '/root/map_utils/map_utils/'
 keyPath = '/root/s3code.txt' 
  
 # main input hdf5  file of simulated realisations of f
-realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_trial_fourteen/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
-#filename = '/home/pwg/Desktop/test_sim_KE.hdf5'
+realisations_path = '/mnt/qrypfpr230708_asia_run_1.9.2008_as1/realizations_mem_100000000_QRYPFPR230708_Asia_Run_1.9.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 
 # hdf 5 file containng traces for burden function
-burdentrace_path='/mnt/burdentraces/Africa+_scale_0.6_model_exp.hdf5'
+burdentrace_path='/mnt/burdentraces/CSE_Asia_and_Americas_scale_0.6_model_exp.hdf5'
  
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/mnt/distributedoutput_country_s114/'
-exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_s114/'
+exportPathDistributed_country = '/mnt/distributedoutput_country_as1/'
+exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_as1/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/mnt/combinedoutput_country_s114/'
-exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_s114/'
+exportPathCombined_country = '/mnt/combinedoutput_country_as1/'
+exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_as1/'
  
 # input 1km salb raster of unique spatial IDs
-salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_S1.hdf5"
-salb1km_path="/mnt/auxiliary_data/salb1km-e2_y-x+_S1.hdf5"
+salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_AS1.hdf5"
+salb1km_path="/mnt/auxiliary_data/salb1km-e2_y-x+_AS1.hdf5"
 #salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/salblim1km-e_ken.hdf5"
  
 # input 1km and 5km raster of population per cell
-grump1km_path="/mnt/auxiliary_data/gr071km_y-x+_S1.hdf5" 
-grump5km_path="/mnt/auxiliary_data/gr075km_y-x+_S1.hdf5"
+grump1km_path="/mnt/auxiliary_data/gr071km_y-x+_AS1.hdf5" 
+grump5km_path="/mnt/auxiliary_data/gr075km_y-x+_AS1.hdf5"
 #gr001km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/gr001km_ken.hdf5"
  
 # location of 5km hdf5  limits mask
-lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+_S1.hdf5"
+lim5kmbnry_path="/mnt/auxiliary_data/st_mask5km-e_y-x+_AS1.hdf5"
 #lim5kmbnry_path="/home/pwg/mbg-world/datafiles/auxiliary_data/lim5kmbnry-e_y-x+_ken.hdf5"
  
 # files containing list of unique salb IDs in input raster and pixels per ID : generated as ouptut from FUNexamineSalb
 examineSalbFolder='examinesalb'
-uniqueSalb_path='/mnt/examineSalb/uniqueSalb_s1.txt'
-uniqueSalbwholecountries_path='/mnt/examineSalb/uniqueSalbwholecountries_s1.txt'
-pixelN_path='/mnt/examineSalb/pixelN_s1.txt'
-pixelNwholecountries_path='/mnt/examineSalb/pixelNwholecountries_s1.txt'
+uniqueSalb_path='/mnt/examineSalb/uniqueSalb_as1.txt'
+uniqueSalbwholecountries_path='/mnt/examineSalb/uniqueSalbwholecountries_as1.txt'
+pixelN_path='/mnt/examineSalb/pixelN_as1.txt'
+pixelNwholecountries_path='/mnt/examineSalb/pixelNwholecountries_as1.txt'
  
 # class definition dictionaries
 breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}

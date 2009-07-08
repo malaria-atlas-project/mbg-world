@@ -9,10 +9,10 @@ xllc = -180
 yllc = -57
 cellsize = 0.04166665
 
-AM_lims = {'topRow': 1890,
-'bottomRow': 2140,
-'leftCol': 2038,
-'rightCol': 3401}
+AM_lims = {'topRow': 1525,
+'bottomRow': 2483,
+'leftCol': 2125,
+'rightCol': 3296}
 
 AF_lims = {'topRow': 1393,
 'bottomRow': 2745,
