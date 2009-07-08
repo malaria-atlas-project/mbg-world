@@ -36,10 +36,13 @@ outfile_name = realizations_path+outfile_base
 
 ## iterations and indices set up
 n_total = len(hf.root.chain0.PyMCsamples)
+
+if (burn+n_jobs)>n_total:
+    raise ValueError ('insufficient realisations in trace ('+str()+') to allow burn = '+str(burn)+' and n_jobs= '+str(n_jobs))
+
 indices = np.array(np.linspace(burn, n_total, n_jobs+1), dtype=int)
 my_start = indices[i]
 my_end = indices[i+1]
-
 
  
 print 'i: %i'%i

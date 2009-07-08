@@ -9,7 +9,9 @@
 # run ECDISTRIBUTE_CONDSIM r-dbd9a2b2 CONDSIM_params_S1_fifteen.py 16
 # run ECDISTRIBUTE_CONDSIM r-77d3971e CONDSIM_params_S1_seventeen.py 16
 # run ECDISTRIBUTE_CONDSIM r-81f4b0e8 CONDSIM_params_AF_eighteen.py 15
-# run ECDISTRIBUTE_CONDSIM r-e1c68088 CONDSIM_params_AS1.py 15
+# python ECDISTRIBUTE_CONDSIM.py r-e1c68088 CONDSIM_params_AS1.py 15
+# python ECDISTRIBUTE_CONDSIM.py r-87c583ee CONDSIM_params_AS2.py 15
+# python ECDISTRIBUTE_CONDSIM.py r-91c583f8 CONDSIM_params_AM.py 15
 
 # import libraries
 from map_utils import amazon_ec
