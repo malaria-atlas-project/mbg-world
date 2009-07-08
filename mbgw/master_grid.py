@@ -38,7 +38,7 @@ S2_lims = {'topRow': 2373,
 
 AS1_lims = {'topRow': 1109,
 'bottomRow': 1886,
-'leftCol': 5795,
+'leftCol': 5575,
 'rightCol': 7366}
 
 AS2_lims = {'topRow': 1838,
