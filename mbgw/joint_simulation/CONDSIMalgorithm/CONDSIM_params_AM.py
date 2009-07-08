@@ -32,8 +32,11 @@ realizations_path = '/mnt/qrypfpr220708_americas_run_1.9.2008/'
 NinThinnedBlock =10000
 
 # set some other memory and kriging parameters
-burn = 2000
+burn = 200
 memmax = 1.e8
 thinning = 4
 relp=1e-6
+
+# have we merged the urban and periurban categories into a sinlge 'urban' category
+merged_urb = True
 

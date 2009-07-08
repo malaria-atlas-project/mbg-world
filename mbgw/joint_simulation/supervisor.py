@@ -63,7 +63,7 @@ def get_covariate_submesh(name, grid_lims):
 
     return out
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0,merged_urb=False):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -182,8 +182,13 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
             except KeyError:
                 print 'Warning, no column named %s'%key+'_coef'
                 continue
+
             mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
-            this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
+            if merged_urb and key == 'urb':
+                print 'Merging urb'
+                this_pred_covariate = (get_covariate_submesh('urb5km-e_y-x+', grid_lims)+get_covariate_submesh('periurb5km-e_y-x+', grid_lims)) * this_coef
+            else:
+                this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
             covariate_mesh += this_pred_covariate        
 
         # Pull covariance information out of trace
