@@ -10,7 +10,7 @@
 # run ECDISTRIBUTE_extractSummaries r-d1b6ccb8 extract_params_S1_fifteen.py
 # run ECDISTRIBUTE_extractSummaries r-77d3971e extract_params_S1_seventeen.py
 # run ECDISTRIBUTE_extractSummaries r-f5f4b39c extract_params_AF.py
-# python ECDISTRIBUTE_extractSummaries.py r-f5f4b39c extract_params_AS1.py
+# python ECDISTRIBUTE_extractSummaries.py r-1fa9e876 extract_params_AS1.py
 # python ECDISTRIBUTE_extractSummaries.py r-f5f4b39c extract_params_AS2.py
 # python ECDISTRIBUTE_extractSummaries.py r-f5f4b39c extract_params_AM.py
 
@@ -69,7 +69,7 @@ NTOTALREL = NRELS*NPER
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -85,7 +85,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -103,7 +103,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 2
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]

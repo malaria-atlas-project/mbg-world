@@ -36,7 +36,7 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -52,7 +52,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -70,7 +70,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 10
+NINSTANCES = 20
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
