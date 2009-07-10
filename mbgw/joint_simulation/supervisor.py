@@ -53,7 +53,7 @@ def get_covariate_submesh(name, grid_lims):
         order = 'y-x+'
     
     raw_shape = getattr(mbgw.auxiliary_data, name).data.shape
-    raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['topRow']:grid_lims['bottomRow']+1, grid_lims['leftCol']:grid_lims['rightCol']+1]
+    raw = getattr(mbgw.auxiliary_data, name).data[grid_lims['topRow']-1:grid_lims['bottomRow'], grid_lims['leftCol']-1:grid_lims['rightCol']]
     out = grid_convert(raw, order, 'x+y+').copy()
     targ_shape = (grid_lims['rightCol']-grid_lims['leftCol']+1, grid_lims['bottomRow']-grid_lims['topRow']+1)
 

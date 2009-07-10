@@ -11,7 +11,7 @@
 # run ECDISTRIBUTE_CONDSIM r-81f4b0e8 CONDSIM_params_AF_eighteen.py 15
 # python ECDISTRIBUTE_CONDSIM.py r-e1c68088 CONDSIM_params_AS1.py 15
 # python ECDISTRIBUTE_CONDSIM.py r-87c583ee CONDSIM_params_AS2.py 15
-# python ECDISTRIBUTE_CONDSIM.py r-91c583f8 CONDSIM_params_AM.py 15
+# python ECDISTRIBUTE_CONDSIM.py r-df84c4b6 CONDSIM_params_AM.py 15
 
 # import libraries
 from map_utils import amazon_ec
@@ -21,10 +21,15 @@ import numpy as np
 import time
 import sys
 
+RESERVATIONID='r-df84c4b6'
+PARAMFILE_PY='CONDSIM_params_AM.py'
+PARAMFILE_R='15'
+
+
 # deal with system arguments (expects two)
-RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
-PARAMFILE_PY = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
-PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
+#RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
+#PARAMFILE_PY = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
+#PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
 
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
@@ -36,7 +41,7 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -52,7 +57,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 20
+NINSTANCES = 1
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]

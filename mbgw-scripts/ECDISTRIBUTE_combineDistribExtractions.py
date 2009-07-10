@@ -9,7 +9,7 @@
 # run ECDISTRIBUTE_combineDistribExtractions r-7d0b7014 extract_params_S1_fourteen.py
 # run ECDISTRIBUTE_combineDistribExtractions r-d1b6ccb8 extract_params_S1_fifteen.py
 # run ECDISTRIBUTE_combineDistribExtractions r-85e2a6ec extract_params_S1_seventeen.py
-# run ECDISTRIBUTE_combineDistribExtractions r-fbf7b092 extract_params_AF.py
+# run ECDISTRIBUTE_combineDistribExtractions r-0189c968 extract_params_AF.py
 # run ECDISTRIBUTE_combineDistribExtractions r-9fb3f2f6 extract_params_AS1.py
 # run ECDISTRIBUTE_combineDistribExtractions r-1998d970 extract_params_AS2.py
 
