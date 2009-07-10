@@ -21,15 +21,15 @@ import numpy as np
 import time
 import sys
 
-RESERVATIONID='r-df84c4b6'
-PARAMFILE_PY='CONDSIM_params_AM.py'
-PARAMFILE_R='15'
+#RESERVATIONID='r-df84c4b6'
+#PARAMFILE_PY='CONDSIM_params_AM.py'
+#PARAMFILE_R='15'
 
 
 # deal with system arguments (expects two)
-#RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
-#PARAMFILE_PY = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
-#PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
+RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
+PARAMFILE_PY = sys.argv[2]  ## defines name of python file housing the parmeter definitions (e.g. extract_params_AF.py)
+PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal parmeter definitions for conditoinal simulation R scripts
 
 # initialise amazon S3 key object 
 S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
@@ -41,7 +41,7 @@ checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 1
+NINSTANCES = 8
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
@@ -57,7 +57,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 1
+NINSTANCES = 8
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -75,7 +75,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-NINSTANCES = 20
+NINSTANCES = 8
 MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
@@ -86,7 +86,7 @@ n_total = 500#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 STARTJOB = 0
-STOPJOB = 70 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STOPJOB = 24 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 ## construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]

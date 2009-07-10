@@ -14,10 +14,10 @@ AM_lims = {'topRow': 1525,
 'leftCol': 2125,
 'rightCol': 3296}
 
-AF_lims = {'topRow': 1393,
-'bottomRow': 2745,
-'leftCol': 3879,
-'rightCol': 5628}
+AF_lims = {'topRow': 1412,
+'bottomRow': 2726,
+'leftCol': 3886,
+'rightCol': 5603}
 
 # Two test squares (S1 fits indside S2) in S malawi - includes a high and low focus and an urban area
 S1_lims = {'topRow': 2387,
@@ -37,14 +37,14 @@ S2_lims = {'topRow': 2373,
 
 
 AS1_lims = {'topRow': 1109,
-'bottomRow': 1886,
+'bottomRow': 1910,
 'leftCol': 5575,
 'rightCol': 7366}
 
 AS2_lims = {'topRow': 1838,
-'bottomRow': 2506,
-'leftCol': 6599,
-'rightCol': 8400}
+'bottomRow': 2522,
+'leftCol': 6592,
+'rightCol': 8419}
 
 # Kenya limits.
 KE_lims = {'topRow' : 1901,

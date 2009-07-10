@@ -10,18 +10,18 @@ utilFolder = '/root/map_utils/map_utils/'
 keyPath = '/root/s3code.txt' 
  
 # main input hdf5  file of simulated realisations of f
-realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = '/mnt/qrypfpr010708_africa_run_9.10.2008_try2/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 
 # hdf 5 file containng traces for burden function
 burdentrace_path='/mnt/burdentraces/Africa+_scale_0.6_model_exp.hdf5'
  
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/mnt/distributedoutput_country_af/'
-exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_af/'
+exportPathDistributed_country = '/mnt/distributedoutput_country_af_try2/'
+exportPathDistributed_perpixel = '/mnt/distributedoutput_perpixel_af_try2/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/mnt/combinedoutput_country_af/'
-exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_af/'
+exportPathCombined_country = '/mnt/combinedoutput_country_af_try2/'
+exportPathCombined_perpixel = '/mnt/combinedoutput_perpixel_af_try2/'
  
 # input 1km salb raster of unique spatial IDs
 salblim1km_path="/mnt/auxiliary_data/salblim1km-e_y-x+_AF.hdf5"
