@@ -25,6 +25,7 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
     L<-t(U[1:n,oo])
     PostVar<-L 
 
+    print(paste("range of L from MVRNORM:",min(L),"to",max(L)))
 
      # define choleski decomposition of COV
 #     U<-chol(COV, pivot = TRUE)
@@ -39,7 +40,7 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
    
    }
    
-   print(paste("range of L from MVRNORM:",min(L),"to",max(L)))
+   
     
    #check for any NAs, nans, or Infs
    if(any(is.nan(L))) print("ERROR!!! in MVRNORM, found nan values in L") 
@@ -50,5 +51,8 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
 
  # take NDraws samples from the multivariate normal distribution of mean MU and covariance COV
    samples <- as.vector(MU) + (L %*% matrix(rnorm(n*Ndraws),nrow=n,ncol=Ndraws))
+
+   rint(paste("range of samples from MVRNORM:",min(samples),"to",max(samples)))
+
    return(t(samples))
 }
