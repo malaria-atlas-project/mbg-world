@@ -7,12 +7,31 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
    
      print("passed a covariance matrix, so performing cholesky decomp")
 
+
+     ichol_full.list<-.Fortran("ichol_full",              
+           c=as.double(PostVar),              
+           n=as.integer(Npred),              
+           sig=as.double(rep(0,Npred^2)),              
+           m=as.integer(0),              
+           p=as.integer(rep(0,Npred)))              
+    U<-matrix(ichol_full.list$sig,nrow=Npred,ncol=Npred)              
+    n<-ichol_full.list$m
+    pivot<-ichol_full.list$p
+
+#            U<-chol(PostVar, pivot = TRUE)
+#            pivot <- attr(U, "pivot")
+#            n <-attr(U,"rank")
+    oo <- order(pivot)
+    L<-t(U[1:n,oo])
+    PostVar<-L 
+
+
      # define choleski decomposition of COV
-     U<-chol(COV, pivot = TRUE)
-     pivot <- attr(U, "pivot")
-     n <-attr(U,"rank")
-     oo <- order(pivot)
-     L<-t(U[1:n,oo])
+#     U<-chol(COV, pivot = TRUE)
+#     pivot <- attr(U, "pivot")
+#     n <-attr(U,"rank")
+#     oo <- order(pivot)
+#     L<-t(U[1:n,oo])
 
     print(paste("n=",n))
     print(paste("nrow of L=",nrow(L)))

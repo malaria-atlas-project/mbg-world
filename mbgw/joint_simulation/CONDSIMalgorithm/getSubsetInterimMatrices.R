@@ -73,13 +73,6 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
        ## if we are returning the choleski decomposition of the kriging variance matrix, rather than the original matrix, do this now:
           if(returnL){
        
-#c : Input covariance matrix, will not be destroyed
-#!n : size of c
-#!sig : Output matrix. Upper triangle will be overwritten with Cholesky
-#!factor. Initialize to zero.
-#!m : Output integer
-#!p : Output integer array of length n
-
             ichol_full.list<-.Fortran("ichol_full",              
                        c=as.double(PostVar),              
                        n=as.integer(Npred),              
