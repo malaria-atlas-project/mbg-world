@@ -73,9 +73,26 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
        ## if we are returning the choleski decomposition of the kriging variance matrix, rather than the original matrix, do this now:
           if(returnL){
        
-            U<-chol(PostVar, pivot = TRUE)
-            pivot <- attr(U, "pivot")
-            n <-attr(U,"rank")
+#c : Input covariance matrix, will not be destroyed
+#!n : size of c
+#!sig : Output matrix. Upper triangle will be overwritten with Cholesky
+#!factor. Initialize to zero.
+#!m : Output integer
+#!p : Output integer array of length n
+
+            ichol_full.list<-.Fortran("ichol_full",              
+                       c=as.double(PostVar),              
+                       n=as.integer(Npred),              
+                       sig=as.double(rep(0,Npred^2)),              
+                       m=as.integer(0),              
+                       p=as.integer(rep(0,Npred)))              
+            U<-matrix(ichol_full.list$sig,nrow=Npred,ncol=Npred)              
+            n<-ichol_full.list$m
+            pivot<-ichol_full.list$p
+
+#            U<-chol(PostVar, pivot = TRUE)
+#            pivot <- attr(U, "pivot")
+#            n <-attr(U,"rank")
             oo <- order(pivot)
             L<-t(U[1:n,oo])
             PostVar<-L 

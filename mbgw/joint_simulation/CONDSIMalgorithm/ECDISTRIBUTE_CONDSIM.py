@@ -21,9 +21,9 @@ import numpy as np
 import time
 import sys
 
-#RESERVATIONID='r-df84c4b6'
+#RESERVATIONID='r-ef1e5386'
 #PARAMFILE_PY='CONDSIM_params_AM.py'
-#PARAMFILE_R='15'
+#PARAMFILE_R='1'
 
 
 # deal with system arguments (expects two)

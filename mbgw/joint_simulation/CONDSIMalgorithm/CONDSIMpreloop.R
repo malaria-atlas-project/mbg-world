@@ -31,11 +31,13 @@ CONDSIMpreloop<-function(covParamObj,gridParamObj,monthParamObj,startRel,endRel,
     temp<-system("R CMD SHLIB dist_to_aniso.f",intern=T)
     temp<-system("R CMD SHLIB isotropic_cov_funs.f",intern=T)
     temp<-system("R CMD SHLIB Stein_st_covariance_serial.f",intern=T)
+    temp<-system("R CMD SHLIB ichol_full.f",intern=T)
     dyn.load("geographic.so")
     dyn.load("euc_angle.so")
     dyn.load("dist_to_aniso.so")
     dyn.load("isotropic_cov_funs.so")
     dyn.load("Stein_st_covariance_serial.so")  
+    dyn.load("ichol_full.so")  
   
  ## invoke parameter file
     source(paste("ParamFile_uncond_",paramfileINDEX,".R",sep=""))
