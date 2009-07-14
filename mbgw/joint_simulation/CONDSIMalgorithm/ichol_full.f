@@ -17,15 +17,7 @@ c Date: May 6, 2007
 c Port of mex function chol_incomplete.c by Matthias Seeger
 c http://www.kyb.tuebingen.mpg.de/bs/people/seeger/
 c
-cf2py double precision dimension(n,n), intent(in)::c
-cf2py double precision dimension(n,n), intent(out)::sig
-cf2py integer dimension(n), intent(out)::p
-cf2py double precision dimension(n), intent(hide)::rowvec
-cf2py double precision dimension(n), intent(hide)::diag
-cf2py integer intent(hide), depend(c):: n = shape(c,0)
-cf2py integer intent(out)::m
-cf2py double precision intent(in) :: reltol
-cf2py threadsafe
+
 
       DOUBLE PRECISION c(n,n), sig(n,n), diag(n)
       DOUBLE PRECISION rowvec(n)
@@ -37,7 +29,7 @@ cf2py threadsafe
       PARAMETER (zero=0.0D0)
       PARAMETER (one=1.0D0)
       PARAMETER (negone = -1.0D0)
-      PARAMETER (reltol = 0.000001
+      PARAMETER (reltol = 0.000001)
 
 * DGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
 *  Purpose
@@ -110,8 +102,7 @@ cf2py threadsafe
 
           if (i.GT.1) then
 
-!               BLAS-less DGEMV might be useful if you ever do the
-sparse version.
+!               BLAS-less DGEMV might be useful if you ever do the sparse version.
 !               do j=i+1,n
 !                 do k=1,i-1
 !                   rowvec(j)=rowvec(j)-sig(k,j)*sig(k,i)
