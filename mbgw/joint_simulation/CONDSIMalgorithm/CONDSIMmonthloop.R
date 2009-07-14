@@ -184,6 +184,13 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
 
  ## define grid to return for this month
     MonthGrid<-OutMATlist[[1]]
+
+   if(any(is.nan(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found nan values in MonthGrid") 
+   if(any(is.na(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found na values in MonthGrid") 
+   if(any(is.infinite(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found Inf values in MonthGrid")       
+
+
+
     
  ## this current month now becomes month t-1, other MonthDepth months all shuffle along
   # loop through matrices in memory and shuffle them all back in time by one (if we are storing any previous months)

@@ -18,7 +18,11 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
     print(paste("nrow of L=",nrow(L)))
     print(paste("ncol of L=",ncol(L)))
    
-   }  
+   } 
+   #check for any NAs, nans, or Infs
+   if(any(is.nan(L))) print("ERROR!!! in MVRNORM, found nan values in L") 
+   if(any(is.na(L))) print("ERROR!!! in MVRNORM, found na values in L") 
+   if(any(is.infinite(L))) print("ERROR!!! in MVRNORM, found Inf values in L")       
    
    n<-ncol(L)
 

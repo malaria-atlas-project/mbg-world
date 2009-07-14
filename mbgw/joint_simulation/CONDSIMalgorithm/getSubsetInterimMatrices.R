@@ -97,7 +97,11 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
             L<-t(U[1:n,oo])
             PostVar<-L 
           }       
-       
+
+          if(any(is.nan(L))) print("ERROR!!! in getSubsetInterimMatrices, found nan values in L") 
+          if(any(is.na(L))) print("ERROR!!! in getSubsetInterimMatrices, found na values in L") 
+          if(any(is.infinite(L))) print("ERROR!!! in getSubsetInterimMatrices, found Inf values in L")       
+      
 
        ## add outputs to relevant lists
           PostMeanInterim.list[[i]]<-PostMeanInterim 
