@@ -33,9 +33,9 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
 #     oo <- order(pivot)
 #     L<-t(U[1:n,oo])
 
-    print(paste("n=",n))
-    print(paste("nrow of L=",nrow(L)))
-    print(paste("ncol of L=",ncol(L)))
+    #print(paste("n=",n))
+    #print(paste("nrow of L=",nrow(L)))
+    #print(paste("ncol of L=",ncol(L)))
    
    }
    
@@ -51,7 +51,7 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
  # take NDraws samples from the multivariate normal distribution of mean MU and covariance COV
    samples <- as.vector(MU) + (L %*% matrix(rnorm(n*Ndraws),nrow=n,ncol=Ndraws))
    rm(L)
-   print(paste("range of samples from MVRNORM:",min(samples),"to",max(samples)))
+   #print(paste("range of samples from MVRNORM:",min(samples),"to",max(samples)))
 
    return(t(samples))
 }

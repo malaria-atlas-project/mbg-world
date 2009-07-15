@@ -187,7 +187,7 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
 
    print(paste("range of MonthGrid from CONDSIMmonthloop:",min(MonthGrid),"to",max(MonthGrid)))
 
-   if(month==8) save(MonthGrid,preLoopObj,file="RobjectsM8") 
+   #if(month==8) save(MonthGrid,preLoopObj,file="RobjectsM8") 
 
 
    if(any(is.nan(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found nan values in MonthGrid") 
@@ -213,8 +213,8 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
     listSummary<-returnListSummary(OutMATlist,paste("listSummary_OutMATlist_original_",startRel,"_",endRel,".txt",sep="")) 
     # image(MonthGrid)
 
-print("warnings:")
-print(warnings())
+#print("warnings:")
+#print(warnings())
     
     return(monthObject)
 }    

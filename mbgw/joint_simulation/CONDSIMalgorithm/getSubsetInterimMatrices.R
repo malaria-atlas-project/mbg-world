@@ -88,7 +88,12 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
 #            n <-attr(U,"rank")
             oo <- order(pivot)
             L<-t(U[1:n,oo])
+            #print("Max deviation")
+            #print(max(abs((L%*%t(L)-PostVar)/PostVar))) 
+            #if(max(abs((L%*%t(L)-PostVar)/PostVar))>0.01) save(L,U,n,pivot,oo,PostVar,Npred,cDtoD,cDtoP,cPtoP,PostMeanInterim,file="CholProbs")
+                       
             PostVar<-L 
+            
           }       
           print(paste("range of L from getSubsetInterimMatrices:",min(L),"to",max(L)))
           if(any(is.nan(L))) print("ERROR!!! in getSubsetInterimMatrices, found nan values in L") 

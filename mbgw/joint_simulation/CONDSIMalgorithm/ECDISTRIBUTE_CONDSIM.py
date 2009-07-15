@@ -23,8 +23,8 @@ import sys
 
 #RESERVATIONID='r-c1c38fa8'
 #PARAMFILE_PY='CONDSIM_params_AM.py'
-#PARAMFILE_R='1'
-
+#PARAMFILE_R=17
+#NINSTANCES=1
 
 # deal with system arguments (expects two)
 RESERVATIONID = sys.argv[1]  ## defines ID of reservation that contains the instances we will use on EC2
@@ -82,8 +82,8 @@ INITCMDS=[]
 n_total = 500#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
-STARTJOB = 24
-STOPJOB = 78 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STARTJOB = 0
+STOPJOB = 20 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 ## construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]
