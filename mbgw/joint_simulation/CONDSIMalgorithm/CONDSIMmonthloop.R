@@ -186,6 +186,10 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
     MonthGrid<-OutMATlist[[1]]
 
    print(paste("range of MonthGrid from CONDSIMmonthloop:",min(MonthGrid),"to",max(MonthGrid)))
+
+   if(month==8) save(MonthGrid,preLoopObj,file="RobjectsM8") 
+
+
    if(any(is.nan(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found nan values in MonthGrid") 
    if(any(is.na(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found na values in MonthGrid") 
    if(any(is.infinite(MonthGrid))) print("ERROR!!! in CONDSIMmonthloop, found Inf values in MonthGrid")       

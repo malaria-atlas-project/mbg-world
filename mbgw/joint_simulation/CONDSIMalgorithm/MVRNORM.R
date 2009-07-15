@@ -23,7 +23,7 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
 #            n <-attr(U,"rank")
     oo <- order(pivot)
     L<-t(U[1:n,oo])
-
+    rm(U)
     print(paste("range of L from MVRNORM:",min(L),"to",max(L)))
 
      # define choleski decomposition of COV
@@ -51,7 +51,6 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
  # take NDraws samples from the multivariate normal distribution of mean MU and covariance COV
    samples <- as.vector(MU) + (L %*% matrix(rnorm(n*Ndraws),nrow=n,ncol=Ndraws))
    rm(L)
-   rm(U)
    print(paste("range of samples from MVRNORM:",min(samples),"to",max(samples)))
 
    return(t(samples))
