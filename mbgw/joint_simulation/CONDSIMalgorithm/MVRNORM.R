@@ -17,8 +17,10 @@ MVRNORM<-function(Ndraws,MU,COV=c(),L=c()){
     print(paste("n=",n))
     print(paste("nrow of L=",nrow(L)))
     print(paste("ncol of L=",ncol(L)))
-   
+    print(paste("max dev",max(abs(L%*%t(L)-COV))))
    }  
+   
+   
    
    n<-ncol(L)
 

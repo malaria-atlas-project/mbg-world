@@ -78,6 +78,9 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
             n <-attr(U,"rank")
             oo <- order(pivot)
             L<-t(U[1:n,oo])
+            
+            print(paste("max dev",max(abs(L%*%t(L)-PostVar))))
+            
             PostVar<-L 
           }       
        
