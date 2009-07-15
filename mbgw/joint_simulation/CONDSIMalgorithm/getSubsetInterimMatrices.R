@@ -82,16 +82,23 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
             U<-matrix(ichol_full.list$sig,nrow=Npred,ncol=Npred)              
             n<-ichol_full.list$m
             pivot<-ichol_full.list$p
-
-#            U<-chol(PostVar, pivot = TRUE)
-#            pivot <- attr(U, "pivot")
-#            n <-attr(U,"rank")
             oo <- order(pivot)
+            
             L<-t(U[1:n,oo])
-            #print("Max deviation")
-            #print(max(abs((L%*%t(L)-PostVar)/PostVar))) 
-            #if(max(abs((L%*%t(L)-PostVar)/PostVar))>0.01) save(L,U,n,pivot,oo,PostVar,Npred,cDtoD,cDtoP,cPtoP,PostMeanInterim,file="CholProbs")
-                       
+            print("Max deviation new")
+            print(max(abs((L%*%t(L)-PostVar)/PostVar))) 
+            if(max(abs((L%*%t(L)-PostVar)/PostVar))>0.01) save(L,U,n,pivot,oo,PostVar,Npred,cDtoD,cDtoP,cPtoP,PostMeanInterim,file="CholProbs")
+
+            U<-chol(PostVar, pivot = TRUE)
+            pivot <- attr(U, "pivot")
+            n <-attr(U,"rank")
+            oo <- order(pivot)
+            
+            L<-t(U[1:n,oo])
+            print("Max deviation old")
+            print(max(abs((L%*%t(L)-PostVar)/PostVar))) 
+            if(max(abs((L%*%t(L)-PostVar)/PostVar))>0.01) save(L,U,n,pivot,oo,PostVar,Npred,cDtoD,cDtoP,cPtoP,PostMeanInterim,file="CholProbs")
+            
             PostVar<-L 
             
           }       
