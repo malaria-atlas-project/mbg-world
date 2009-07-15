@@ -185,6 +185,8 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
  ## define grid to return for this month
     MonthGrid<-OutMATlist[[1]]
     
+    print(paste("range of MonthGrid from CONDSIMmonthloop:",min(MonthGrid),"to",max(MonthGrid)))
+    
  ## this current month now becomes month t-1, other MonthDepth months all shuffle along
   # loop through matrices in memory and shuffle them all back in time by one (if we are storing any previous months)
     if(MonthDepth>0){ 
