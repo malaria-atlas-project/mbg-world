@@ -208,6 +208,8 @@ if(VERBOSE==2)print(paste("month",month,"  col",col))
     monthObject<-list("MonthGrid"=MonthGrid,"OutMATlist"=OutMATlist)
     listSummary<-returnListSummary(OutMATlist,paste("listSummary_OutMATlist_original_",startRel,"_",endRel,".txt",sep="")) 
     # image(MonthGrid)
+
+warnings()
     
     return(monthObject)
 }    
