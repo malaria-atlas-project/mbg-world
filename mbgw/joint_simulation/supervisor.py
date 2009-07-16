@@ -324,7 +324,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     ##############################~TEMP
 
 #    ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
-    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=None,FULLRANK=False)
+#    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=relp,FULLRANK=False)
 #    #print 'variance of unconditioned block = '+str(round(np.var(out_arr),10))
 #    #print 'variance of unconditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
 #    #examineRealization(outfile_root,real_index,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
@@ -641,6 +641,9 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
     M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
     if FULLRANK is False:
         C = pm.gp.NearlyFullRankCovariance(C.eval_fun, relative_precision=relp, **C.params)
+
+    #from IPython.Debugger import Pdb
+    #Pdb.color_scheme='Linux'.set_trace()
 
     # define function for realisation
     f = pm.gp.Realization(M,C)
