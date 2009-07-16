@@ -35,7 +35,7 @@ NinThinnedBlock =10000
 burn = 200
 memmax = 1.e8
 thinning = 1
-relp=1e-6
+relp=1e-13
 
 # have we merged the urban and periurban categories into a sinlge 'urban' category
 merged_urb = True
