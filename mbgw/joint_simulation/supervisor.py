@@ -642,6 +642,9 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
     if FULLRANK is False:
         C = pm.gp.NearlyFullRankCovariance(C.eval_fun, relative_precision=relp, **C.params)
 
+    from IPython.Debugger import Pdb
+    Pdb.color_scheme='Linux'.set_trace()
+
     # define function for realisation
     f = pm.gp.Realization(M,C)
 
