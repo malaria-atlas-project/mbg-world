@@ -386,40 +386,40 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     #####################################
     
     
-#    # Bring in data.
-#    print '\tKriging to bring in data.'    
-#    print '\tPreprocessing.'
-#    t1 = time.time()    
-#    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)
-#    t2 = time.time()
-#    print '\t\tDone in %f'%(t2-t1)
+    # Bring in data.
+    print '\tKriging to bring in data.'    
+    print '\tPreprocessing.'
+    t1 = time.time()    
+    dev_posdef, xbi, ybi, dl_posdef = preprocess(C, data_locs, thin_grids, thin_x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata)
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
 
-#    #from IPython.Debugger import Pdb
-#    #Pdb(color_scheme='Linux').set_trace()
-#    
-#    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
-#    print '\tKriging.'
-#    t1 = time.time()
-#    for i in xrange(grid_shape[2]-1,-1,-1):
-#        thin_row.fill(0.)
-#        
-#        thin_x[:,:,2] = axes[2][i]
-#        x[:,:,2] = axes[2][i]
-#        
-#        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
-#        row = ndimage.map_coordinates(thin_row, mapgrid)
-#        
-#        row += covariate_mesh
-#        row += M(x)   
-#        
-#        row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
-#        
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
+    
+    thin_row = np.empty(thin_grid_shape[:2], dtype=np.float32)
+    print '\tKriging.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]-1,-1,-1):
+        thin_row.fill(0.)
+        
+        thin_x[:,:,2] = axes[2][i]
+        x[:,:,2] = axes[2][i]
+        
+        krige_month(C, i, dl_posdef, thin_grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, thin_x, dev_posdef, thin_row, thin_mask)
+        row = ndimage.map_coordinates(thin_row, mapgrid)
+        
+        row += covariate_mesh
+        row += M(x)   
+        
+        row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
+        
 
-# 
-#        # NaN the oceans to save storage
-#        row[np.where(1-mask)] = missing_val
-#        
-#        out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
+ 
+        # NaN the oceans to save storage
+        row[np.where(1-mask)] = missing_val
+        
+        out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
     ####################################TEMP
     #print 'variance of conditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
