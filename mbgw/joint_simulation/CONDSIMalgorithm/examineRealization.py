@@ -1,5 +1,5 @@
 # example call
-# run examineRealization "/home/pwg/mbg-world/mbgw-scripts/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 0 15 True TRUE  0 11 True True
+# run examineRealization("/home/pwg/Realizations/150709/realizations_mem_100000000_QRYPFPR220708_Americas_Run_1.9.2008_iterations_0_1.hdf5",0,11,17,None,None,False,"FALSE",True,True)
 
 # import python libraries
 from rpy import *

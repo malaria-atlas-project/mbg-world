@@ -17,10 +17,10 @@ def getGridCovarianceInY(gridIN,meanIN,cellWidth,VERBOSE=False,NaNvalue="nan"):
     n_cols = shape(gridIN)[1]
 
     YpixList = np.array(xrange(0,n_rows))    
-    #littleJumps = YpixList[0:int(n_rows*0.25):2]
-    #bigJumps  = YpixList[int(n_rows*0.25):int(n_rows*0.8):20]
-    #jumps=np.concatenate((littleJumps,bigJumps))
-    jumps=YpixList[0:int(n_rows):1]
+    littleJumps = YpixList[0:int(n_rows*0.25):2]
+    bigJumps  = YpixList[int(n_rows*0.25):int(n_rows*0.8):20]
+    jumps=np.concatenate((littleJumps,bigJumps))
+    #jumps=YpixList[0:int(n_rows):1]
 
     # initialise vector to house covariance at each lag
     E_cov = np.empty(len(jumps)-1)
