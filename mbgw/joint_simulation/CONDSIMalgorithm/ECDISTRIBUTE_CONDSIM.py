@@ -83,7 +83,7 @@ n_total = 500#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
 STARTJOB = 24
-STOPJOB = 43 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STOPJOB = 84 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 ## construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]
