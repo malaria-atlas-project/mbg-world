@@ -653,7 +653,7 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
 
     # realise at specified locations (return same shape as sd coordinate block - should be 3d)
     simVector = f(xyt_cube)
-    if f.C_internal.obs_mesh.shape[0] < np.prod(xyt_cube.shape[:-1])-10:
+    if f.C_internal.obs_mesh.shape[0] < np.prod(xyt_cube.shape[:-1]):
         raise LowRankError, 'Block simulation does not have enough degrees of freedom'
     
     # insert these values into this realisation of the main output array
