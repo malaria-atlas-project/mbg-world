@@ -621,6 +621,9 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
  
     # return 1d array of simulated values    
     return f(XYT_out)
+
+class LowRankError(Exception):
+    pass
     
 def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,relp=None,FULLRANK=False):
 
@@ -650,6 +653,8 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
 
     # realise at specified locations (return same shape as sd coordinate block - should be 3d)
     simVector = f(xyt_cube)
+    if f.C_internal.obs_mesh.shape[0]<200 and np.prod(xyt_cube.shape[:-1])>300:
+        raise LowRankError, 'Block simulation does not have enough degrees of freedom'
     
     # insert these values into this realisation of the main output array
     relblock4d[real_index,:,:,:]=simVector[:,:,:]
