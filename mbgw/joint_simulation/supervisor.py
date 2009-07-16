@@ -639,7 +639,7 @@ def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,rel
 
     # define latent mean function and optionally covert covariance function to sub full rank
     M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
-    if FULLRANK is True:
+    if FULLRANK is False:
         C = pm.gp.NearlyFullRankCovariance(C.eval_fun, relative_precision=relp, **C.params)
 
     # define function for realisation
