@@ -613,7 +613,9 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
     M = pm.gp.Mean(lambda x:np.zeros(x.shape[:-1]))
     C = pm.gp.NearlyFullRankCovariance(C.eval_fun, relative_precision=relp, **C.params)
     #pm.gp.observe(M,C,obs_mesh=XYT_in,obs_vals=z_in)
-    pm.gp.observe(M,C,obs_mesh=XYT_in,obs_vals=z_in,cross_validate=False,assume_full_rank=True)
+    C.observe(XYT_in, np.zeros(XYT_in.shape[0]), assume_full_rank=True)
+    M.observe(C, XYT_in, z_in)
+    #pm.gp.observe(M,C,obs_mesh=XYT_in,obs_vals=z_in,cross_validate=False,assume_full_rank=True)
     f = pm.gp.Realization(M,C)
  
     #from IPython.Debugger import Pdb
