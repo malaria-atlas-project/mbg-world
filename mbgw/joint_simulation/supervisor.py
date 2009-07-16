@@ -39,6 +39,8 @@ from map_utils import grid_convert
 #####################TEMP
 
 from IPython.Debugger import Pdb
+class LowRankError(Exception):
+    pass
 
 __all__ = ['create_realization', 'create_many_realizations','reduce_realizations','getThinnedBlockXYTZlists','array3d_2_XYTZlist','gridParams_2_XYTmarginallists','predictPointsFromBlock']
 
@@ -620,11 +622,13 @@ def predictPointsFromBlock(XYT_in,z_in, XYT_out,C,relp,VERBOSE=False):
     #Pdb(color_scheme='Linux').set_trace()
  
     # return 1d array of simulated values    
-    return f(XYT_out)
+    out = f(XYT_out)
+    if f.C_internal.obs_mesh.shape[0] < np.prod(XYT_out.shape[:-1]):
+        raise LowRankError, 'Simulation to data does not have enough degrees of freedom: %i of %i'%(f.C_internal.obs_mesh.shape[0], np.prod(XYT_out.shape[:-1]))
+        
+    return out
 
-class LowRankError(Exception):
-    pass
-    
+
 def getUnconditionedBlock(relblock4d,real_index,grids,C,NinThinnedBlock=None,relp=None,FULLRANK=False):
 
     # get grid's marginal coordinates
