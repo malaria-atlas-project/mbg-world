@@ -22,7 +22,7 @@ import time
 import sys
 
 #RESERVATIONID='r-df84c4b6'
-#PARAMFILE_PY='CONDSIM_params_AM.py'
+#PARAMFILE_PY='CONDSIM_params_AMS1.py'
 #PARAMFILE_R='15'
 
 
