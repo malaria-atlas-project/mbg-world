@@ -191,7 +191,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
             else:
                 mean_ondata += getattr(meta, key)[:][meta.ui[:]] * this_coef
                 this_pred_covariate = get_covariate_submesh(key+'5km-e_y-x+', grid_lims) * this_coef
-            covariate_mesh += this_pred_covariate        
+            covariate_mesh += this_pred_covariate
 
         # Pull covariance information out of trace
         this_C = trace.group0.C[indices[i]]
