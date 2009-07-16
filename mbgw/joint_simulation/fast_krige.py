@@ -51,6 +51,7 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     dev = (tdata-mean_ondata-pdata)
     
     print 'Max dev:', np.max(np.abs(dev))
+    print 'Max and min mean:', np.max(mean_ondata), np.min(mean_ondata)
 
     # Figure out which data locations are relevant to the different prediction blocks
     cutoff = C.params['amp']*relp
