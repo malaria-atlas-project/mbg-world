@@ -60,11 +60,14 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     
     C_eval = C(data_locs,data_locs)
     
-    U, n_posdef, pivots = ichol_full(c=C_eval, reltol=relp)
-    U = U[:n_posdef, :n_posdef]
-
-    dl_posdef = data_locs[pivots[:n_posdef]]
-    dev_posdef = dev[pivots[:n_posdef]]
+    U = np.asarray(np.linalg.cholesky(C_eval).T, order='F')
+    dl_posdef = data_locs
+    dev_posdef = dev
+    # U, n_posdef, pivots = ichol_full(c=C_eval, reltol=relp)
+    # U = U[:n_posdef, :n_posdef]
+    # 
+    # dl_posdef = data_locs[pivots[:n_posdef]]
+    # dev_posdef = dev[pivots[:n_posdef]]
 
     # Backsolve data-data covariance against dev
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
