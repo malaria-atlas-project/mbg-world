@@ -99,13 +99,13 @@ print '*******************************\n'
 
 
 ## main jobs
-#print '\n*******************************'
-#print 'STARTING MAIN JOBS ON INSTANCES..'
-#print '*******************************\n'
-#MAXJOBSPERINSTANCE = 2
-#MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
-#UPLOADFILES=[]
-#INITCMDS=[]
+print '\n*******************************'
+print 'STARTING MAIN JOBS ON INSTANCES..'
+print '*******************************\n'
+MAXJOBSPERINSTANCE = 2
+MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+UPLOADFILES=[]
+INITCMDS=[]
 
 ### construct main commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]

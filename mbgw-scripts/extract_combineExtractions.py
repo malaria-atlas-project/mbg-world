@@ -386,10 +386,6 @@ def combineDistribExtractions_perpixel():
 
         # if the string looks OK, then import the file
         importarray = np.loadtxt(exportPathDistributed_perpixel+fname)
-
-
-
-
             
         # check shape of array 
         if importarray.shape != referenceshape:

@@ -789,8 +789,8 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             
             #######################TEMP NO NUGGET
-            #chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
-            chunk = f_chunk+0
+            chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            #chunk = f_chunk+0
             ######################################
             
             
@@ -798,7 +798,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             chunk = pm.invlogit(chunk.ravel())
             
             #######################TEMP NO AGE CORRECT
-            #chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
+            chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
             ##########################################
             
             chunk = chunk.reshape(f_chunk.shape).squeeze()
