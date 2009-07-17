@@ -95,7 +95,7 @@ for ii in xrange(0,n_realizations):
 annualmean_mean = np.atleast_2d(np.mean(annualmean_block,-1))
 annualmean_std = np.atleast_2d(np.std(annualmean_block,-1))
 
-print 'surface mean of annual mean is'+str(np.mean(annualmean_mean))
+print 'surface mean of annual mean is '+str(np.mean(annualmean_mean))
 
 # optionally plot
 if PLOTTING is True:

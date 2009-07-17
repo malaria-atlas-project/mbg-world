@@ -65,13 +65,11 @@ def get_covariate_submesh(name, grid_lims):
 
     return out
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0,merged_urb=False):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0,merged_urb=False,TESTSQUARE=False):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
-    
-    
-    
+
     # Establish grids
     xllc_here = (xllc + cellsize * (grid_lims['leftCol']-1))*deg_to_rad
     xurc_here = (xllc + cellsize * (grid_lims['rightCol']-1))*deg_to_rad
@@ -120,12 +118,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
 
     for i in xrange(len(data_locs)):
         for j in xrange(3):
-
-
-            ####??????????
             data_mesh_indices[i,j] = np.argmin(np.abs(data_locs[i,j] - axes[j]))
-            ####??????????
-
 
     if n_in_trace is None:
         n_in_trace=len(trace.group0.C) 
@@ -135,7 +128,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
     
     outfile = tb.openFile(outfile_name, 'w')
     outfile.createArray('/','lon_axis',axes[0],title='Longitude in radians')
-    outfile.createArray('/','lat_axis',axes[1],title='Longitude in radians')
+    outfile.createArray('/','lat_axis',axes[1],title='Latitude in radians')
     outfile.createArray('/','t_axis',axes[2],title='Time in years since 2009')        
     outfile.createCArray('/','realizations',
                         tb.Float32Atom(), 
@@ -212,7 +205,7 @@ def normalize_for_mapcoords(arr, max):
     arr *= max
 
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
-def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock):
+def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock,TESTSQUARE):
 
 
     print '\nON REALIZATION '+str(real_index)+'\n'
@@ -267,6 +260,11 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     del mlon, mlat
 
     Cp = C.params
+
+    # In special case (america region) run only a test square using direct simulation, if it does not fail then just return
+    if TESTSQUARE:
+        getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=relp,FULLRANK=False)  
+        return()
     
     # Prepare input dictionaries
     covParamObj = {'Scale': Cp['scale'][0],
@@ -285,48 +283,48 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     
     # Call R preprocessing function and check to make sure no screwy re-casting has taken place.
     t1 = time.time()
-#    os.chdir(r_path)
-#    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
-#    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    os.chdir(r_path)
+    preLoopObj = r.CONDSIMpreloop(covParamObj,gridParamObj,monthParamObj,indices.min(), indices.max(),paramfileINDEX)
+    tree_reader = reader(file('listSummary_preLoopObj_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
 
-#    preLoopClassTree, junk = parse_tree(tree_reader)
-#    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
-#    
-#    OutMATlist = preLoopObj['OutMATlist']
-#    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
-#    OutMATClassTree, junk = parse_tree(tree_reader)
-#    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
-#    os.chdir(curpath)
-#    preLoop_time = time.time()-t1
-#    print "preLoop_time :"+str(preLoop_time)
+    preLoopClassTree, junk = parse_tree(tree_reader)
+    preLoopObj = compare_tree(preLoopObj, preLoopClassTree)
+    
+    OutMATlist = preLoopObj['OutMATlist']
+    tree_reader = reader(file('listSummary_OutMATlist_original_%i_%i.txt'%(indices.min(), indices.max())),delimiter=' ')
+    OutMATClassTree, junk = parse_tree(tree_reader)
+    OutMATlist = compare_tree(OutMATlist, OutMATClassTree)
+    os.chdir(curpath)
+    preLoop_time = time.time()-t1
+    print "preLoop_time :"+str(preLoop_time)
 
-#    #from IPython.Debugger import Pdb
-#    #Pdb(color_scheme='Linux').set_trace()
-#        
-#    ## Create and store unconditional realizations
-#    print '\tGenerating unconditional realizations.'
-#    t1 = time.time()
-#    for i in xrange(grid_shape[2]):
-#        print 'On month :'+str(i)
-#        #print 'OutMATlist:'
-#        #print OutMATlist
-#        os.chdir(r_path)
-#        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
-#        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
-#        os.chdir(curpath)
-#        OutMATlist= monthObject['OutMATlist']
-#        MonthGrid = monthObject['MonthGrid']
-#        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
-#    t2 = time.time()
-#    print '\t\tDone in %f'%(t2-t1)
-#    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
-#    
-#    # delete unneeded R products
-#    del OutMATlist, preLoopObj, MonthGrid, monthObject
-    ##############################~TEMP
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
+        
+    ## Create and store unconditional realizations
+    print '\tGenerating unconditional realizations.'
+    t1 = time.time()
+    for i in xrange(grid_shape[2]):
+        print 'On month :'+str(i)
+        #print 'OutMATlist:'
+        #print OutMATlist
+        os.chdir(r_path)
+        monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist, indices.min(), indices.max(),paramfileINDEX)
+        #monthObject = r.CONDSIMmonthloop(i+1,preLoopObj,OutMATlist,paramfileINDEX)
+        os.chdir(curpath)
+        OutMATlist= monthObject['OutMATlist']
+        MonthGrid = monthObject['MonthGrid']
+        out_arr[real_index,:,:,i] = MonthGrid[:grid_shape[1],:grid_shape[0]]
+    t2 = time.time()
+    print '\t\tDone in %f'%(t2-t1)
+    print "monthloop_time :"+str(t2-t1)+" for "+str(grid_shape[2])+" months" 
+    
+    # delete unneeded R products
+    del OutMATlist, preLoopObj, MonthGrid, monthObject
+    #############################~TEMP
 
 #    ################################~TEMP DIRECTLY JOIN SIMULATE UNCODITIONED BLOCK FOR TESTING   
-    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=relp,FULLRANK=False)
+#    getUnconditionedBlock(out_arr,real_index,grids,C_straightfromtrace,NinThinnedBlock=None,relp=relp,FULLRANK=False)
 #    #print 'variance of unconditioned block = '+str(round(np.var(out_arr),10))
 #    #print 'variance of unconditioned block month 6 = '+str(round(np.var(out_arr[:,:,:,6]),10))
 #    #examineRealization(outfile_root,real_index,6,15,None,None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True)
