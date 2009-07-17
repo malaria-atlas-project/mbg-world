@@ -388,8 +388,7 @@ def combineDistribExtractions_perpixel():
         importarray = np.loadtxt(exportPathDistributed_perpixel+fname)
 
 
-        print '\nimported file : '+str(fname)
-        print 'mean is : '+str(np.mean(importarray))
+
 
             
         # check shape of array 
@@ -403,6 +402,10 @@ def combineDistribExtractions_perpixel():
 
         # if its a meanPR file, add it's running mean values to the global meanPR array
         if variable == str('meanPR'):
+
+            print '\nimported file : '+str(fname)
+            print 'mean is : '+str(np.mean(importarray))
+
             meanPR = meanPR + importarray
             meanPRtally = meanPRtally+1
 
