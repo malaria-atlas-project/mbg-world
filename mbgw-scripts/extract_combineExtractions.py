@@ -386,6 +386,11 @@ def combineDistribExtractions_perpixel():
 
         # if the string looks OK, then import the file
         importarray = np.loadtxt(exportPathDistributed_perpixel+fname)
+
+
+        print '\nimported file : '+str(fname)+'
+        print 'mean is : '+str(np.mean(importarray))
+
             
         # check shape of array 
         if importarray.shape != referenceshape:
@@ -452,6 +457,9 @@ def combineDistribExtractions_perpixel():
     stdevBUR = np.sqrt(varBUR)
 
     # export mean and SD arrays as asciis
+    print ('\nmeanPRtally is: '+str(meanPRtally)
+    print ('mean of meanPR before export to ascii is: '+str(np.mean(meanPR))
+    
     exportAscii(meanPR,exportPathCombined_perpixel+"meanPR.asc",hdrDict,mask = mask.root.data[:,:])
     exportAscii(stdevPR,exportPathCombined_perpixel+"stdevPR.asc",hdrDict,mask = mask.root.data[:,:])
     exportAscii(meanBUR,exportPathCombined_perpixel+"meanBUR.asc",hdrDict,mask = mask.root.data[:,:])
