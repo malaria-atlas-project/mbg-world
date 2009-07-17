@@ -764,7 +764,9 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
         #f_chunk[np.isnan(f_chunk)]=0
         #print(sum(np.isnan(f_chunk)))
         ####################################
-        
+
+        print('mean of f_chunk: '+str(np.mean(f_chunk)))
+         
         # run check that there are no missing values in this f chunk
         #if sum(sum(sum(np.isnan(f_chunk))))>0:
         if np.isnan(f_chunk).any()==True:
@@ -787,14 +789,18 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             
             #######################TEMP NO NUGGET
-            chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
-            #chunk = f_chunk+0
+            #chunk = f_chunk + np.random.normal(loc=0, scale=np.sqrt(V[MCMCrel]), size=f_chunk.shape)
+            chunk = f_chunk+0
             ######################################
             
             
             
             chunk = pm.invlogit(chunk.ravel())
-            chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
+            
+            #######################TEMP NO AGE CORRECT
+            #chunk *= facs[np.random.randint(N_facs, size=np.prod(chunk.shape))]
+            ##########################################
+            
             chunk = chunk.reshape(f_chunk.shape).squeeze()
             #xxx8 = xxx8 + (r.Sys_time() - xxx8a)
 
@@ -802,13 +808,17 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
             #print('sum of chunkTMEAN '+str(sum(sum(chunkTMEAN))))
 
+            print('mean of chunkTMEAN: '+str(np.mean(f_chunk)))
 
             #hdrDict = getAsciiheaderFromTemplateHDF5(lim5kmbnry_path)
             #exportAscii(chunkTMEAN,exportPathDistributed_perpixel+"chunkTmean.asc",hdrDict)
             #return()
             
             # increment runing mean PR matrices 
+            print('totalN : '+str(totalN))
+            print('meanPR before : '+str(meanPR))
             meanPR = meanPR + (chunkTMEAN/totalN)
+            print('meanPR after : '+str(meanPR))
             meanPR2 = meanPR2 + (np.square(chunkTMEAN)/totalN)
 
             # get burden realisation for this PR and increment running burden matrix
@@ -849,6 +859,8 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
     startRelOUT = FileStartRel+startRel
     endRelOUT = FileStartRel+endRel
     relSuff = '_r'+str(startRelOUT)+'to'+str(endRelOUT)
+
+    print('mean of meanPR before return as .gz: '+str(np.mean(meanPR)))
 
     ## export running meanPR and meanPR2 array
     np.savetxt(exportPathDistributed_perpixel+"meanPR_perpixel"+relSuff+".gz",meanPR)

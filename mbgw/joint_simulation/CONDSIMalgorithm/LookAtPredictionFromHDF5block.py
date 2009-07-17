@@ -1,10 +1,10 @@
 # example call
-# run LookAtPredictionFromHDF5block None 30 None None "/mnt/qrypfpr010708_africa_run_9.10.2008_trial_six/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_50.hdf5" True True False True
+# run LookAtPredictionFromHDF5block None None None None "/home/pwg/Realizations/160779_AMS1_directsim_krigin_withlowrankerrorflag_inAndOut_spreadrel/realizations_mem_100000000_QRYPFPR220708_Americas_Run_1.9.2008_iterations_7_8.hdf5" True False False False
 
 # import libraries
 import numpy as np
 import tables as tb
-import pylab as pl
+#import pylab as pl
 import pymc as pm
 import sys
 from mbgw import correction_factors
@@ -94,6 +94,8 @@ for ii in xrange(0,n_realizations):
 # get posterior mean and std of predicted maps
 annualmean_mean = np.atleast_2d(np.mean(annualmean_block,-1))
 annualmean_std = np.atleast_2d(np.std(annualmean_block,-1))
+
+print 'surface mean of annual mean is'+str(np.mean(annualmean_mean))
 
 # optionally plot
 if PLOTTING is True:
