@@ -110,16 +110,14 @@ print '*******************************\n'
 ### construct main commands list
 CMDS = ['"cd mbg-world/mbgw-scripts/;python ECRUNSCRIPT_extractSummaries.py %i %i %i %i None None True True True"'%(NPER,int(FileStartRels[i]),int(FileEndRels[i]),NTOTALREL) for i in xrange(NJOBS)]
 
-print CMDS
-
-## finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
-#startTime = time.time()
-#returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
-#endTime = time.time()-startTime
-#print '\n*******************************'
-#print 'FINISHED MAIN JOBS ON INSTANCES..'
-#print '*******************************\n'
-#print 'total run time for '+str(NJOBS)+' jobs on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
+# finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
+startTime = time.time()
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+endTime = time.time()-startTime
+print '\n*******************************'
+print 'FINISHED MAIN JOBS ON INSTANCES..'
+print '*******************************\n'
+print 'total run time for '+str(NJOBS)+' jobs on '+str(NINSTANCES)+' instances, with '+str(MAXJOBSPERINSTANCE)+' jobs per instance was: '+str(endTime)
 
 
 
