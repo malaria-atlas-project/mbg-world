@@ -808,7 +808,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
             #print('sum of chunkTMEAN '+str(sum(sum(chunkTMEAN))))
 
-            print('mean of chunkTMEAN: '+str(np.mean(f_chunk)))
+            print('mean of chunkTMEAN: '+str(np.mean(chunkTMEAN)))
 
             #hdrDict = getAsciiheaderFromTemplateHDF5(lim5kmbnry_path)
             #exportAscii(chunkTMEAN,exportPathDistributed_perpixel+"chunkTmean.asc",hdrDict)
@@ -816,9 +816,9 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
             
             # increment runing mean PR matrices 
             print('totalN : '+str(totalN))
-            print('meanPR before : '+str(meanPR))
+            print('mean of meanPR before : '+str(mean(meanPR)))
             meanPR = meanPR + (chunkTMEAN/totalN)
-            print('meanPR after : '+str(meanPR))
+            print('mean of meanPR after : '+str(mean(meanPR)))
             meanPR2 = meanPR2 + (np.square(chunkTMEAN)/totalN)
 
             # get burden realisation for this PR and increment running burden matrix
