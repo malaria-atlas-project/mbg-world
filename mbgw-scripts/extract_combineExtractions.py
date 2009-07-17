@@ -388,7 +388,7 @@ def combineDistribExtractions_perpixel():
         importarray = np.loadtxt(exportPathDistributed_perpixel+fname)
 
 
-        print '\nimported file : '+str(fname)+'
+        print '\nimported file : '+str(fname)
         print 'mean is : '+str(np.mean(importarray))
 
             
