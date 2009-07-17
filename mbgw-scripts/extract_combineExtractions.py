@@ -457,8 +457,8 @@ def combineDistribExtractions_perpixel():
     stdevBUR = np.sqrt(varBUR)
 
     # export mean and SD arrays as asciis
-    print ('\nmeanPRtally is: '+str(meanPRtally)
-    print ('mean of meanPR before export to ascii is: '+str(np.mean(meanPR))
+    print '\nmeanPRtally is: '+str(meanPRtally)
+    print 'mean of meanPR before export to ascii is: '+str(np.mean(meanPR))
     
     exportAscii(meanPR,exportPathCombined_perpixel+"meanPR.asc",hdrDict,mask = mask.root.data[:,:])
     exportAscii(stdevPR,exportPathCombined_perpixel+"stdevPR.asc",hdrDict,mask = mask.root.data[:,:])
