@@ -63,11 +63,12 @@ print 'Creating realizations'
 if region == "AM":
     print '\nrunning preliminary test square for AMS1 region'
     grid_lims_AMS1 = getattr(mg, "AMS1" + '_lims')
-    create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims_AMS1, start_year, nmonths, realizations_path+'TESTSQUARE'+outfile_base, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock,merged_urb=merged_urb,TESTSQUARE=True) 
+    create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims_AMS1, start_year, nmonths, realizations_path+'TESTSQUARE'+outfile_base, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock,merged_urb=merged_urb,TESTRANGE=TESTRANGE,TESTSQUARE=True) 
     print '\nDONE preliminary test square for AMS1 region...will go on to full version'
 
+
 t1=time.time()
-create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock,merged_urb=merged_urb)
+create_many_realizations(my_start, iter_per_job, hf.root.chain0, hf.root.metadata, grid_lims, start_year, nmonths, outfile_name, memmax, relp, mask_name, n_in_trace = my_end, thinning=thinning,paramfileINDEX=paramfileINDEX,NinThinnedBlock=NinThinnedBlock,merged_urb=merged_urb,TESTRANGE=TESTRANGE)
 
 print 'Total time for realizations was '+str(time.time()-t1)
 

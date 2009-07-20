@@ -46,6 +46,8 @@ relDict = S.queryRealizationsInBucket(relBucket,relPath,VERBOSE=True)
 
 print '\nquerying bucket '+str(relBucket)+' : found '+str(relDict['Nrealisations'])+' realisations accross '+str(relDict['Nfiles'])+' files.'
 
+if relDict['Nrealisations']==0: raise RuntimeError ('No realisations to extract so quitting')
+
 # set realization number parameters
 NRELS = relDict['Nrealisations']
 NJOBS = relDict['Nfiles']
@@ -102,7 +104,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-MAXJOBSPERINSTANCE = 2
+MAXJOBSPERINSTANCE = 1
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
 INITCMDS=[]

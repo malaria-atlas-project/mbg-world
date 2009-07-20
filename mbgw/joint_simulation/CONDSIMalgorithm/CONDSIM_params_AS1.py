@@ -39,3 +39,7 @@ relp=1e-6
 
 # have we merged the urban and periurban categories into a sinlge 'urban' category
 merged_urb = False
+
+# are we going to test each month has sensible range of max and min values ?
+TESTRANGE = False
+

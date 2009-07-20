@@ -65,7 +65,7 @@ def get_covariate_submesh(name, grid_lims):
 
     return out
 
-def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0,merged_urb=False,TESTSQUARE=False):
+def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonths, outfile_name, memmax, relp=1e-3, mask_name=None, n_in_trace=None, thinning=10,paramfileINDEX=0,NinThinnedBlock=0,merged_urb=False,TESTRANGE=False,TESTSQUARE=False):
     """
     Creates N realizations from the predictive distribution over the specified space-time mesh.
     """
@@ -205,7 +205,7 @@ def normalize_for_mapcoords(arr, max):
     arr *= max
 
 # def create_realization(out_arr,real_index, C, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices):
-def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock,TESTSQUARE):
+def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_ondata, M, covariate_mesh, tdata, data_locs, grids, axes, data_mesh_indices, where_in, where_out, n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock,TESTRANGE,TESTSQUARE):
 
 
     print '\nON REALIZATION '+str(real_index)+'\n'
@@ -411,13 +411,22 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         
         row += covariate_mesh
         row += M(x)   
-        
         row += grid_convert(out_arr[real_index,:,:,i], 'y-x+', 'x+y+')
-        
-
  
         # NaN the oceans to save storage
         row[np.where(1-mask)] = missing_val
+
+        # if we are checking for plausible max and min values (Vs f at data), implement tet on conditioned values for this month
+        if TESTRANGE!=False:
+            monthMin = np.min(row)
+            monthMax = np.max(row)
+            pointsMin = np.min(tdata)
+            pointsMax = np.max(tdata)
+            pointRange = pointsMax-pointsMin
+            threshMin = pointsMin-(pointsRange*TESTRANGE)
+            threshMax = pointsMax+(pointsRange*TESTRANGE)
+            if(((monthMin<threshMin) | (monthMax>threshMax))):
+                raise ValueError ('Killing realization on month '+str(month)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(pointsMin)+','+str(pointsMax)+')')
         
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
@@ -426,7 +435,6 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
     #print 'variance of conditioned block = '+str(round(np.var(out_arr),10))
     #examineRealization(outfile_root,real_index,6,15,None,None,conditioned=True,flipVertical="FALSE",SPACE=True,TIME=True)
     ########################################
-        
             
     print '\t\tDone in %f'%(time.time()-t1)        
         
