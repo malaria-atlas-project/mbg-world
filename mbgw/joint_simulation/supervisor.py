@@ -196,7 +196,7 @@ def create_many_realizations(burn, n, trace, meta, grid_lims, start_year, nmonth
         #create_realization(outfile.root.realizations, i, this_C, mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, n_blocks_x, n_blocks_y, relp, mask, thinning, indices)
 
         data_vals = trace.PyMCsamples[indices[i]]['f'][:]
-        create_realization(outfile.root, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock,TESTSQUARE)
+        create_realization(outfile.root, i, this_C,trace.group0.C[indices[i]], mean_ondata, this_M, covariate_mesh, data_vals, data_locs, grids, axes, data_mesh_indices, np.where(in_mesh)[0], np.where(True-in_mesh)[0], n_blocks_x, n_blocks_y, relp, mask, thinning,indices,paramfileINDEX,NinThinnedBlock,TESTRANGE,TESTSQUARE)
         outfile.flush()
     outfile.close()
 
