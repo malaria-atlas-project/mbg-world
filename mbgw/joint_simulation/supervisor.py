@@ -417,8 +417,8 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         row[np.where(1-mask)] = missing_val
 
         # if we are checking for plausible max and min values (Vs f at data), implement tet on conditioned values for this month
-        monthMin = np.min(row)
-        monthMax = np.max(row)
+        monthMin = np.min(row[np.where(mask)])
+        monthMax = np.max(row[np.where(mask)])
         pointsMin = np.min(tdata)
         pointsMax = np.max(tdata)
         pointsRange = pointsMax-pointsMin
