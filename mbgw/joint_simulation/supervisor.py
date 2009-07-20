@@ -424,7 +424,7 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         pointsRange = pointsMax-pointsMin
         threshMin = pointsMin-(pointsRange*TESTRANGE)
         threshMax = pointsMax+(pointsRange*TESTRANGE)
-        print('On month '+str(i)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(pointsMin)+','+str(pointsMax)+')')
+        print('On month '+str(i)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(monthMin)+','+str(monthMax)+')')
         if TESTRANGE!=False:
             if(((monthMin<threshMin) | (monthMax>threshMax))):
                 raise ValueError ('Killing realization on month '+str(i)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(monthMin)+','+str(monthMax)+')')
