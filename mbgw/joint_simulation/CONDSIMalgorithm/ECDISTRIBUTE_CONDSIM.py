@@ -43,7 +43,7 @@ print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
 MAXJOBSPERINSTANCE = 1
-MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+MAXJOBTRIES = 2 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 INITCMDS=[]
 CMDS=[]
@@ -58,7 +58,7 @@ print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
 MAXJOBSPERINSTANCE = 1
-MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+MAXJOBTRIES = 2 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
 INITCMDS=[]
 CMDS = ['bash /root/cloud_setup.sh',]*NINSTANCES
@@ -82,15 +82,15 @@ INITCMDS=[]
 n_total = 1000#100 #600
 iter_per_job = 1
 NJOBS = n_total / iter_per_job
-STARTJOB = 43
-STOPJOB = 243 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+STARTJOB = 243
+STOPJOB = 1000 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
 
 ## construct main commands list
 CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]
 
 ## finally, call local function map_jobs from amazon_ec module to distribute these jobs on EC2
 startTime = time.time()
-returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=False,STDOUTPATH=STDOUTPATH)    
+returns = amazon_ec.map_jobs(RESERVATIONID,NINSTANCES,MAXJOBSPERINSTANCE,MAXJOBTRIES,cmds=CMDS, init_cmds=INITCMDS,upload_files=UPLOADFILES, interval=20,shutdown=True,STDOUTPATH=STDOUTPATH)    
 endTime = time.time()-startTime
 print '\n*******************************'
 print 'FINISHED MAIN JOBS ON INSTANCES..'
