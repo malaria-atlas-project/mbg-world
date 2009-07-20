@@ -40,3 +40,7 @@ relp=1e-13
 # have we merged the urban and periurban categories into a sinlge 'urban' category
 merged_urb = True
 
+# are we going to test each month has sensible range of max and min values? 
+# False = no test
+# value between 0 and 1 specifies tolerance e.g. 0.25 allows range to be 25% larger in each direction (50% overall)
+TESTRANGE = False
