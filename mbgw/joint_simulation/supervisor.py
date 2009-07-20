@@ -424,10 +424,10 @@ def create_realization(outfile_root,real_index, C,C_straightfromtrace, mean_onda
         pointsRange = pointsMax-pointsMin
         threshMin = pointsMin-(pointsRange*TESTRANGE)
         threshMax = pointsMax+(pointsRange*TESTRANGE)
-        print('On month '+str(month)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(pointsMin)+','+str(pointsMax)+')')
+        print('On month '+str(i)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(pointsMin)+','+str(pointsMax)+')')
         if TESTRANGE!=False:
             if(((monthMin<threshMin) | (monthMax>threshMax))):
-                raise ValueError ('Killing realization on month '+str(month)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(pointsMin)+','+str(pointsMax)+')')
+                raise ValueError ('Killing realization on month '+str(i)+' : f range=('+str(pointsMin)+','+str(pointsMax)+') ; month range=('+str(pointsMin)+','+str(pointsMax)+')')
         
         out_arr[real_index,:,:,i] = grid_convert(row, 'x+y+','y-x+')
     
