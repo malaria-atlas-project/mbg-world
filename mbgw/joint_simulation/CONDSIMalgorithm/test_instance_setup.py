@@ -12,7 +12,7 @@ import os,sys
 from map_utils import S3
 from CONDSIM_params import *
 
-cd ..
+os.chdir('..')
 
 
 import numpy as np
