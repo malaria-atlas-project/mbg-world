@@ -43,4 +43,4 @@ merged_urb = True
 # are we going to test each month has sensible range of max and min values? 
 # False = no test
 # value between 0 and 1 specifies tolerance e.g. 0.25 allows range to be 25% larger in each direction (50% overall)
-TESTRANGE = 0.50
+TESTRANGE = 0.75
