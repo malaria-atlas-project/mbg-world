@@ -73,7 +73,7 @@ print '\n*******************************'
 print 'STARTING UPLOADING FILES TO INSTANCES..'
 print '*******************************\n'
 MAXJOBSPERINSTANCE = 1
-MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+MAXJOBTRIES = 2 #maximum number of tries before we give up on any individual job
 UPLOADFILES=['/home/pwg/mbg-world/mbgw-scripts/cloud_setup.sh','/home/pwg/mbg-world/mbgw-scripts/s3code.txt']
 INITCMDS=[]
 CMDS=[]
@@ -88,7 +88,7 @@ print '\n*******************************'
 print 'STARTING EXECUTING INITILISATION COMMANDS ON INSTANCES..'
 print '*******************************\n'
 MAXJOBSPERINSTANCE = 1
-MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
+MAXJOBTRIES = 2 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
 INITCMDS=[]
 CMDS = ['bash /root/cloud_setup.sh',]*NINSTANCES
@@ -104,7 +104,7 @@ print '*******************************\n'
 print '\n*******************************'
 print 'STARTING MAIN JOBS ON INSTANCES..'
 print '*******************************\n'
-MAXJOBSPERINSTANCE = 1
+MAXJOBSPERINSTANCE = 2
 MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
 UPLOADFILES=[]
 INITCMDS=[]
