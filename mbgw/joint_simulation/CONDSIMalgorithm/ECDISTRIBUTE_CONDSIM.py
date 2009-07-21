@@ -34,7 +34,7 @@ PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal par
 NINSTANCES = int(sys.argv[4])
 STAGE = sys.argv[5]
 
-if (STAGE=='SETUP' | STAGE == 'ALL'):
+if ((STAGE=='SETUP') | (STAGE == 'ALL')):
 
     # initialise amazon S3 key object 
     S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
@@ -74,7 +74,7 @@ if (STAGE=='SETUP' | STAGE == 'ALL'):
     print '*******************************\n'
 
 
-if (STAGE=='MAIN' | STAGE == 'ALL'):
+if ((STAGE=='MAIN') | (STAGE == 'ALL')):
 
     # main jobs
     print '\n*******************************'

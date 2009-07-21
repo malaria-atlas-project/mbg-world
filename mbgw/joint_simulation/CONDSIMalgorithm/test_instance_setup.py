@@ -1,7 +1,7 @@
 print 'Starting test script.py...'
 
 # import libraries
-import map_utils import checkAndBuildPaths
+from map_utils import checkAndBuildPaths
 from map_utils import S3
 from CONDSIM_params import *
 import sys
