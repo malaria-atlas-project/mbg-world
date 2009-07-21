@@ -1,8 +1,7 @@
 print 'Starting test script.py...'
 
 import pymc
-import mbg-world
-import generic-mbg
+import mbgw
 import st-cov-fun
 import map_utils
 
