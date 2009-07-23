@@ -34,13 +34,13 @@ PARAMFILE_R = int(sys.argv[3])  ## defines name of R file housing additoinal par
 NINSTANCES = int(sys.argv[4])
 STAGE = sys.argv[5]
 
+# initialise amazon S3 key object 
+S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
+
+STDOUTPATH = '/home/pwg/mbg-world/stdout_CONDSIM/DistributedOutputSTDOUTERR_'+str(PARAMFILE_PY.partition('.')[0])+'_'+str(time.ctime())+'/'
+checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
+
 if ((STAGE=='SETUP') | (STAGE == 'ALL')):
-
-    # initialise amazon S3 key object 
-    S=S3(keyPath='/home/pwg/mbg-world/mbgw-scripts/s3code.txt')
-
-    STDOUTPATH = '/home/pwg/mbg-world/stdout_CONDSIM/DistributedOutputSTDOUTERR_'+str(PARAMFILE_PY.partition('.')[0])+'_'+str(time.ctime())+'/'
-    checkAndBuildPaths(STDOUTPATH,VERBOSE=True,BUILD=True)
 
     # upload files
     print '\n*******************************'
@@ -80,16 +80,26 @@ if ((STAGE=='MAIN') | (STAGE == 'ALL')):
     print '\n*******************************'
     print 'STARTING MAIN JOBS ON INSTANCES..'
     print '*******************************\n'
+    MAXJOBSPERINSTANCE = 1
     MAXJOBTRIES = 1 #maximum number of tries before we give up on any individual job
     UPLOADFILES=[]
     INITCMDS=[]
 
     ## set realization number parameters
-    n_total = 1900#100 #600
+    n_total = 518#100 #600
     iter_per_job = 1
     NJOBS = n_total / iter_per_job
-    STARTJOB = 955
-    STOPJOB = 1800 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+    STARTJOB = 378
+    STOPJOB = 518 # this can be set to equal NJOBS, or a smaller number if we don;t want to do all NJOBS realisatios in one go - can continue with other realisations starting at i = STOPJOB
+
+#    ##############TEMP
+#    TEMPINDEX=np.array([951,950,931,925,923,917,914,908,891,890,87,879,877,869,868,858,848,838,836,82,818,803,780,76,765,762,752,74,743,721,706,69,692,690,65,659,641,57,53,4,467,465,436,42,426,41,415,3,399,397,38,37,360,358,34,340,333,320,31,316,314,311,308,299,295,283,27,279,277,275,266,264,260,230,228,214,212,205,202,18,17,173,170,16,165,157,156,14,13,137,136,11,119,107])
+#    CMDS=[]
+#    for i in xrange(STARTJOB,STOPJOB):
+#        if (any(TEMPINDEX==i)): continue
+#        CMDS.append('"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R))
+#    ##############TEMP
+
 
     ## construct main commands list
     CMDS = ['"cd /root/mbg-world/mbgw/joint_simulation/CONDSIMalgorithm/;nice -n -20 python ECRUNSCRIPT_CONDSIM.py %i %i %i %i"'%(i,iter_per_job,NJOBS,PARAMFILE_R) for i in xrange(STARTJOB,STOPJOB)]
