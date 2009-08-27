@@ -1,12 +1,16 @@
 # example call
-# run LookAtPredictionFromHDF5block None None None None "/home/pwg/Realizations/160779_AMS1_directsim_krigin_withlowrankerrorflag_inAndOut_spreadrel/realizations_mem_100000000_QRYPFPR220708_Americas_Run_1.9.2008_iterations_7_8.hdf5" True False False False
+# run LookAtPredictionFromHDF5block None None None None "/home/pwg/Realizations/160779_AMS1_directsim_krigin_withlowrankerrorflag_inAndOut_spreadrel/realizations_mem_100000000_QRYPFPR220708_Americas_Run_1.9.2008_iterations_7_8.hdf5" True True True True
+
+#run LookAtPredictionFromHDF5block None None None None "/home/pwg/Realizations/finalRealizationsForMethodsPaper/af/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_100_101.hdf5" True True True NULL "/home/pwg/Realizations/finalRealizationsForMethodsPaper/af/AMrel1.asc"
+
 
 # import libraries
 import numpy as np
 import tables as tb
-#import pylab as pl
+import pylab as pl
 import pymc as pm
 import sys
+from rpy import *
 from mbgw import correction_factors
 
 # set some parameters
@@ -22,7 +26,6 @@ endMonth = None
 BACKTRANSFORM = False
 AGECORRECT = False
 ADDNUGGET = False
-PLOTTING = False
 
 if sys.argv[1]!='None': startRel = int(sys.argv[1])
 if sys.argv[2]!='None': endRel = int(sys.argv[2])
@@ -32,8 +35,9 @@ filename = sys.argv[5]
 if sys.argv[6] == 'True': BACKTRANSFORM=True
 if sys.argv[7] == 'True': AGECORRECT=True
 if sys.argv[8] == 'True': ADDNUGGET=True
-if sys.argv[9] == 'True': PLOTTING=True
-
+PLOTTING = sys.argv[9]
+EXPORTASCII = sys.argv[10]
+lim5kmbnry_path = sys.argv[11]
 
 # get realization block
 hf = tb.openFile(filename)
@@ -98,7 +102,7 @@ annualmean_std = np.atleast_2d(np.std(annualmean_block,-1))
 print 'surface mean of annual mean is '+str(np.mean(annualmean_mean))
 
 # optionally plot
-if PLOTTING is True:
+if PLOTTING == "PYLAB":
 
     pl.figure(1)
     pl.clf()
@@ -119,17 +123,57 @@ if PLOTTING is True:
     pl.hist(annualmean_block,bins=25)
     pl.title('time-aggregated PR per-pixel (all realizations)\nmean = '+str(np.mean(annualmean_block)))
 
-    #aa = np.zeros(12).reshape(2,6)
-    #aa[0,1] = 1
-    #pl.figure(4)
-    #pl.clf()
-    #pl.imshow(aa,interpolation='nearest')
-    #pl.colorbar()
-    #pl.title('dot at top row, 2nd column ??')
-    #pl.axis('image')
+    aa = np.zeros(12).reshape(2,6)
+    aa[0,1] = 1
+    pl.figure(4)
+    pl.clf()
+    pl.imshow(aa,interpolation='nearest')
+    pl.colorbar()
+    pl.title('dot at top row, 2nd column ??')
+    pl.axis('image')
    
     pl.show()
 
+if PLOTTING == "RPLOT":
+
+    # import R function
+    r.source('~/mbg-world/mbgw-scripts/extract_Rlib.R')
+    plotMapPY=r['plotMap']
+    annualmean_mean[0,0]<-0
+    annualmean_mean[0,1]<-1    
+    
+    template = np.zeros(1850*1850).reshape(1850,1850)
+    template[0:annualmean_mean.shape[0]:1,0:annualmean_mean.shape[1]:1]=annualmean_mean
+    
+    plotMapPY(1-template,flipVertical="FALSE",NODATA=1,titsuf="")
+
+if EXPORTASCII is not "NULL":
+
+    from map_utils import getAsciiheaderFromTemplateHDF5
+    from map_utils import exportAscii
+
+    mask = tb.openFile(lim5kmbnry_path)
+    hdrDict = getAsciiheaderFromTemplateHDF5(lim5kmbnry_path)
+
+    # export as ascii
+    exportAscii(annualmean_mean,EXPORTASCII,hdrDict,mask = mask.root.data[:,:])
+    
+
+
+    
+
+    #r.require('fields')
+    #r.image_plot(annualmean_mean)
+
     #from IPython.Debugger import Pdb
     #Pdb(color_scheme='Linux').set_trace()
+    
+
+#r.segments(0.5,0.05,0.5,0.95)
+#r.segments(0.4,0.05,0.4,0.95)
+#r.segments(np.repeat(0.4,11),np.array([0.05,0.15,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.95]),np.repeat(0.5,11),np.array([0.05,0.15,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.95]))
+
+
+    
+    
 

@@ -175,9 +175,12 @@ run examineRealization "/home/pwg/mbg-world/mbgw-scripts/test_inAndout_krige_16.
 run examineRealization "/home/pwg/Realizations/localTest/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterations_0_1.hdf5" 0 1 True FALSE 11 0 1 True True
 run examineRealization "/home/pwg/Realizations/localTest/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterationsCOND_0_1.hdf5" 0 1 True FALSE 11 0 1 True True
 
+#########
+run examineRealization "/home/pwg/Realizations/localTest/realizations_mem_100000000_QRYPFPR010708_Africa_Run_9.10.2008_iterationsCOND_0_1.hdf5" 0 1 True FALSE 11 0 1 True True
+/home/pwg/Desktop/untitled folder/am/realizations_mem_100000000_QRYPFPR220708_Americas_Run_1.9.2008_iterations_37_38
 
-'/home/pwg/Realizations/localTest/'
+filename,Rel,Month,paramfileINDEX,TemporalStartMonth=None,TemporalEndMonth=None,conditioned=False,flipVertical="FALSE",SPACE=True,TIME=True
 
-
+run examineRealization("/home/pwg/Realizations/finalRealizationsForMethodsPaper/am/realizations_mem_100000000_QRYPFPR220708_Americas_Run_1.9.2008_iterations_37_38.hdf5",0,11,17,None,None,True,"FALSE",True,True)
 
 
