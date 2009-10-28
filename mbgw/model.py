@@ -23,7 +23,7 @@ from generic_mbg import *
 
 __all__ = ['make_model']
 
-continent = 'Africa'
+continent = 'Asia'
 with_stukel = False
 chunk = 2
 
@@ -141,7 +141,7 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
         amp = pm.Lambda('amp', lambda log_amp = log_amp: np.exp(log_amp))
 
         # Subjective skew-normal prior on scale (the range, phi_x) in log-space.
-        log_scale = pm.SkewNormal('log_scale',value=-1,**scale_params)
+        log_scale = pm.SkewNormal('log_scale',value=-4,**scale_params)
         scale = pm.Lambda('scale', lambda log_scale = log_scale: np.exp(log_scale))
 
         # Exponential prior on the temporal scale/range, phi_t. Standard one-over-x
