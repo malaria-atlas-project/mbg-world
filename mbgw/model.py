@@ -59,6 +59,9 @@ else:
     disttol = 0./6378.
     ttol = 0.
 
+def stukel_invlogit(x,a1,a2):
+    return pm.flib.stukel_invlogit(x.ravel(),a1,a2).reshape(x.shape)
+
 def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
 
     if np.any(pos+neg==0):
@@ -141,7 +144,7 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
         amp = pm.Lambda('amp', lambda log_amp = log_amp: np.exp(log_amp))
 
         # Subjective skew-normal prior on scale (the range, phi_x) in log-space.
-        log_scale = pm.SkewNormal('log_scale',value=-4,**scale_params)
+        log_scale = pm.SkewNormal('log_scale',value=-1,**scale_params)
         scale = pm.Lambda('scale', lambda log_scale = log_scale: np.exp(log_scale))
 
         # Exponential prior on the temporal scale/range, phi_t. Standard one-over-x
@@ -211,9 +214,9 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
 
     # Don't worry, these are just reasonable initial values...
     if with_stukel:
-        val_now = pm.stukel_logit((pos+1.)/(pos+neg+2.), a1.value, a2.value)
+        val_now = pm.flib.stukel_logit((pos+1.)/(pos+neg+2.), a1.value, a2.value)
     else:
-        val_now = pm.logit((pos+1.)/(pos+neg+2.))
+        val_now = pm.flib.logit((pos+1.)/(pos+neg+2.))
     
     if data_mesh.shape[0] % chunk == 0:
         additional_index = 0
@@ -225,25 +228,22 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
         this_slice = slice(chunk*i, min((i+1)*chunk, data_mesh.shape[0]))
 
         # epsilon plus f, given f.
-        @pm.stochastic(trace=False, dtype=np.float)
-        def eps_p_f_now(value=val_now[this_slice], f=f_eval, V=V, this_slice = this_slice):
-            return pm.normal_like(value, f[this_slice], 1./V)
-        eps_p_f_now.__name__ = "eps_p_f%i"%i
-        eps_p_f_list.append(eps_p_f_now)
+        eps_p_f_list.append(pm.Normal('eps_p_f_%i'%i, f_eval[this_slice], tau, value=val_now[this_slice]))
         
         # The number positive: the data. Uses the spline interpolations of the likelihood
         # functions to compute them.
         try:
             @pm.data
             @pm.stochastic(dtype=np.int)
-            def N_pos_now(value = pm.utils.round_array(pos[this_slice]), splrep = splreps[this_slice], eps_p_f = eps_p_f_now, a1=a1, a2=a2):
-                p_now = pm.flib.stukel_invlogit(eps_p_f, a1, a2)
+            def N_pos_now(value = pm.utils.round_array(pos[this_slice]), splrep = splreps[this_slice], eps_p_f = eps_p_f_list[-1], a1=a1, a2=a2):
+                p_now = stukel_invlogit(eps_p_f, a1, a2)
                 out = 0.
                 for i in xrange(len(value)):
                     out += interp.splev(p_now[i], splrep[i])
                 return out
         except ValueError:
             raise ValueError, 'Log-likelihood is nan at chunk %i'%i
+        N_pos_list.append(N_pos_now)
 
     # Combine the eps_p_f values. This is stupid, I should have just used a Container.
     # I guess this makes it easier to keep traces.

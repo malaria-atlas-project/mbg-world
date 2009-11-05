@@ -5,8 +5,8 @@
 
 from tables import *
 from numpy import *
-from pymc import invlogit, logit
-from pymc.flib import logsum
+from pymc.flib import logsum, invlogit, logit
+from pymc import flib
 from cf_helper import cfh, cfhs
 # import magic_load
 # magic_load.magic_load('age_pr_datasets','/home/anand/MAP/Age standardization/age_pr_datasets/__init__.py')
@@ -23,6 +23,13 @@ F_trace, P_trace = proot.col('F_pred'), proot.col('P_pred')
 aroot = auxiliary_data.age_dist_model
 
 S_trace = aroot.col('S_pred')
+
+def logit(x):
+    return flib.logit(x.ravel()).reshape(x.shape)
+    
+def invlogit(x):
+    return flib.invlogit(x.ravel()).reshape(x.shape)
+    
 
 def two_ten_factors(N):
     """
