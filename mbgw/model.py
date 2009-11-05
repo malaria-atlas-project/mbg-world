@@ -228,12 +228,12 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
         this_slice = slice(chunk*i, min((i+1)*chunk, data_mesh.shape[0]))
 
         # epsilon plus f, given f.
-        eps_p_f_list.append(pm.Normal('eps_p_f_%i'%i, f_eval[this_slice], tau, value=val_now[this_slice]))
+        eps_p_f_list.append(pm.Normal('eps_p_f_%i'%i, f_eval[this_slice], tau, value=val_now[this_slice], trace=False))
         
         # The number positive: the data. Uses the spline interpolations of the likelihood
         # functions to compute them.
         try:
-            @pm.data
+            @pm.observed
             @pm.stochastic(dtype=np.int)
             def N_pos_now(value = pm.utils.round_array(pos[this_slice]), splrep = splreps[this_slice], eps_p_f = eps_p_f_list[-1], a1=a1, a2=a2):
                 p_now = stukel_invlogit(eps_p_f, a1, a2)
