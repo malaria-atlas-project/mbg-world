@@ -54,19 +54,19 @@ a_hi=10
 
 # what do we want to extract?
 
-PERPIXEL = True  # do we want to extract maps
-PERCOUNTRY = False # do we want to aggregate over spatial units like countries or admin1s?
+PERPIXEL = False  # do we want to extract maps
+PERCOUNTRY = True # do we want to aggregate over spatial units like countries or admin1s?
 
 do_AREALMEANPR = False   # area-weighted mean PR (applies to PERCOUNTRY extractions only)
-do_POPMEANPR = True      # population-weighted mean PR (applies to PERCOUNTRY extractions only)
+do_POPMEANPR = False      # population-weighted mean PR (applies to PERCOUNTRY extractions only)
 do_AREALMEANRo = False   # area-weighted mean Ro (applies to PERCOUNTRY extractions only)
-do_POPMEANRo = False     # population-weighted mean Ro(applies to PERCOUNTRY extractions only)
+do_POPMEANRo = True     # population-weighted mean Ro(applies to PERCOUNTRY extractions only)
 do_PAR = False           # population at risk, will be summarised by breaksDict classes (applies to both PERCOUNTRY and PERPIXEL extractions)
 do_BURDEN = False        # burden, will be summarised by breaksDict classes  (applies to both PERCOUNTRY and PERPIXEL extractions)
 
 do_BurdenMap=False       # map of clinical cases per pixel
-do_PRMap=True            # map of PfPR per pixel
-do_RoMap=True            # map of PfRc per pixel
+do_PRMap=False            # map of PfPR per pixel
+do_RoMap=False            # map of PfRc per pixel
 
 # class definition dictionaries
 #breaks_MBGW={"BREAKS":[0.,0.05,0.40,1.1],"BREAKNAMES":["lte05","gt05lte40","gt40lte100"],"NAME":"MBGW"}
