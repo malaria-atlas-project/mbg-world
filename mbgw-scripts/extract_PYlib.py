@@ -324,7 +324,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
             if (do_PAR):PARdict[scheme].update(PAR)
             if (do_BURDEN):BURDENdict[scheme].update(BURDEN)
 
-        # define a function object for later estimation of burden, based on this grump row (after cnvertig to a vector)
+        # define a function object for later estimation of burden, based on this grump row (after convertig to a vector)
         if (do_BURDEN): BurdenPredictorObj = BurdenPredictor(hf_name=burdentrace_path, nyr=N_years, burn=0)
 
     # loop through each realisation

@@ -10,7 +10,7 @@ utilFolder = '/home/pwg/map_utils/map_utils/'
 #keyPath = '/root/s3code.txt' 
  
 # main input hdf5  file of simulated realisations of f
-realisations_path = 'home/pwg/mbg-world/realizations/AS1/qrypfpr230708_asia_run_1.9.2008_as1_try2/realizations_mem_100000000_QRYPFPR230708_Asia_Run_1.9.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
+realisations_path = '/home/pwg/mbg-world/realizations/AS1/qrypfpr230708_asia_run_1.9.2008_as1_try2/realizations_mem_100000000_QRYPFPR230708_Asia_Run_1.9.2008_iterations_FILESTARTREL_FILEENDREL.hdf5'
 
 # hdf5 file containng traces for burden function
 burdentrace_path='/home/pwg/mbg-world/datafiles/burdentraces/CSE_Asia_and_Americas_scale_0.6_model_exp.hdf5'
@@ -24,11 +24,12 @@ exportPathCombined_country = '/home/pwg/mbg-world/extractionOutput/combinedoutpu
 exportPathCombined_perpixel = '/home/pwg/mbg-world/extractionOutput/combinedoutput_perpixel_ind/'
  
 # input salb rasters of unique spatial IDs (trimmed to limits)
-salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/NULL.hdf5"
-salblim5km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ad1_st_5km-e_y-x+_IND.hdf5"
+salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ad1_st_5km_y-x+_IND.hdf5"
+salblim5km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ad1_st_5km_y-x+_IND.hdf5"
 
 # input full salb rasters
-salb5km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ad1_5km-e_y-x+_IND.hdf5"
+salb1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ad1_1km_y-x+_IND.hdf5"
+salb5km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/ad1_5km_y-x+_IND.hdf5"
  
 # input 1km and 5km raster of population per cell
 grump1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/gr071km_y-x+_AS1.hdf5" 
@@ -64,8 +65,8 @@ do_POPMEANRo = False     # population-weighted mean Ro(applies to PERCOUNTRY ext
 do_PAR = True           # population at risk, will be summarised by breaksDict classes (applies to both PERCOUNTRY and PERPIXEL extractions)
 do_BURDEN = True        # burden, will be summarised by breaksDict classes  (applies to both PERCOUNTRY and PERPIXEL extractions)
 
-do_BurdenMap=True       # map of clinical cases per pixel
-do_PRMap=True            # map of PfPR per pixel
+do_BurdenMap=False       # map of clinical cases per pixel
+do_PRMap=False            # map of PfPR per pixel
 do_RoMap=False            # map of PfRc per pixel
 
 # class definition dictionaries
