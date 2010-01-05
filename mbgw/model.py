@@ -19,8 +19,6 @@ import gc
 from tables import ObjectAtom
 from generic_mbg import *
 
-
-
 __all__ = ['make_model']
 
 continent = 'Africa'
@@ -137,7 +135,7 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
 
         # Subjective skew-normal prior on amp (the partial sill, tau) in log-space.
         # Parameters are passed in in manual_MCMC_supervisor.
-        log_amp = pm.SkewNormal('log_amp',**amp_params)
+        log_amp = pm.SkewNormal('log_amp',value=amp_params['mu'],**amp_params)
         amp = pm.Lambda('amp', lambda log_amp = log_amp: np.exp(log_amp))
 
         # Subjective skew-normal prior on scale (the range, phi_x) in log-space.
@@ -254,6 +252,8 @@ def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1
             out[chunk*i:min((i+1)*chunk, data_mesh.shape[0])] = eps_p_f_list[i]
         return out
     
+    covariate_dicts = {'eps_p_f':covariate_dict}
+
     out = locals()
     for v in covariate_dict.iteritems():
         out[v[0]] = v[1][0]
