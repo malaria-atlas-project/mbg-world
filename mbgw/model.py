@@ -19,8 +19,6 @@ import gc
 from tables import ObjectAtom
 from generic_mbg import *
 
-
-
 __all__ = ['make_model']
 
 continent = 'Africa'
@@ -59,8 +57,8 @@ else:
     disttol = 0./6378.
     ttol = 0.
 
-def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
-    
+def make_model(lon,lat,t,covariate_values,pos,neg,lo_age=None,up_age=None,cpus=1,with_stukel=with_stukel, chunk=chunk, disttol=disttol, ttol=ttol):
+
     if np.any(pos+neg==0):
         where_zero = np.where(pos+neg==0)[0]
         raise ValueError, 'Pos+neg = 0 in the rows (starting from zero):\n %s'%where_zero
@@ -128,8 +126,6 @@ def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1
             a1 = pm.Uninformative('a1',0,observed=True)
             a2 = pm.Uninformative('a2',0,observed=True)        
 
-        # Make it easier for inc (psi) to jump across 0: let nonmod_inc roam freely over the reals,
-        # and mod it by pi to get the 'inc' parameter.
         inc = pm.CircVonMises('inc', 0, 0)
 
         # Use a uniform prior on sqrt ecc (sqrt ???). Using a uniform prior on ecc itself put too little
@@ -139,7 +135,7 @@ def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1
 
         # Subjective skew-normal prior on amp (the partial sill, tau) in log-space.
         # Parameters are passed in in manual_MCMC_supervisor.
-        log_amp = pm.SkewNormal('log_amp',**amp_params)
+        log_amp = pm.SkewNormal('log_amp',value=amp_params['mu'],**amp_params)
         amp = pm.Lambda('amp', lambda log_amp = log_amp: np.exp(log_amp))
 
         # Subjective skew-normal prior on scale (the range, phi_x) in log-space.
@@ -159,7 +155,7 @@ def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1
         vars_to_writeout.extend(['inc','ecc','amp','scale','scale_t','t_lim_corr','sin_frac'])
     
         # Collect stochastic variables with observed=False for the adaptive Metropolis stepper.
-        trial_stochs = [tau, a1, a2, nonmod_inc, sqrt_ecc, log_amp, log_scale, scale_t, t_lim_corr, sin_frac]
+        trial_stochs = [tau, a1, a2, sqrt_ecc, log_amp, log_scale, scale_t, t_lim_corr, sin_frac]
         nondata_stochs = []
         for stoch in trial_stochs:
             if not stoch.observed:
@@ -256,6 +252,8 @@ def make_model(lon,lat,t,pos,neg,covariate_values,lo_age=None,up_age=None,cpus=1
             out[chunk*i:min((i+1)*chunk, data_mesh.shape[0])] = eps_p_f_list[i]
         return out
     
+    covariate_dicts = {'eps_p_f':covariate_dict}
+
     out = locals()
     for v in covariate_dict.iteritems():
         out[v[0]] = v[1][0]
