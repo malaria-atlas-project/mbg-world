@@ -5,7 +5,9 @@
 cd /usr/lib/python2.5/site-packages/
 rm -r -f pymc*
 cd
-svn checkout http://pymc.googlecode.com/svn/trunk/ pymc
+rm -r -f pymc*
+#svn checkout http://pymc.googlecode.com/svn/trunk/ pymc
+git clone git://github.com/pymc-devs/pymc.git
 cd pymc
 python setupegg.py install
 cd 
@@ -15,6 +17,9 @@ apt-get install python-boto
 rm -r -f mbg-world
 git clone git://github.com/malaria-atlas-project/mbg-world.git
 cd mbg-world
+git checkout a5cf4606c3066959f953bed98d7e6703d9030540
+git checkout -b condsim2
+git pull origin condsim2
 ln -s ../datafiles datafiles
 python setup.py develop
 cd
@@ -22,7 +27,11 @@ cd
 rm -r -f generic-mbg
 git clone git://github.com/malaria-atlas-project/generic-mbg.git
 cd generic-mbg 
-python setup.py install
+
+#python setup.py install
+
+ln -s ../datafiles datafiles 
+python setup.py develop
 cd
 
 rm -r -f st-cov-fun
@@ -43,4 +52,6 @@ git clone git://github.com/malaria-atlas-project/pr-incidence.git
 cd pr-incidence
 python setup.py install
 cd
+
+export OMP_NUM_THREADS=4
 

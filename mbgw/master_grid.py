@@ -9,30 +9,6 @@ xllc = -180
 yllc = -57
 cellsize = 0.04166665
 
-#<<<<<<< Updated upstream:mbgw/master_grid.py
-#AM_lims = {'topRow': 1494,
-#'bottomRow': 2602,
-#'leftCol': 2038,
-#'rightCol': 3401}
-
-#AF_lims = {'topRow': 1393,
-#'bottomRow': 2745,
-#'leftCol': 3879,
-#'rightCol': 5628}
-
-#AS_lims = {'topRow': 1018,
-#'bottomRow': 2512,
-#'leftCol': 5241,
-#'rightCol': 8423}
-
-## FIXME: Replace with real Kenya limits.
-#KE_lims = {'topRow' : 789,
-#'bottomRow' : 1021,
-#'leftCol' : 2999,
-#'rightCol' : 3203}
-
-#rad_to_km = 6378.1/pi
-#=======
 AM_lims = {'topRow': 1525,
 'bottomRow': 2483,
 'leftCol': 2125,

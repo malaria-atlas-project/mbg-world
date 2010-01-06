@@ -3,8 +3,6 @@ print "from RUNSCRIPT_extractSummaries:\n"
 # import libraries
 from map_utils import checkAndBuildPaths
 from extract_PYlib import *
-#from boto_PYlib import *
-from map_utils import S3
 import os
 from extract_params import *
 import sys
@@ -32,8 +30,8 @@ if sys.argv[7] == 'False' : BURDEN=False
 if sys.argv[8] == 'False' : PERPIXEL=False
 if sys.argv[9] == 'False' : PERCOUNTRY=False
 
-S=S3(keyPath) # initialise key object
-
+a_lo = int(sys.argv[10]) 
+a_hi = int(sys.argv[11]) 
 
 # build realisation block import path
 hdf5block_path = realisations_path
@@ -50,14 +48,6 @@ print "BURDEN: "+str(BURDEN)
 print "PERPIXEL: "+str(PERPIXEL) 
 print "PERCOUNTRY: "+str(PERCOUNTRY) 
 
-# download this realisation file from S3 storage
-print '\nDownloading realisation from S3..'
-S3bucketname = hdf5block_path.split('/')[-2]
-print '\tS3bucketname: '+str(S3bucketname)
-S3filename = hdf5block_path.split('/')[-1]
-print '\tS3filename: '+str(S3filename)
-S.downloadFileFromBucket(S3bucketname,S3filename,hdf5block_path,overwriteContent=False,makeDirectory=False,VERBOSE=True)
-
 if PERPIXEL==True:
 
     print '\n running PERPIXEL extraction'
@@ -68,7 +58,7 @@ if PERPIXEL==True:
 
     # now call extractSummaries_perpixel substituting in the formatted sys args 
     print '\nrunning extractSummaries_perpixel..'
-    extractSummaries_perpixel ([slice(None,None,None), slice(None,None,None), MonthsSlice],2,10,n_per,FileStartRel,FileEndRel,totalN,startRel,endRel,BURDEN)
+    extractSummaries_perpixel ([slice(None,None,None), slice(None,None,None), MonthsSlice],a_lo,a_hi,n_per,FileStartRel,FileEndRel,totalN,startRel,endRel,BURDEN)
 
     # now upload the output back to the S3 storage
     #S.uploadDirectoryAsBucket('distributedoutput_perpixel',exportPathDistributed_perpixel,uploadConstituentFiles=True,overwriteContent=True)

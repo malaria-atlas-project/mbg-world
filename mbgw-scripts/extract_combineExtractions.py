@@ -74,7 +74,7 @@ def deconstructFilename (fname):
        returnDict={'variable':variable,'extractiontype':extractiontype,'scheme':scheme,'breakname':breakname,'startRel':startRel,'endRel':endRel}
        return(returnDict)
 
-    if ((variable==str('meanPR')) | (variable==str('BURDEN')) | (variable==str('meanPR2')) | (variable==str('meanBUR')) | (variable==str('meanBUR2'))):       
+    if ((variable==str('PopMeanPR')) | (variable==str('AreaMeanPR')) | (variable==str('PopMeanRo')) | (variable==str('AreaMeanRo')) |(variable==str('BURDEN')) | (variable==str('meanPR')) | (variable==str('meanPR2')) | (variable==str('meanBUR')) | (variable==str('meanBUR2')) | (variable==str('meanRo')) | (variable==str('meanRo2'))):       
        part2= part1[2].partition('_')
        extractiontype = part2[0]        
        part3=part2[2].partition('r')
@@ -99,12 +99,14 @@ def copySubTableToMain(subfname,maintable,n_per,Nsalb,filledCols):
     if len(shape(inputTable)) == 1:
         inputTable = np.atleast_2d(inputTable).T
 
+    if len(shape(inputTable)) == 0: inputTable.shape=(1,1) # special case of just one element (one realisation of one unit)
+
     ## query attributes of input table
     name_parts = deconstructFilename(subfname)    
     startRel = name_parts['startRel']    
     endRel = name_parts['endRel']    
+    nrel = (endRel-startRel) 
     ncols = inputTable.shape[1]    
-    nrel = (endRel-startRel)    
 
     # check attributes are as expected    
     if inputTable.shape[0] != Nsalb:    
@@ -212,7 +214,7 @@ def getSummariesPerCountry(globalarray):
         pixelN=fromfile(pixelN_path,sep=",")
     except IOError:
         print 'WARNING!! files '+pixelN_path+" or "+uniqueSalb_path+" not found: running examineSalb"
-        temp=examineSalb (salblim1km_path,ignore=np.array([-9999]))
+        temp=examineSalb (salblim_path,ignore=np.array([-9999]))
         uniqueSalb=temp['uniqueSalb']
         pixelN=temp['count'] 
 
@@ -283,22 +285,27 @@ def combineDistribExtractions_country():
     if len(shape(firstfile)) == 1:
         firstfile = np.atleast_2d(firstfile).T
 
+    if len(shape(firstfile)) == 0: firstfile.shape=(1,1) # special case of just one element (one realisation of one unit)
+
     tableshape = firstfile.shape
     Nsalb = tableshape[0]
     ncols = tableshape[1] 
     n_per = ncols/(name_parts['endRel']-name_parts['startRel'])
-
+        
     # define generic blank array to house combined tables for each variable
     blankarray = np.repeat(-9999.,n_realizations_infiles*n_per*Nsalb).reshape(Nsalb,n_per*n_realizations_infiles)
 
     # loop through all meanPR_* files and add them to global array, then export global array, and optionallly accopmanying summary table
-    temp=makeGlobalArray_contVariables('meanPR',blankarray,n_per,Nsalb)
-
+    if(do_AREALMEANPR):temp=makeGlobalArray_contVariables('AreaMeanPR',blankarray,n_per,Nsalb)
+    if(do_POPMEANPR):temp=makeGlobalArray_contVariables('PopMeanPR',blankarray,n_per,Nsalb)
+    if(do_AREALMEANRo):temp=makeGlobalArray_contVariables('AreaMeanRo',blankarray,n_per,Nsalb)
+    if(do_POPMEANRo):temp=makeGlobalArray_contVariables('PopMeanRo',blankarray,n_per,Nsalb)
+    
     # loop through all BURDEN_* files and add them to global array, then export global array, and optionallly accopmanying summary table
-    makeGlobalArray_categoVariables('BURDEN',blankarray,n_per,Nsalb)
+    if(do_BURDEN):makeGlobalArray_categoVariables('BURDEN',blankarray,n_per,Nsalb)
 
     # loop through all PAR_* files and add them to global arrays, then export global arrays, and optionallly accopmanying summary table
-    makeGlobalArray_categoVariables('PAR',blankarray,n_per,Nsalb)
+    if(do_PAR):makeGlobalArray_categoVariables('PAR',blankarray,n_per,Nsalb)
 
     return()
 #############################################################################################################################################
@@ -330,13 +337,19 @@ def combineDistribExtractions_perpixel():
     zeroMap = zeros(product(referenceshape)).reshape(referenceshape)
      
     # initialise zero arrays to sum over for means, and counters for checking 
-    meanPR = cp.deepcopy(zeroMap)
-    meanPR2 = cp.deepcopy(zeroMap) 
-    meanBUR = cp.deepcopy(zeroMap) 
-    meanBUR2 = cp.deepcopy(zeroMap)
-
-    meanPRtally = meanPR2tally = meanBURtally = meanBUR2tally = 0 
-
+    if do_PRMap:
+        meanPR = cp.deepcopy(zeroMap)
+        meanPR2 = cp.deepcopy(zeroMap) 
+        meanPRtally = meanPR2tally = 0
+    if do_RoMap:
+        meanRo = cp.deepcopy(zeroMap)
+        meanRo2 = cp.deepcopy(zeroMap) 
+        meanRotally = meanRo2tally = 0
+    if do_BurdenMap:
+        meanBUR = cp.deepcopy(zeroMap) 
+        meanBUR2 = cp.deepcopy(zeroMap)
+        meanBURtally = meanBUR2tally = 0 
+        
     # initialise dictionary of PCM arrays to sum over for each scheme/class
     Nschemes=len(breaksDict)    
     schemeNames=breaksDict.keys()    
@@ -398,6 +411,10 @@ def combineDistribExtractions_perpixel():
 
         # if its a meanPR file, add it's running mean values to the global meanPR array
         if variable == str('meanPR'):
+
+            print '\nimported file : '+str(fname)
+            print 'mean is : '+str(np.mean(importarray))
+
             meanPR = meanPR + importarray
             meanPRtally = meanPRtally+1
 
@@ -405,6 +422,20 @@ def combineDistribExtractions_perpixel():
         if variable == str('meanPR2'):
             meanPR2 = meanPR2 + importarray
             meanPR2tally = meanPR2tally+1
+
+        # if its a meanRo file, add it's running mean values to the global meanRo array
+        if variable == str('meanRo'):
+
+            print '\nimported file : '+str(fname)
+            print 'mean is : '+str(np.mean(importarray))
+
+            meanRo = meanRo + importarray
+            meanRotally = meanRotally+1
+
+        # if its a meanRo2 file, add it's running mean values to the global meanRo2 array
+        if variable == str('meanRo2'):
+            meanRo2 = meanRo2 + importarray
+            meanRo2tally = meanRo2tally+1
             
         # if its a meanBUR file, add it's running mean values to the global meanBUR array
         if variable == str('meanBUR'):
@@ -427,9 +458,9 @@ def combineDistribExtractions_perpixel():
             PCMdict[scheme]['PCM'][thisbreakname] = PCMdict[scheme]['PCM'][thisbreakname] + importarray
             PCMdict[scheme]['PCMtally'][thisbreakname] = PCMdict[scheme]['PCMtally'][thisbreakname] +1 
             
-    # run checks on tallys - they should all be the same for each variable
-    if ((meanPRtally == meanPR2tally == meanBURtally == meanBUR2tally)==False):
-        print 'WARNING!!! tallys do not match: meanPRtally='+str(meanPRtally)+' meanPR2tally='+str(meanPR2tally)+' meanBURtally='+str(meanBURtally)+' meanBUR2tally='+str(meanBUR2tally)
+#    # run checks on tallys - they should all be the same for each variable
+#    if ((meanPRtally == meanPR2tally == meanBURtally == meanBUR2tally)==False):
+#        print 'WARNING!!! tallys do not match: meanPRtally='+str(meanPRtally)+' meanPR2tally='+str(meanPR2tally)+' meanBURtally='+str(meanBURtally)+' meanBUR2tally='+str(meanBUR2tally)
         
     ## ..loop through each classification scheme 
     for ss in xrange(0,Nschemes): 
@@ -445,17 +476,37 @@ def combineDistribExtractions_perpixel():
             if(thistally!=meanPRtally):
                 print 'WARNING!!! tallys do not match: PCM tally for scheme '+str(scheme)+' class '+str(thisbreakname)+' is '+str(thistally)+' but for meanPRtally is '+str(meanPRtally)
     
-    # calculate SD for PR and Burden
-    varPR = meanPR2 - np.square(meanPR)
-    stdevPR = np.sqrt(varPR)
-    varBUR = meanBUR2 - np.square(meanBUR)
-    stdevBUR = np.sqrt(varBUR)
+    # calculate SD for each variable
+    if do_PRMap:
+        varPR = meanPR2 - np.square(meanPR)
+        stdevPR = np.sqrt(varPR)
+
+    if do_RoMap:
+        varRo = meanRo2 - np.square(meanRo)
+        stdevRo = np.sqrt(varRo)
+
+    if do_BurdenMap:
+        varBUR = meanBUR2 - np.square(meanBUR)
+        stdevBUR = np.sqrt(varBUR)
 
     # export mean and SD arrays as asciis
-    exportAscii(meanPR,exportPathCombined_perpixel+"meanPR.asc",hdrDict,mask = mask.root.data[:,:])
-    exportAscii(stdevPR,exportPathCombined_perpixel+"stdevPR.asc",hdrDict,mask = mask.root.data[:,:])
-    exportAscii(meanBUR,exportPathCombined_perpixel+"meanBUR.asc",hdrDict,mask = mask.root.data[:,:])
-    exportAscii(stdevBUR,exportPathCombined_perpixel+"stdevBUR.asc",hdrDict,mask = mask.root.data[:,:])
+    if do_PRMap:
+        print '\nmeanPRtally is: '+str(meanPRtally)
+        print 'mean of meanPR before export to ascii is: '+str(np.mean(meanPR))
+        exportAscii(meanPR,exportPathCombined_perpixel+"meanPR.asc",hdrDict,mask = mask.root.data[:,:])
+        exportAscii(stdevPR,exportPathCombined_perpixel+"stdevPR.asc",hdrDict,mask = mask.root.data[:,:])
+
+    if do_RoMap:
+        print '\nmeanRotally is: '+str(meanRotally)
+        print 'mean of meanRo before export to ascii is: '+str(np.mean(meanRo))
+        exportAscii(meanRo,exportPathCombined_perpixel+"meanRo.asc",hdrDict,mask = mask.root.data[:,:])
+        exportAscii(stdevRo,exportPathCombined_perpixel+"stdevRo.asc",hdrDict,mask = mask.root.data[:,:])
+
+    if do_BurdenMap:
+        print '\meanBURtally is: '+str(meanBURtally)
+        print 'mean of meanBUR before export to ascii is: '+str(np.mean(meanBUR))
+        exportAscii(meanBUR,exportPathCombined_perpixel+"meanBUR.asc",hdrDict,mask = mask.root.data[:,:])
+        exportAscii(stdevBUR,exportPathCombined_perpixel+"stdevBUR.asc",hdrDict,mask = mask.root.data[:,:])
 
     # for each classification scheme, define an array showing PCM to most likely class (PCMMLC) and what that most likely class is (MLC)
     for ss in xrange(0,Nschemes):             

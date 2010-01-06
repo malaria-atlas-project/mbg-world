@@ -70,7 +70,7 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
           PostMeanInterim<-t(cDtoP.temp) %*% cDtoD.inv
           PostVar<-cPtoP.temp - t(cDtoP.temp) %*% cDtoD.inv %*% cDtoP.temp
 
-       ## if we are returning the cholski decomposition of the krigingn variance matrix, rather than the original matrix, do this now:
+       ## if we are returning the choleski decomposition of the kriging variance matrix, rather than the original matrix, do this now:
           if(returnL){
        
             U<-chol(PostVar, pivot = TRUE)
@@ -78,6 +78,9 @@ getSubsetInterimMatrices<-function(cDtoD,cDtoP,cPtoP,returnL,NuniqueFPs,counter=
             n <-attr(U,"rank")
             oo <- order(pivot)
             L<-t(U[1:n,oo])
+            
+            print(paste("max dev",max(abs(L%*%t(L)-PostVar))))
+            
             PostVar<-L 
           }       
        

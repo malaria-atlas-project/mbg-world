@@ -43,12 +43,15 @@ def ndmeshgrid(grids, hnode=None):
         return ns
 
 
-def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata):
+def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, relp, mean_ondata): 
 
     xbi = np.asarray(np.linspace(0,grids[0][2],n_blocks_x+1),dtype=int)
     ybi = np.asarray(np.linspace(0,grids[1][2],n_blocks_y+1),dtype=int)
 
     dev = (tdata-mean_ondata-pdata)
+    
+    print 'Max dev:', np.max(np.abs(dev))
+    print 'Max and min mean:', np.max(mean_ondata), np.min(mean_ondata)
 
     # Figure out which data locations are relevant to the different prediction blocks
     cutoff = C.params['amp']*relp
@@ -60,16 +63,19 @@ def preprocess(C, data_locs, grids, x, n_blocks_x, n_blocks_y, tdata, pdata, rel
     
     C_eval = C(data_locs,data_locs)
     
-    U, n_posdef, pivots = ichol_full(c=C_eval, reltol=relp)
-    U = U[:n_posdef, :n_posdef]
-
-    dl_posdef = data_locs[pivots[:n_posdef]]
-    dev_posdef = dev[pivots[:n_posdef]]
+    U = np.asarray(np.linalg.cholesky(C_eval).T, order='F')
+    dl_posdef = data_locs
+    dev_posdef = dev
+    # U, n_posdef, pivots = ichol_full(c=C_eval, reltol=relp)
+    # U = U[:n_posdef, :n_posdef]
+    # 
+    # dl_posdef = data_locs[pivots[:n_posdef]]
+    # dev_posdef = dev[pivots[:n_posdef]]
 
     # Backsolve data-data covariance against dev
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='T', inplace=True)
     pm.gp.trisolve(U, dev_posdef, uplo='U', transa='N', inplace=True)
-    
+
     return dev_posdef, xbi, ybi, dl_posdef
         
 
@@ -93,3 +99,6 @@ def krige_month(C, i, dl_posdef, grid_shape, n_blocks_x, n_blocks_y, xbi, ybi, x
                 this_mask = mask[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]]             
 
                 row[xbi[j]:xbi[j+1],ybi[k]:ybi[k+1]] = scipy.linalg.blas.fblas.sgemv(1., this_C_V.T, dev_posdef).reshape((x_block_size, y_block_size))
+
+    #from IPython.Debugger import Pdb
+    #Pdb(color_scheme='Linux').set_trace()
