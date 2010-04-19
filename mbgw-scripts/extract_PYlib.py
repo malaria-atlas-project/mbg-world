@@ -29,7 +29,8 @@ rowsPerChunk=1
 r.source('extract_Rlib.R')
 expandGridResPY=r['expandGridRes']
 
-r.source('/home/pwg/rc/PRutils.R')
+#r.source('/home/pwg/rc/PRutils.R')
+r.source('/home/pwg/rc/PR2R0_recessionPaper.R')
 
 # import parameters from param file
 from extract_params import *
@@ -532,7 +533,7 @@ def extractSummaries_country(slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,star
                 if(do_AREALMEANRo|do_POPMEANRo):
                     chunkExpRo=np.zeros(product(shape(chunkExpPR))).reshape(shape(chunkExpPR))
                     nonzero=np.where(chunkExpPR!=0)
-                    chunkExpRo[nonzero] = r.PR2Rc(chunkExpPR[nonzero],ES=1, alpha=4.2, c=0.5, s=1, b=0.8, r=355.55/200, gama=0)
+                    chunkExpRo[nonzero] = r.PR2R0(chunkExpPR[nonzero])
 
                 
                 #from IPython.Debugger import Pdb
@@ -969,7 +970,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 #            if do_RoMap==True:
 #                chunk_Ro=np.zeros(product(shape(chunk))).reshape(shape(chunk))
 #                nonzero=np.where(chunk!=0)
-#                chunk_Ro[nonzero] = r.PR2Rc(chunk[nonzero],ES=1, alpha=4.2, c=0.5, s=1, b=0.8, r=355.55/200, gama=0)
+#                chunk_Ro[nonzero] = r.PR2R0(chunk[nonzero])
 
             # aggregate through time to obtain spatial-only array for this nugget-realisation
             chunkTMEAN = np.atleast_2d(np.mean(chunk,-1))
@@ -981,7 +982,7 @@ def extractSummaries_perpixel (slices,a_lo,a_hi,n_per,FileStartRel,FileEndRel,to
 #                print('mean of chunkTMEAN_Ro: '+str(np.mean(chunkTMEAN_Ro)))
                 chunkTMEAN_Ro=np.zeros(product(shape(chunkTMEAN))).reshape(shape(chunkTMEAN))
                 nonzero=np.where(chunkTMEAN!=0)
-                chunkTMEAN_Ro[nonzero] = r.PR2Rc(chunkTMEAN[nonzero],ES=1, alpha=4.2, c=0.5, s=1, b=0.8, r=355.55/200, gama=0)
+                chunkTMEAN_Ro[nonzero] = r.PR2R0(chunkTMEAN[nonzero])
 
 #            from IPython.Debugger import Pdb
 #            Pdb(color_scheme='Linux').set_trace()                   

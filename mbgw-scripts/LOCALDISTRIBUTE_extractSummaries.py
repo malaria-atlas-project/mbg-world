@@ -41,7 +41,7 @@ NPER  = 1
 NTOTALREL = NRELS*NPER
 
 ####################################TEMP 
-NTOTALREL = 1
+#NTOTALREL = 1
 ####################################TEMP
 
 # call examineSalb to provide lists of unique spatial units, and optionally their areas and populations

@@ -16,12 +16,12 @@ realisations_path = '/home/pwg/mbg-world/realizations/AS2/qrypfpr230708_asia_run
 burdentrace_path='/home/pwg/mbg-world/datafiles/burdentraces/CSE_Asia_and_Americas_scale_0.6_model_exp.hdf5'
 
 # location for export of raw extractions (as they come off each distributed instance)
-exportPathDistributed_country = '/home/pwg/mbg-world/extractionOutput/distributedoutput_country_as2/admin0/'
-exportPathDistributed_perpixel = '/home/pwg/mbg-world/extractionOutput/distributedoutput_perpixel_as2/'
+exportPathDistributed_country = '/home/pwg/mbg-world/extractionOutput/distributedoutput_country_as2/admin0_popmeans_2_10/'
+#exportPathDistributed_perpixel = '/home/pwg/mbg-world/extractionOutput/distributedoutput_perpixel_as2/'
  
 # location for export of combined extractions (after distributed files joined by extract_combineDistribExtractions.py)
-exportPathCombined_country = '/home/pwg/mbg-world/extractionOutput/combinedoutput_country_as2/admin0/'
-exportPathCombined_perpixel = '/home/pwg/mbg-world/extractionOutput/combinedoutput_perpixel_as2/'
+exportPathCombined_country = '/home/pwg/mbg-world/extractionOutput/combinedoutput_country_as2/admin0_popmeans_2_10/'
+#exportPathCombined_perpixel = '/home/pwg/mbg-world/extractionOutput/combinedoutput_perpixel_as2/'
  
 # input salb rasters of unique spatial IDs (trimmed to limits)
 #salblim1km_path="/home/pwg/mbg-world/datafiles/auxiliary_data/GridsForCS/NULL.hdf5"
@@ -58,9 +58,9 @@ PERPIXEL = False  # do we want to extract maps
 PERCOUNTRY = True # do we want to aggregate over spatial units like countries or admin1s?
 
 do_AREALMEANPR = False   # area-weighted mean PR (applies to PERCOUNTRY extractions only)
-do_POPMEANPR = False      # population-weighted mean PR (applies to PERCOUNTRY extractions only)
+do_POPMEANPR = True      # population-weighted mean PR (applies to PERCOUNTRY extractions only)
 do_AREALMEANRo = False   # area-weighted mean Ro (applies to PERCOUNTRY extractions only)
-do_POPMEANRo = True     # population-weighted mean Ro(applies to PERCOUNTRY extractions only)
+do_POPMEANRo = False     # population-weighted mean Ro(applies to PERCOUNTRY extractions only)
 do_PAR = False           # population at risk, will be summarised by breaksDict classes (applies to both PERCOUNTRY and PERPIXEL extractions)
 do_BURDEN = False        # burden, will be summarised by breaksDict classes  (applies to both PERCOUNTRY and PERPIXEL extractions)
 
